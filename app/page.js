@@ -12,6 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Youtube, Facebook } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 const Home = () => {
   const [isShrunk, setIsShrunk] = useState(false);
@@ -97,15 +98,17 @@ const Home = () => {
                 superando continuamente sus expectativas, apoyados siempre de
                 nuestro profesional equipo de trabajo.
               </p>
-              <button
-                className="bg-white text-blue-700 px-10 py-4 rounded-full text-lg font-bold 
+              <Link href="/dashboard">
+                <button
+                  className="bg-white text-blue-700 px-10 py-4 rounded-full text-lg font-bold 
                    hover:transform hover:scale-105
                    transition-all duration-300 flex items-center 
                    space-x-2 group shadow-lg hover:shadow-2xl"
-              >
-                <span>Saber más</span>
-                <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-              </button>
+                >
+                  <span>Saber más</span>
+                  <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                </button>
+              </Link>
             </div>
 
             <div

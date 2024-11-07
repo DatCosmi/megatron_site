@@ -14,7 +14,6 @@
   }
 }
 
-/* styles/globals.css */
 html {
   scroll-behavior: smooth;
 }
@@ -25,54 +24,27 @@ body {
   padding: 0;
 }
 
-header,
-footer {
-  background-color: #1a73e8;
-  color: #fff;
-  padding: 20px;
-  text-align: center;
-}
-
-.main-container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: auto;
-}
-
-.section {
-  margin: 40px 0;
-}
-
-.section h2 {
-  color: #1a73e8;
-}
-
-.card-container {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.card {
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 30%;
-  text-align: center;
-}
-
 .logo {
-  height: 5vw;
-  margin-top: -1vw;
-  margin-bottom: -1vw;
+  height: 4.5vw;
+}
+
+.logo2 {
+  height: 8vw;
+  margin-top: 1vw;
 }
 
 .brt-logo {
   height: 10vw;
   margin-top: -3vw;
   margin-bottom: -1vw;
+}
+
+.barrita {
+  bottom: -1px;
+}
+
+.sect1 {
+  padding-top: 3vw;
 }
 
 @layer utilities {

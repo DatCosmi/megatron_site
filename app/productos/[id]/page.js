@@ -2,6 +2,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import Header from "../../components/header";
+import Footer from "../../components/footer";
 
 const ProductDetail = ({ params }) => {
   const [showQuoteForm, setShowQuoteForm] = useState(false);
@@ -70,6 +72,8 @@ const ProductDetail = ({ params }) => {
     <div className="min-h-screen bg-gray-50 mt-5">
       {/* Contenido principal */}
       <main className="max-w-7xl mx-auto px-4 py-8">
+        <Header />
+
         <div className="bg-white rounded-lg shadow-lg overflow-hidden mt-10">
           {/* Navegación */}
           <div className="max-w-7xl mx-auto px-4 py-2 flex items-center">
@@ -176,6 +180,7 @@ const ProductDetail = ({ params }) => {
             </form>
           </div>
         )}
+        <Footer />
       </main>
     </div>
   );

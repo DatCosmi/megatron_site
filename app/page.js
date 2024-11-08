@@ -13,6 +13,8 @@ import {
 import { Youtube, Facebook } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Header from "./components/header";
+import Footer from "./components/footer";
 
 const Home = () => {
   const [isShrunk, setIsShrunk] = useState(false);
@@ -66,6 +68,7 @@ const Home = () => {
 
   return (
     <main>
+      <Header />
       {/* Hero Section */}
       <section
         className={`${
@@ -526,6 +529,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </main>
   );
 };

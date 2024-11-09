@@ -1,6 +1,6 @@
 // components/Dashboard.js
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../components/sidebar";
 
 const TECHNICIANS = [
@@ -20,7 +20,7 @@ const SERVICES = [
     date: "01/10/2024",
     time: "13:23:41",
     status: "pendiente",
-    assignedTo: null,
+    assignedTo: "Carlos Stanley",
   },
   {
     id: 2,
@@ -83,11 +83,28 @@ function Dashboard() {
   const [services, setServices] = useState(SERVICES);
   const [activeFilter, setActiveFilter] = useState("todos");
   const [selectedService, setSelectedService] = useState(null);
-  const [showTechnicianList, setShowTechnicianList] = useState(false);
+  const [isTechnicianListOpen, setIsTechnicianListOpen] = useState(false);
+  const [isAddReportModalOpen, setIsAddReportModalOpen] = useState(false);
+  const [newReportData, setNewReportData] = useState({
+    title: "",
+    description: "",
+    department: "",
+    equipment: "",
+    reportedBy: "",
+    date: "",
+    time: "",
+  });
+  const [selectedTechnician, setSelectedTechnician] = useState(null);
 
   const filteredServices = services.filter((service) =>
     activeFilter === "todos" ? true : service.status === activeFilter
   );
+
+  const servicesForTechnician = selectedTechnician
+    ? services.filter(
+        (service) => service.assignedTo === selectedTechnician.name
+      )
+    : [];
 
   const handleAssign = (technicianId) => {
     setServices((prevServices) =>
@@ -103,7 +120,7 @@ function Dashboard() {
       )
     );
     setSelectedService(null);
-    setShowTechnicianList(false);
+    setIsTechnicianListOpen(false);
   };
 
   const handleComplete = (serviceId) => {
@@ -116,31 +133,64 @@ function Dashboard() {
     );
   };
 
-  const handleReassign = () => {
-    setShowTechnicianList(true);
-  };
-
   const handleDelete = (serviceId) => {
     setServices((prevServices) =>
-      prevServices.filter((service) => service.id !== serviceId)
+      prevServices.filter((s) => s.id !== serviceId)
     );
   };
 
+  // Establecer la fecha y hora automáticamente cuando se monta el componente
+  useEffect(() => {
+    const currentDate = new Date();
+    const currentDateString = currentDate.toISOString().split("T")[0]; // Fecha en formato YYYY-MM-DD
+    const currentTimeString = currentDate
+      .toTimeString()
+      .split(" ")[0]
+      .substring(0, 5); // Hora en formato HH:MM
+
+    setNewReportData((prevData) => ({
+      ...prevData,
+      date: currentDateString,
+      time: currentTimeString,
+    }));
+  }, []);
+
+  const handleAddReportSubmit = () => {
+    const newReport = {
+      id: services.length + 1,
+      ...newReportData,
+      status: "pendiente",
+      assignedTo: null,
+    };
+    setServices([...services, newReport]);
+    setIsAddReportModalOpen(false);
+    setNewReportData({
+      title: "",
+      description: "",
+      department: "",
+      equipment: "",
+      reportedBy: "",
+      date: "",
+      time: "",
+    });
+  };
+
   return (
-    <div className="flex">
+    <div className="flex h-screen bg-gray-100">
       <Sidebar />
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-6">
         <header className="mb-4">
           <h1 className="text-2xl font-semibold">Dashboard de Servicios</h1>
         </header>
+
         <div className="flex space-x-4 mb-6">
           {FILTERS.map((filter) => (
             <button
               key={filter.id}
-              className={`px-4 py-2 rounded-lg ${
+              className={`px-4 py-2 rounded-full ${
                 activeFilter === filter.id
                   ? "bg-blue-500 text-white"
-                  : "bg-gray-100"
+                  : "bg-gray-100 text-gray-700"
               }`}
               onClick={() => setActiveFilter(filter.id)}
             >
@@ -148,129 +198,241 @@ function Dashboard() {
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <button
+          className="mb-4 px-4 py-2 bg-green-500 text-white rounded-lg"
+          onClick={() => setIsAddReportModalOpen(true)}
+        >
+          Agregar Reporte
+        </button>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredServices.map((service) => (
             <div
               key={service.id}
-              className="p-4 bg-white rounded-lg shadow-md cursor-pointer"
-              onClick={() => setSelectedService(service)}
+              className="bg-white rounded-xl shadow-lg p-6 space-y-3"
             >
-              <h2 className="text-lg font-semibold">{service.title}</h2>
-              <p className="text-gray-600">{service.description}</p>
-              <p className="text-sm text-gray-500">{service.department}</p>
-              <div className="flex items-center mt-2">
-                <div
-                  className={`w-2 h-2 rounded-full ${getStatusColor(
-                    service.status
-                  )}`}
-                />
-                <span className="ml-2 text-sm text-gray-500">
-                  {getStatusText(service.status)}
-                </span>
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                  {service.title.charAt(0)}
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold">{service.title}</h2>
+                  <p className="text-sm text-gray-500">{service.department}</p>
+                </div>
               </div>
+              <p className="text-gray-600">{service.description}</p>
+              <p className="text-sm text-gray-500">
+                Reportado por: {service.reportedBy}
+              </p>
+              <p className="text-sm text-gray-500">
+                Equipo: {service.equipment}
+              </p>
+              <p className="text-sm text-gray-500">
+                Estado: {getStatusText(service.status)}
+              </p>
+
+              {service.status === "pendiente" && (
+                <button
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg w-full"
+                  onClick={() => {
+                    setSelectedService(service);
+                    setIsTechnicianListOpen(true);
+                  }}
+                >
+                  Asignar
+                </button>
+              )}
               {service.status === "en-curso" && (
-                <p className="text-sm mt-2">Asignado a: {service.assignedTo}</p>
+                <div className="flex space-x-2">
+                  <button
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg w-full"
+                    onClick={() => handleComplete(service.id)}
+                  >
+                    Completar
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-yellow-500 text-white rounded-lg w-full"
+                    onClick={() => {
+                      setSelectedService(service);
+                      setIsTechnicianListOpen(true);
+                    }}
+                  >
+                    Reasignar
+                  </button>
+                </div>
+              )}
+              {service.status === "completada" && (
+                <button
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg w-full"
+                  onClick={() => handleDelete(service.id)}
+                >
+                  Eliminar
+                </button>
               )}
             </div>
           ))}
         </div>
 
-        {selectedService && (
+        {isTechnicianListOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg w-full max-w-lg">
               <h2 className="text-xl font-semibold mb-4">
-                {selectedService.title}
+                Selecciona un técnico
               </h2>
-              <p>{selectedService.description}</p>
-
-              {selectedService.status === "pendiente" && (
-                <button
-                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
-                  onClick={() => setShowTechnicianList(true)}
-                >
-                  Asignar
-                </button>
-              )}
-
-              {selectedService.status === "en-curso" && (
-                <>
+              <div className="space-y-2">
+                {TECHNICIANS.map((technician) => (
                   <button
-                    className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg"
-                    onClick={() => handleComplete(selectedService.id)}
+                    key={technician.id}
+                    className="w-full px-4 py-2 text-left bg-gray-100 hover:bg-blue-500 hover:text-white rounded-lg"
+                    onClick={() => handleAssign(technician.id)}
                   >
-                    Marcar como completado
+                    {technician.name}
                   </button>
-                  <button
-                    className="mt-2 px-4 py-2 bg-yellow-500 text-white rounded-lg"
-                    onClick={handleReassign}
-                  >
-                    Reasignar
-                  </button>
-                </>
-              )}
-
-              {selectedService.status === "completada" && (
-                <button
-                  className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg"
-                  onClick={() => handleDelete(selectedService.id)}
-                >
-                  Eliminar
-                </button>
-              )}
-
+                ))}
+              </div>
               <button
-                className="mt-2 px-4 py-2 bg-gray-500 text-white rounded-lg"
-                onClick={() => setSelectedService(null)}
+                className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg w-full"
+                onClick={() => setIsTechnicianListOpen(false)}
               >
-                Cerrar
+                Cancelar
               </button>
+            </div>
+          </div>
+        )}
 
-              {showTechnicianList && (
-                <div className="mt-4">
-                  <h3 className="text-lg font-semibold mb-2">Asignar a:</h3>
-                  {TECHNICIANS.map((technician) => (
-                    <button
-                      key={technician.id}
-                      className="block w-full text-left px-4 py-2 bg-gray-100 rounded-lg mb-2"
-                      onClick={() => handleAssign(technician.id)}
-                    >
-                      {technician.name}
-                    </button>
-                  ))}
-                </div>
-              )}
+        {isAddReportModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg w-full max-w-lg">
+              <h2 className="text-xl font-semibold mb-4">
+                Agregar Nuevo Reporte
+              </h2>
+              <input
+                type="text"
+                placeholder="Título"
+                className="w-full mb-2 p-2 border border-gray-300 rounded"
+                value={newReportData.title}
+                onChange={(e) =>
+                  setNewReportData({ ...newReportData, title: e.target.value })
+                }
+              />
+              <textarea
+                placeholder="Descripción"
+                className="w-full mb-2 p-2 border border-gray-300 rounded"
+                value={newReportData.description}
+                onChange={(e) =>
+                  setNewReportData({
+                    ...newReportData,
+                    description: e.target.value,
+                  })
+                }
+              ></textarea>
+              <input
+                type="text"
+                placeholder="Departamento"
+                className="w-full mb-2 p-2 border border-gray-300 rounded"
+                value={newReportData.department}
+                onChange={(e) =>
+                  setNewReportData({
+                    ...newReportData,
+                    department: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Equipo"
+                className="w-full mb-2 p-2 border border-gray-300 rounded"
+                value={newReportData.equipment}
+                onChange={(e) =>
+                  setNewReportData({
+                    ...newReportData,
+                    equipment: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Reportado por"
+                className="w-full mb-2 p-2 border border-gray-300 rounded"
+                value={newReportData.reportedBy}
+                onChange={(e) =>
+                  setNewReportData({
+                    ...newReportData,
+                    reportedBy: e.target.value,
+                  })
+                }
+              />
+              {/* Aquí no mostramos los campos de fecha y hora */}
+              <button
+                className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg w-full"
+                onClick={handleAddReportSubmit}
+              >
+                Agregar Reporte
+              </button>
+              <button
+                className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg w-full"
+                onClick={() => setIsAddReportModalOpen(false)}
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         )}
       </main>
+
+      {/* Barra lateral derecha */}
+      <aside className="w-64 bg-white p-4 border-l border-gray-200">
+        <h2 className="text-lg font-semibold mb-4">Técnicos</h2>
+        <div className="space-y-2">
+          {TECHNICIANS.map((technician) => (
+            <button
+              key={technician.id}
+              className={`w-full px-4 py-2 text-left rounded-lg ${
+                selectedTechnician?.id === technician.id
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+              onClick={() => setSelectedTechnician(technician)}
+            >
+              {technician.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Lista de reportes del técnico seleccionado */}
+        {selectedTechnician && (
+          <div className="mt-6">
+            <h3 className="text-md font-semibold">Reportes Asignados</h3>
+            <ul className="mt-2 space-y-2">
+              {servicesForTechnician.length > 0 ? (
+                servicesForTechnician.map((service) => (
+                  <li key={service.id} className="bg-gray-200 rounded-lg p-2">
+                    <p className="font-semibold">{service.title}</p>
+                    <p className="text-sm text-gray-600">
+                      {service.description}
+                    </p>
+                  </li>
+                ))
+              ) : (
+                <p className="text-gray-500 mt-2">No hay reportes asignados.</p>
+              )}
+            </ul>
+          </div>
+        )}
+      </aside>
     </div>
   );
 }
 
-const getStatusColor = (status) => {
-  switch (status) {
-    case "pendiente":
-      return "bg-yellow-500";
-    case "en-curso":
-      return "bg-green-500";
-    case "completada":
-      return "bg-blue-500";
-    default:
-      return "bg-gray-400";
-  }
-};
-
-const getStatusText = (status) => {
-  switch (status) {
-    case "pendiente":
-      return "Pendiente";
-    case "en-curso":
-      return "En curso";
-    case "completada":
-      return "Completada";
-    default:
-      return status;
-  }
-};
+function getStatusText(status) {
+  return (
+    {
+      pendiente: "Pendiente",
+      "en-curso": "En curso",
+      completada: "Completada",
+    }[status] || "Desconocido"
+  );
+}
 
 export default Dashboard;

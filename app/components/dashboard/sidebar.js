@@ -21,20 +21,11 @@ const Sidebar = () => {
   const isActiveRoute = (href) => pathname === href;
 
   return (
-    <aside className="w-60 min-h-screen bg-white border-r border-gray-200 flex flex-col overflow-y-auto">
+    <aside className="w-60 min-h-screen bg-white border-r border-gray-200 flex flex-col h-screen fixed top-0 left-0 overflow-y-auto">
       {/* Logo section */}
-      <div className="p-6">
-        <Link href="/dashboard" className="flex items-center">
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={48}
-            height={48}
-            className="w-12 h-12"
-          />
-          <span className="ml-3 text-xl font-semibold text-blue-800">
-            Megatron
-          </span>
+      <div className="p-6 flex justify-center items-center">
+        <Link href="/dashboard" className="flex justify-center">
+          <Image src="/logo.png" alt="Logo" width={100} height={100} />
         </Link>
       </div>
 
@@ -48,11 +39,11 @@ const Sidebar = () => {
               ${
                 isActiveRoute(item.href)
                   ? "bg-blue-50 text-blue-600"
-                  : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                  : "text-[#757e96] hover:bg-blue-50 hover:text-blue-600"
               }`}
           >
             <item.icon className="w-5 h-5 mr-3" />
-            <span className="text-sm font-medium">{item.name}</span>
+            <span className="text-sm font-semibold">{item.name}</span>
           </Link>
         ))}
       </nav>

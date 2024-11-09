@@ -54,6 +54,10 @@ body {
 }
 
 /* Dashboard.module.css */
+.container-dashboard {
+  justify-content: center;
+  align-items: center;
+}
 
 .dashboard {
   max-width: 1200px;
@@ -61,6 +65,7 @@ body {
   padding: 20px;
   color: #2d2d2d;
   font-family: Arial, sans-serif;
+  height: 100%;
 }
 
 .title {
@@ -164,4 +169,17 @@ table td {
 .status-completed {
   color: #06d6a0; /* Verde para completadas */
   font-weight: bold;
+}
+
+.recent-orders td:first-child {
+  font-weight: bold;
+  color: #6a8cbd;
+}
+
+.recent-orders tbody tr:nth-child(odd) {
+  background-color: #f9fafb; /* Color para las filas impares */
+}
+
+.recent-orders tbody tr:nth-child(even) {
+  background-color: #eff3ff; /* Color para las filas pares */
 }

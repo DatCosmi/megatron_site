@@ -2,6 +2,8 @@ export const TECHNICIANS = [
   { id: 1, name: "Carlos Stanley" },
   { id: 2, name: "Ana García" },
   { id: 3, name: "Roberto Méndez" },
+  { id: 4, name: "Juan Pérez" },
+  { id: 5, name: "Laura Núñez" },
 ];
 
 export const SERVICES = [

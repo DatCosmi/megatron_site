@@ -102,7 +102,7 @@ function Reports() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 mr-64">
+    <div className="flex min-h-screen bg-[#eff1f6] mr-64 ml-60">
       <Sidebar />
 
       <main className="flex-1 p-8">
@@ -118,7 +118,7 @@ function Reports() {
             </div>
             <button
               onClick={() => setIsAddReportModalOpen(true)}
-              className="p-2 bg-[#00bcd4] text-white rounded-lg hover:bg-[#00acc1] transition-colors"
+              className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors"
             >
               <Plus className="w-5 h-5" />
             </button>
@@ -130,8 +130,8 @@ function Reports() {
                 key={filter.id}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeFilter === filter.id
-                    ? "bg-[#00bcd4] text-white"
-                    : "text-gray-600 bg-white hover:bg-gray-50"
+                    ? "bg-[#2d57d1] text-white"
+                    : "text-gray-600 bg-[#eff1f6] hover:bg-gray-50"
                 }`}
                 onClick={() => setActiveFilter(filter.id)}
               >
@@ -184,7 +184,7 @@ function Reports() {
 
                 <div className="space-y-2">
                   <button
-                    className="w-full px-4 py-2 bg-[#00bcd4] text-white rounded-lg hover:bg-[#00acc1] transition-colors text-sm font-medium"
+                    className="w-full px-4 py-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors text-sm font-medium"
                     onClick={() => {
                       setSelectedService(service);
                       setIsServiceDetailModalOpen(true);
@@ -195,7 +195,7 @@ function Reports() {
 
                   {service.status === "pendiente" && !service.assignedTo && (
                     <button
-                      className="w-full px-4 py-2 bg-white border border-[#00bcd4] text-[#00bcd4] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                      className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                       onClick={() => {
                         setSelectedService(service);
                         setIsTechnicianListOpen(true);
@@ -207,7 +207,7 @@ function Reports() {
 
                   {service.status === "pendiente" && service.assignedTo && (
                     <button
-                      className="w-full px-4 py-2 bg-white border border-[#00bcd4] text-[#00bcd4] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                      className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                       onClick={() => {
                         setSelectedService(service);
                         setIsTechnicianListOpen(true);
@@ -220,7 +220,7 @@ function Reports() {
                   {service.status === "en-curso" && (
                     <>
                       <button
-                        className="w-full px-4 py-2 bg-white border border-[#00bcd4] text-[#00bcd4] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                        className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                         onClick={() => {
                           setSelectedService(service);
                           setIsTechnicianListOpen(true);
@@ -229,7 +229,7 @@ function Reports() {
                         Reasignar
                       </button>
                       <button
-                        className="w-full px-4 py-2 bg-white border border-[#06d6a0] text-[#06d6a0] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                        className="w-full px-4 py-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
                         onClick={() => handleComplete(service.id)}
                       >
                         Completar

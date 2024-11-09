@@ -1,31 +1,28 @@
-// app/components/dashboard/TechnicianSidebar.js
 "use client";
 import { TECHNICIANS, SERVICES } from "../../data/constants";
 import { useState } from "react";
-import ServiceDetailModal from "./SerciceDetailModal"; // Importar el modal
+import ServiceDetailModal from "./SerciceDetailModal";
+import { Clock, CheckCircle, AlertCircle } from "lucide-react";
 
 function TechnicianSidebar({
   services,
-  setSelectedService, // Prop que viene del componente padre
+  setSelectedService,
   setIsTechnicianListOpen,
 }) {
   const [selectedTechnician, setSelectedTechnician] = useState(null);
-  const [localSelectedService, setLocalSelectedService] = useState(null); // Renombrado para evitar conflicto
+  const [localSelectedService, setLocalSelectedService] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleTechnicianClick = (technician) => {
-    // Si el técnico ya está seleccionado, deseleccionarlo
     if (selectedTechnician?.id === technician.id) {
       setSelectedTechnician(null);
-      setLocalSelectedService(null); // Limpiar servicio seleccionado si se cambia el técnico
+      setLocalSelectedService(null);
     } else {
       setSelectedTechnician(technician);
-      setLocalSelectedService(null); // Limpiar servicio seleccionado si se cambia el técnico
+      setLocalSelectedService(null);
     }
   };
 
-  // Filtrar los reportes asociados a un técnico en base a assignedTo
-  // y que no estén marcados como "completada"
   const getTechnicianReports = (technicianName) => {
     return SERVICES.filter(
       (service) =>
@@ -33,66 +30,118 @@ function TechnicianSidebar({
     );
   };
 
-  // Abrir el modal con los detalles del servicio
-  const openServiceModal = (service) => {
-    setLocalSelectedService(service); // Usar el estado local
-    setIsModalOpen(true); // Abrir el modal
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "pendiente":
+        return "border-pink-500";
+      case "en_curso":
+        return "border-emerald-500";
+      case "sin_asignar":
+        return "border-blue-500";
+      default:
+        return "border-yellow-500";
+    }
   };
 
-  // Cerrar el modal
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "pendiente":
+        return <AlertCircle className="w-5 h-5 text-pink-500" />;
+      case "en_curso":
+        return <CheckCircle className="w-5 h-5 text-emerald-500" />;
+      default:
+        return <Clock className="w-5 h-5 text-yellow-500" />;
+    }
+  };
+
+  const openServiceModal = (service) => {
+    setLocalSelectedService(service);
+    setIsModalOpen(true);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setLocalSelectedService(null);
   };
 
   return (
-    <aside className="w-64 bg-white p-4 border-l border-gray-200 h-screen fixed top-0 right-0">
-      <h2 className="text-lg font-semibold mb-4">Técnicos</h2>
-      <div className="overflow-y-auto h-full">
+    <aside className="w-80 bg-white p-6 border-l border-gray-200 h-screen fixed top-0 right-0 overflow-y-auto z-40">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-gray-800">Técnicos</h2>
+        <button
+          onClick={() => setIsTechnicianListOpen(false)}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="space-y-4">
         {TECHNICIANS.map((technician) => (
-          <div key={technician.id} className="relative">
+          <div key={technician.id} className="space-y-4">
             <button
               onClick={() => handleTechnicianClick(technician)}
-              className={`w-full px-4 py-2 text-left rounded-lg ${
+              className={`w-full px-4 py-3 flex items-center justify-between rounded-lg transition duration-200 ${
                 selectedTechnician?.id === technician.id
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 text-gray-700"
-              } hover:bg-blue-200 transition duration-200`}
+                  ? "bg-blue-50 text-blue-600"
+                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+              }`}
             >
-              {technician.name}
+              <div className="flex items-center space-x-3">
+                <span className="font-medium">{technician.name}</span>
+              </div>
+              <span className="text-sm bg-white px-2 py-1 rounded-full shadow-sm">
+                {getTechnicianReports(technician.name).length} reportes
+              </span>
             </button>
 
-            {/* Mostrar los reportes asignados al técnico si está seleccionado */}
             {selectedTechnician?.id === technician.id && (
-              <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg w-full p-4">
-                <h3 className="font-semibold">Reportes asignados</h3>
-                <ul>
-                  {/* Filtrar los servicios asociados al técnico y que no estén completados */}
-                  {getTechnicianReports(technician.name).length > 0 ? (
-                    getTechnicianReports(technician.name).map((service) => (
-                      <li
-                        key={service.id}
-                        className="text-gray-700 mb-2 cursor-pointer"
-                        onClick={() => openServiceModal(service)} // Abrir el modal al hacer clic
-                      >
-                        <strong>{service.title}</strong> - {service.description}
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-gray-500">No hay reportes asignados</li>
-                  )}
-                </ul>
+              <div className="space-y-3">
+                {getTechnicianReports(technician.name).length > 0 ? (
+                  getTechnicianReports(technician.name).map((service) => (
+                    <div
+                      key={service.id}
+                      onClick={() => openServiceModal(service)}
+                      className={`cursor-pointer bg-white rounded-lg p-4 border-l-4 ${getStatusColor(
+                        service.status
+                      )} shadow-sm hover:shadow-md transition duration-200`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <h3 className="font-medium text-gray-900">
+                            {service.title}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {service.department}
+                          </p>
+                          <div className="flex items-center space-x-2 text-sm text-gray-500">
+                            <span>{service.date}</span>
+                          </div>
+                        </div>
+                        <div>{getStatusIcon(service.status)}</div>
+                      </div>
+                      <div className="mt-2">
+                        <button className="w-full text-center py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+                          Ver Detalles
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    No hay reportes asignados
+                  </div>
+                )}
               </div>
             )}
           </div>
         ))}
       </div>
 
-      {/* Mostrar el modal si está abierto */}
       {isModalOpen && localSelectedService && (
         <ServiceDetailModal
           service={localSelectedService}
-          closeModal={closeModal} // Función para cerrar el modal
+          closeModal={closeModal}
         />
       )}
     </aside>

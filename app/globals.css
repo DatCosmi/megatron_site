@@ -47,12 +47,6 @@ body {
   padding-top: 3vw;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
 /* Dashboard.module.css */
 .container-dashboard {
   justify-content: center;

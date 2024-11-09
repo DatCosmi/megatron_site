@@ -180,8 +180,8 @@ const ProductDetail = ({ params }) => {
             </form>
           </div>
         )}
-        <Footer />
       </main>
+      <Footer />
     </div>
   );
 };

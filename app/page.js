@@ -101,7 +101,7 @@ const Home = () => {
                 superando continuamente sus expectativas, apoyados siempre de
                 nuestro profesional equipo de trabajo.
               </p>
-              <Link href="/dashboard">
+              <Link href="/">
                 <button
                   className="bg-white text-blue-700 px-10 py-4 rounded-full text-lg font-bold 
                    hover:transform hover:scale-105

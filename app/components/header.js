@@ -102,6 +102,7 @@ const Header = () => {
 
           <div className="flex-grow"></div>
 
+          {/* Botón Teléfono */}
           <button
             className={`
               px-6 py-2 rounded-full
@@ -120,6 +121,26 @@ const Header = () => {
             <PhoneIcon className="w-4 h-4" />
             <span>Tel: 618-825-3884</span>
           </button>
+
+          {/* Botón Iniciar Sesión */}
+          <Link
+            href="/login"
+            className={`
+              ml-4 px-6 py-2 rounded-full
+              transform hover:scale-105
+              transition-all duration-300 ease-in-out
+              shadow-md hover:shadow-lg
+              flex items-center space-x-2
+              text-sm font-bold
+              ${
+                scrolled
+                  ? "bg-blue-700 text-white hover:bg-blue-800"
+                  : "bg-white text-blue-700 hover:bg-blue-100"
+              }
+            `}
+          >
+            <span>Iniciar sesión</span>
+          </Link>
         </div>
       </nav>
     </header>

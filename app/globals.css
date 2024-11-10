@@ -47,8 +47,133 @@ body {
   padding-top: 3vw;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Dashboard.module.css */
+.container-dashboard {
+  justify-content: center;
+  align-items: center;
+}
+
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  color: #2d2d2d;
+  font-family: Arial, sans-serif;
+  height: 100%;
+}
+
+.title {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: #1a1a2e;
+  text-align: center;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  padding: 1.5rem;
+  border-radius: 10px;
+  text-align: center;
+  width: 22%;
+  color: #fff;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: scale(1.05);
+}
+
+.stat-card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-card p {
+  font-size: 2rem;
+  margin: 0;
+  font-weight: bold;
+}
+
+.stat-card-total {
+  background-color: #3a86ff; /* Azul */
+}
+
+.stat-card-pending {
+  background-color: #ff006e; /* Rojo */
+}
+
+.stat-card-in-progress {
+  background-color: #ffbe0b; /* Amarillo */
+}
+
+.stat-card-completed {
+  background-color: #06d6a0; /* Verde */
+}
+
+.recent-orders {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.recent-orders h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #1a1a2e;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  padding: 0.75rem;
+  text-align: left;
+  font-size: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+table th {
+  color: #7a7a7a;
+}
+
+table td {
+  color: #2d2d2d;
+}
+
+/* Estado de los reportes */
+.status-pending {
+  color: #ff006e; /* Rojo para pendientes */
+  font-weight: bold;
+}
+
+.status-in-progress {
+  color: #ffbe0b; /* Amarillo para en-curso */
+  font-weight: bold;
+}
+
+.status-completed {
+  color: #06d6a0; /* Verde para completadas */
+  font-weight: bold;
+}
+
+.recent-orders td:first-child {
+  font-weight: bold;
+  color: #6a8cbd;
+}
+
+.recent-orders tbody tr:nth-child(odd) {
+  background-color: #f9fafb; /* Color para las filas impares */
+}
+
+.recent-orders tbody tr:nth-child(even) {
+  background-color: #eff3ff; /* Color para las filas pares */
 }

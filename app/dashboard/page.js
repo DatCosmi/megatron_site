@@ -1,179 +1,213 @@
-// components/Dashboard.js
 "use client";
-import { useState } from "react";
-import {
-  AdjustmentsHorizontalIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/solid"; // Importación actualizada para Heroicons v2
-import Sidebar from "../components/sidebar";
+import React, { useState } from "react";
+import { SERVICES } from "../data/constants";
+import Sidebar from "../components/dashboard/sidebar";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-const TECHNICIANS = [
-  { id: 1, name: "Carlos Stanley" },
-  { id: 2, name: "Ana García" },
-  { id: 3, name: "Roberto Méndez" },
-];
+const Dashboard = () => {
+  // Estado para el ordenamiento
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc",
+  });
 
-const SERVICES = [
-  {
-    id: 1,
-    title: "Desarrollo Social",
-    description: "El equipo está manchando las hojas",
-    department: "Departamento de Soporte Técnico",
-    equipment: "M 155",
-    reportedBy: "Carlos Stanley",
-    date: "01/10/2024",
-    time: "13:23:41",
-    status: "pendiente",
-    assignedTo: null,
-  },
-  // Resto de los servicios...
-];
+  const totalReports = SERVICES.length;
+  const pendingReports = SERVICES.filter(
+    (service) => service.status === "pendiente"
+  ).length;
+  const inProgressReports = SERVICES.filter(
+    (service) => service.status === "en-curso"
+  ).length;
+  const completedReports = SERVICES.filter(
+    (service) => service.status === "completada"
+  ).length;
 
-const FILTERS = [
-  { id: "todos", label: "Todos" },
-  { id: "pendiente", label: "Pendientes" },
-  { id: "en-curso", label: "En curso" },
-  { id: "completada", label: "Completadas" },
-];
-
-function Dashboard() {
-  const [services, setServices] = useState(SERVICES);
-  const [activeFilter, setActiveFilter] = useState("todos");
-  const [selectedService, setSelectedService] = useState(null);
-
-  const filteredServices = services.filter((service) =>
-    activeFilter === "todos" ? true : service.status === activeFilter
-  );
-
-  const handleAssign = (technicianId) => {
-    setServices((prevServices) =>
-      prevServices.map((service) =>
-        service.id === selectedService.id
-          ? {
-              ...service,
-              status: "en-curso",
-              assignedTo: TECHNICIANS.find((tech) => tech.id === technicianId)
-                .name,
-            }
-          : service
-      )
-    );
-    setSelectedService(null);
+  const getStatusBadge = (status) => {
+    const baseClasses = "px-2.5 py-0.5 rounded-full text-xs font-medium";
+    switch (status) {
+      case "pendiente":
+        return `${baseClasses} bg-pink-50 text-[#ff006e] border border-pink-200`;
+      case "en-curso":
+        return `${baseClasses} bg-amber-50 text-[#ffbe0b] border border-amber-200`;
+      case "completada":
+        return `${baseClasses} bg-emerald-50 text-[#06d6a0] border border-emerald-200`;
+      default:
+        return `${baseClasses} bg-gray-50 text-gray-800 border border-gray-200`;
+    }
   };
 
-  const handleComplete = (serviceId) => {
-    setServices((prevServices) =>
-      prevServices.map((service) =>
-        service.id === serviceId
-          ? { ...service, status: "completada" }
-          : service
-      )
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "pendiente":
+        return "Pendiente";
+      case "en-curso":
+        return "En curso";
+      case "completada":
+        return "Completada";
+      default:
+        return status;
+    }
+  };
+
+  // Función para manejar el ordenamiento
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Función para obtener los datos ordenados
+  const getSortedServices = () => {
+    const servicesCopy = [...SERVICES];
+    if (!sortConfig.key) return servicesCopy.slice(-5);
+
+    return servicesCopy
+      .sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      })
+      .slice(-5);
+  };
+
+  // Función para renderizar el ícono de ordenamiento
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return <ChevronDown className="h-4 w-4 text-gray-400" />;
+    }
+    return sortConfig.direction === "asc" ? (
+      <ChevronUp className="h-4 w-4 text-gray-600" />
+    ) : (
+      <ChevronDown className="h-4 w-4 text-gray-600" />
     );
   };
 
   return (
-    <div className="flex">
+    <div className="flex h-screen bg-[#eff1f6] ml-60 container-dashboard">
       <Sidebar />
-      <main className="flex-1 p-8">
-        <header className="mb-4">
-          <h1 className="text-2xl font-semibold">Dashboard de Servicios</h1>
-        </header>
-        <div className="flex space-x-4 mb-6">
-          {FILTERS.map((filter) => (
-            <button
-              key={filter.id}
-              className={`px-4 py-2 rounded-lg ${
-                activeFilter === filter.id
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100"
-              }`}
-              onClick={() => setActiveFilter(filter.id)}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredServices.map((service) => (
-            <div
-              key={service.id}
-              className="p-4 bg-white rounded-lg shadow-md cursor-pointer"
-              onClick={() => setSelectedService(service)}
-            >
-              <h2 className="text-lg font-semibold">{service.title}</h2>
-              <p className="text-gray-600">{service.description}</p>
-              <p className="text-sm text-gray-500">{service.department}</p>
-              <div className="flex items-center mt-2">
-                <div
-                  className={`w-2 h-2 rounded-full ${getStatusColor(
-                    service.status
-                  )}`}
-                />
-                <span className="ml-2 text-sm text-gray-500">
-                  {getStatusText(service.status)}
-                </span>
-              </div>
+      <main className="flex-1 p-6 overflow-y-auto">
+        <div className="dashboard">
+          <h1 className="title font-semibold text-gray-800">
+            Dashboard de Servicios
+          </h1>
+          <div className="stats">
+            <div className="stat-card stat-card-total">
+              <h2>Reportes totales</h2>
+              <p>{totalReports}</p>
             </div>
-          ))}
-        </div>
-
-        {selectedService && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg w-full max-w-lg">
-              <h2 className="text-xl font-semibold mb-4">
-                {selectedService.title}
-              </h2>
-              <p>{selectedService.description}</p>
-              <button
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
-                onClick={() => handleAssign(TECHNICIANS[0].id)} // Asignar al primer técnico como demo
-              >
-                Asignar a {TECHNICIANS[0].name}
-              </button>
-              <button
-                className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg"
-                onClick={() => handleComplete(selectedService.id)}
-              >
-                Marcar como completado
-              </button>
-              <button
-                className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg"
-                onClick={() => setSelectedService(null)}
-              >
-                Cerrar
-              </button>
+            <div className="stat-card stat-card-pending">
+              <h2>Pendientes</h2>
+              <p>{pendingReports}</p>
+            </div>
+            <div className="stat-card stat-card-in-progress">
+              <h2>En curso</h2>
+              <p>{inProgressReports}</p>
+            </div>
+            <div className="stat-card stat-card-completed">
+              <h2>Completados</h2>
+              <p>{completedReports}</p>
             </div>
           </div>
-        )}
+
+          {/* Table Section */}
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">
+                Reportes Recientes
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th
+                      scope="col"
+                      className="pl-6 pr-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("id")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Folio
+                        {getSortIcon("id")}
+                      </div>
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("title")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Reporte
+                        {getSortIcon("title")}
+                      </div>
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("date")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Fecha
+                        {getSortIcon("date")}
+                      </div>
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("reportedBy")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Reportado por
+                        {getSortIcon("reportedBy")}
+                      </div>
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("status")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Estado
+                        {getSortIcon("status")}
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {getSortedServices().map((service) => (
+                    <tr key={service.id} className="hover:bg-gray-50">
+                      <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">
+                        #{service.id}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {service.title}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {service.date}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {service.reportedBy}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <span className={getStatusBadge(service.status)}>
+                          {getStatusLabel(service.status)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );
-}
-
-const getStatusColor = (status) => {
-  switch (status) {
-    case "pendiente":
-      return "bg-yellow-500";
-    case "en-curso":
-      return "bg-green-500";
-    case "completada":
-      return "bg-blue-500";
-    default:
-      return "bg-gray-400";
-  }
-};
-
-const getStatusText = (status) => {
-  switch (status) {
-    case "pendiente":
-      return "Pendiente";
-    case "en-curso":
-      return "En curso";
-    case "completada":
-      return "Completada";
-    default:
-      return status;
-  }
 };
 
 export default Dashboard;

@@ -13,6 +13,8 @@ import {
 import { Youtube, Facebook } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Header from "./components/header";
+import Footer from "./components/footer";
 
 const Home = () => {
   const [isShrunk, setIsShrunk] = useState(false);
@@ -66,6 +68,7 @@ const Home = () => {
 
   return (
     <main>
+      <Header />
       {/* Hero Section */}
       <section
         className={`${
@@ -98,7 +101,7 @@ const Home = () => {
                 superando continuamente sus expectativas, apoyados siempre de
                 nuestro profesional equipo de trabajo.
               </p>
-              <Link href="/dashboard">
+              <Link href="/">
                 <button
                   className="bg-white text-blue-700 px-10 py-4 rounded-full text-lg font-bold 
                    hover:transform hover:scale-105
@@ -526,6 +529,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </main>
   );
 };

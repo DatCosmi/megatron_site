@@ -3,6 +3,8 @@ import { useInView } from "react-intersection-observer";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Header from "../components/header";
+import Footer from "../components/footer";
 
 const Productos = () => {
   const router = useRouter();
@@ -108,6 +110,8 @@ const Productos = () => {
 
   return (
     <main>
+      <Header />
+
       {/* Hero Section */}
       <section
         className={`${
@@ -201,6 +205,7 @@ const Productos = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </main>
   );
 };

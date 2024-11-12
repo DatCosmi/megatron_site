@@ -60,13 +60,6 @@ const LoginPage = () => {
               transition={{ delay: 0.3 }}
               className="text-center"
             >
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={200}
-                height={50}
-                className="mb-6 mx-auto"
-              />
               <h1 className="text-4xl font-bold text-blue-600">
                 INICIO DE SESIÓN
               </h1>

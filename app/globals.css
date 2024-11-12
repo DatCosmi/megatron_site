@@ -175,5 +175,70 @@ table td {
 }
 
 .recent-orders tbody tr:nth-child(even) {
-  background-color: #eff3ff; /* Color para las filas pares */
+  background-color: #f2f3f9; /* Color para las filas pares */
+}
+
+/* Printers */
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+.filter-select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.recent-orders {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.recent-orders h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #1a1a2e;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  padding: 0.75rem;
+  text-align: left;
+  font-size: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+table th {
+  color: #7a7a7a;
+}
+
+table td {
+  color: #2d2d2d;
+}
+
+.status-activo {
+  color: #06d6a0; /* Verde para activo */
+  font-weight: bold;
+}
+
+.status-inactivo {
+  color: #ff006e; /* Rojo para inactivo */
+  font-weight: bold;
 }

@@ -6,6 +6,7 @@ import {
   DocumentChartBarIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
+  PrinterIcon,
 } from "@heroicons/react/24/outline";
 import { usePathname } from "next/navigation";
 
@@ -15,6 +16,7 @@ const Sidebar = () => {
   const menuItems = [
     { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
     { name: "Reportes", icon: DocumentChartBarIcon, href: "/reports" },
+    { name: "Equipos", icon: PrinterIcon, href: "/printers " },
     { name: "Configuración", icon: Cog6ToothIcon, href: "/settings" },
   ];
 

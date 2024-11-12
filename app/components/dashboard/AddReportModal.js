@@ -1,117 +1,127 @@
-// app/components/dashboard/AddReportModal.js
 "use client";
 import { useState } from "react";
 import { TECHNICIANS } from "../../data/constants";
 
 function AddReportModal({ services, setServices, closeModal }) {
-  // Estados para los campos del formulario
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [department, setDepartment] = useState("");
   const [equipment, setEquipment] = useState("");
   const [reportedBy, setReportedBy] = useState("");
-  const [assignedTo, setAssignedTo] = useState(""); // Aquí definimos el estado para el técnico asignado
+  const [assignedTo, setAssignedTo] = useState("");
 
-  // Obtener la fecha y hora actuales automáticamente
   const currentDate = new Date();
-  const date = currentDate.toLocaleDateString(); // formato: dd/mm/yyyy
-  const time = currentDate.toLocaleTimeString(); // formato: hh:mm:ss
+  const date = currentDate.toLocaleDateString();
+  const time = currentDate.toLocaleTimeString();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Crear el nuevo reporte
     const newService = {
-      id: services.length + 1, // ID automático basado en el tamaño de la lista
+      id: services.length + 1,
       title,
       description,
       department,
       equipment,
       reportedBy,
-      date, // Fecha actual
-      time, // Hora actual
-      status: "pendiente", // Estado por defecto
-      assignedTo, // Aquí se usa el estado de assignedTo
+      date,
+      time,
+      status: "pendiente",
+      assignedTo,
     };
-
-    // Añadir el reporte a la lista de servicios
     setServices((prevServices) => [...prevServices, newService]);
-
-    // Cerrar el modal después de agregar el reporte
     closeModal();
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-full max-w-lg z-60">
-        <h2 className="text-xl font-semibold mb-4">Agregar Reporte</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Título del reporte */}
+      <div className="bg-white p-8 rounded-xl w-full max-w-md shadow-lg">
+        <h2 className="text-xl font-semibold text-gray-800 mb-6">
+          Agregar Reporte
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Campo Título */}
           <div>
-            <label className="block text-gray-700">Título</label>
+            <label className="block text-gray-600 mb-1 text-sm font-medium">
+              Título
+            </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg"
+              className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
+              placeholder="Escribe el título"
               required
             />
           </div>
 
-          {/* Descripción del reporte */}
+          {/* Campo Descripción */}
           <div>
-            <label className="block text-gray-700">Descripción</label>
+            <label className="block text-gray-600 mb-1 text-sm font-medium">
+              Descripción
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg"
+              className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
+              placeholder="Escribe la descripción"
               required
             />
           </div>
 
-          {/* Departamento */}
+          {/* Campo Departamento */}
           <div>
-            <label className="block text-gray-700">Departamento</label>
+            <label className="block text-gray-600 mb-1 text-sm font-medium">
+              Departamento
+            </label>
             <input
               type="text"
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg"
+              className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
+              placeholder="Escribe el departamento"
               required
             />
           </div>
 
-          {/* Equipo */}
+          {/* Campo Equipo */}
           <div>
-            <label className="block text-gray-700">Equipo</label>
+            <label className="block text-gray-600 mb-1 text-sm font-medium">
+              Equipo
+            </label>
             <input
               type="text"
               value={equipment}
               onChange={(e) => setEquipment(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg"
+              className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
+              placeholder="Escribe el equipo"
               required
             />
           </div>
 
-          {/* Reportado por */}
+          {/* Campo Reportado por */}
           <div>
-            <label className="block text-gray-700">Reportado por</label>
+            <label className="block text-gray-600 mb-1 text-sm font-medium">
+              Reportado por
+            </label>
             <input
               type="text"
               value={reportedBy}
               onChange={(e) => setReportedBy(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg"
+              className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
+              placeholder="Nombre del reportante"
               required
             />
           </div>
 
-          {/* Asignar técnico */}
+          {/* Campo Asignar a Técnico */}
           <div>
-            <label className="block text-gray-700">Asignar a Técnico</label>
+            <label className="block text-gray-600 mb-1 text-sm font-medium">
+              Asignar a Técnico
+            </label>
             <select
-              value={assignedTo} // El valor de la selección es el estado de assignedTo
-              onChange={(e) => setAssignedTo(e.target.value)} // Se actualiza el estado cuando se selecciona un técnico
-              className="w-full p-2 border border-gray-300 rounded-lg"
+              value={assignedTo}
+              onChange={(e) => setAssignedTo(e.target.value)}
+              className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
             >
               <option value="">Seleccione un técnico</option>
               {TECHNICIANS.map((technician) => (
@@ -122,17 +132,18 @@ function AddReportModal({ services, setServices, closeModal }) {
             </select>
           </div>
 
-          <div className="mt-4 flex justify-between">
+          {/* Botones */}
+          <div className="flex items-center justify-center space-x-4 mt-6">
             <button
               type="button"
               onClick={closeModal}
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg"
+              className="px-6 py-3 bg-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+              className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm font-medium hover:bg-[#1a42b6] focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
             >
               Generar Reporte
             </button>

@@ -65,7 +65,7 @@ function TechnicianSidebar({
   };
 
   return (
-    <aside className="w-80 bg-white p-6 border-l border-gray-200 h-screen fixed top-0 right-0 overflow-y-auto z-40">
+    <aside className="w-64 bg-white p-6 border-l border-gray-200 h-screen fixed top-0 right-0 overflow-y-auto z-40">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-800">Técnicos</h2>
         <button
@@ -90,7 +90,7 @@ function TechnicianSidebar({
               <div className="flex items-center space-x-3">
                 <span className="font-medium">{technician.name}</span>
               </div>
-              <span className="text-sm bg-white px-2 py-1 rounded-full shadow-sm">
+              <span className="text-sm bg-white px-2 py-1 rounded-full shadow-sm min-w-20">
                 {getTechnicianReports(technician.name).length} reportes
               </span>
             </button>

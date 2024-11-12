@@ -102,7 +102,7 @@ function Reports() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#eff1f6] mr-80 ml-60">
+    <div className="flex min-h-screen bg-[#eff1f6] mr-64 ml-60">
       <Sidebar />
 
       <main className="flex-1 p-8">

@@ -123,7 +123,7 @@ const Dashboard = () => {
               </h2>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 recent-orders">
+              <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr className="bg-gray-50">
                     <th

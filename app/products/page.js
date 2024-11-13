@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { PRINTERS } from "../data/constants";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Sidebar from "../components/dashboard/sidebar";
 import {
   ChevronLeft,
@@ -9,9 +9,10 @@ import {
   Plus,
   Search,
 } from "lucide-react";
-import AddPrinterModal from "../components/dashboard/AddPrinterModal";
+import AddProductModal from "../components/dashboard/AddProductModal";
 
-const Printers = () => {
+const Products = () => {
+  const [products, setProducts] = useState([]);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -19,22 +20,38 @@ const Printers = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddPrinterModalOpen, setIsAddPrinterModalOpen] = useState(false);
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
 
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(PRINTERS.length / itemsPerPage);
+  const totalPages = Math.ceil(products.length / itemsPerPage);
 
-  const getStatusBadge = (status) => {
+  // Fetch products from the backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(
+          "https://backend-integradora.vercel.app/api/productos"
+        ); // Use full URL if necessary
+        console.log("Fetched products data:", response.data); // Log response here
+        setProducts(response.data); // Ensure this is pointing to the right data structure
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const getTypeBadge = (type) => {
     const baseClasses = "px-2.5 py-0.5 rounded-full text-xs font-medium";
-    switch (status) {
-      case "Activo":
-        return `${baseClasses} bg-emerald-50 text-[#06d6a0] border border-emerald-200`;
-      case "Mantenimiento":
-        return `${baseClasses} bg-amber-50 text-[#ffbe0b] border border-amber-200`;
-      case "Inactivo":
-        return `${baseClasses} bg-red-50 text-[#ff006e] border border-red-200`;
+    switch (type) {
+      case "Impresora":
+        return `${baseClasses} bg-blue-50 text-[#007bff] border border-blue-200`;
+      case "Multifuncional":
+        return `${baseClasses} bg-green-50 text-[#28a745] border border-green-200`;
+      case "Escáner":
+        return `${baseClasses} bg-yellow-50 text-[#ffc107] border border-yellow-200`;
       default:
         return `${baseClasses} bg-gray-50 text-gray-800 border border-gray-200`;
     }
@@ -48,20 +65,18 @@ const Printers = () => {
     setSortConfig({ key, direction });
   };
 
-  const getSortedPrinters = () => {
-    const filteredPrinters = PRINTERS.filter(
-      (printer) =>
-        (categoryFilter === "" || printer.category === categoryFilter) &&
-        (statusFilter === "" || printer.status === statusFilter) &&
-        (printer.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          printer.serialNumber
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()))
+  const getSortedProducts = () => {
+    const filteredProducts = products.filter(
+      (product) =>
+        (categoryFilter === "" || product.Categoria === categoryFilter) &&
+        (statusFilter === "" || product.Tipo === statusFilter) &&
+        (product.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.idProductos.toString().includes(searchQuery.toLowerCase()))
     );
 
-    if (!sortConfig.key) return filteredPrinters;
+    if (!sortConfig.key) return filteredProducts;
 
-    return filteredPrinters.sort((a, b) => {
+    return filteredProducts.sort((a, b) => {
       if (a[sortConfig.key] < b[sortConfig.key]) {
         return sortConfig.direction === "asc" ? -1 : 1;
       }
@@ -94,9 +109,9 @@ const Printers = () => {
     return [1, ...range, totalPages];
   };
 
-  const sortedPrinters = getSortedPrinters();
+  const sortedProducts = getSortedProducts();
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = sortedPrinters.slice(
+  const currentItems = sortedProducts.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -108,7 +123,7 @@ const Printers = () => {
         <div className="dashboard space-y-6">
           {/* Header */}
           <h1 className="text-2xl font-semibold text-gray-800">
-            Dashboard de Equipos
+            Dashboard de Productos
           </h1>
 
           {/* Filtros y búsqueda */}
@@ -123,7 +138,7 @@ const Printers = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Buscar por modelo o número de serie"
+                    placeholder="Buscar por modelo o ID"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -153,7 +168,7 @@ const Printers = () => {
               {/* Status Dropdown */}
               <div className="relative min-w-[140px]">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Estado
+                  Tipo
                 </label>
                 <div className="relative">
                   <select
@@ -162,18 +177,18 @@ const Printers = () => {
                     className="w-full appearance-none px-4 py-2 pr-10 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Todos</option>
-                    <option value="Activo">Activo</option>
-                    <option value="Mantenimiento">Mantenimiento</option>
-                    <option value="Inactivo">Inactivo</option>
+                    <option value="Impresora">Impresora</option>
+                    <option value="Multifuncional">Multifuncional</option>
+                    <option value="Escáner">Escáner</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                 </div>
               </div>
 
-              {/* Search Button */}
+              {/* Add Product Button */}
               <div className="relative min-w-[100px] flex items-end">
                 <button
-                  onClick={() => setIsAddPrinterModalOpen(true)}
+                  onClick={() => setIsAddProductModalOpen(true)}
                   className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors flex items-center"
                 >
                   <Plus className="w-5 h-5" />
@@ -182,15 +197,15 @@ const Printers = () => {
             </div>
           </div>
 
-          {/* Header de tabla y controles */}
+          {/* Table Header and Controls */}
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <span className="text-lg font-semibold text-gray-700">
-                Equipos
+                Productos
               </span>
             </div>
 
-            {/* Paginación */}
+            {/* Pagination */}
             <div className="pagination flex items-center space-x-2 bg-white p-2 rounded-md shadow">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -228,7 +243,7 @@ const Printers = () => {
             </div>
           </div>
 
-          {/* Tabla de Equipos */}
+          {/* Products Table */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200 recent-orders">
               <thead>
@@ -236,59 +251,69 @@ const Printers = () => {
                   <th
                     scope="col"
                     className="pl-6 pr-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("id")}
+                    onClick={() => handleSort("idProductos")}
                   >
                     ID
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("model")}
+                    onClick={() => handleSort("modelo")}
                   >
                     Modelo
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("serialNumber")}
-                  >
-                    Número de Serie
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("category")}
+                    onClick={() => handleSort("Categoria")}
                   >
                     Categoría
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("status")}
+                    onClick={() => handleSort("Marca")}
                   >
-                    Estado
+                    Marca
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("Tipo")}
+                  >
+                    Tipo
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("Existencia")}
+                  >
+                    Existencia
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {currentItems.map((printer) => (
-                  <tr key={printer.id} className="hover:bg-gray-50">
+                {currentItems.map((product) => (
+                  <tr key={product.idProductos} className="hover:bg-gray-50">
                     <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {printer.id}
+                      {product.idProductos}
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {printer.model}
+                      {product.modelo}
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {printer.serialNumber}
+                      {product.Categoria}
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {printer.category}
+                      {product.Marca}
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">
-                      <span className={getStatusBadge(printer.status)}>
-                        {printer.status}
+                      <span className={getTypeBadge(product.Tipo)}>
+                        {product.Tipo}
                       </span>
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {product.Existencia}
                     </td>
                   </tr>
                 ))}
@@ -297,13 +322,13 @@ const Printers = () => {
           </div>
         </div>
 
-        {/* Modal para añadir impresoras */}
-        {isAddPrinterModalOpen && (
-          <AddPrinterModal closeModal={() => setIsAddPrinterModalOpen(false)} />
+        {/* Modal for adding products */}
+        {isAddProductModalOpen && (
+          <AddProductModal closeModal={() => setIsAddProductModalOpen(false)} />
         )}
       </main>
     </div>
   );
 };
 
-export default Printers;
+export default Products;

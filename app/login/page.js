@@ -1,18 +1,38 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 const LoginPage = () => {
   const router = useRouter();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    router.push("/dashboard");
-  };
+  const [user, setUser] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        "https://backend-integradora.vercel.app/api/auth/iniciar-sesion",
+        {
+          user,
+          password,
+        }
+      );
+      setMessage(response.data.message);
+      // Store the token in localStorage or a cookie
+      localStorage.setItem("token", response.data.token);
+
+      router.push("/dashboard");
+    } catch (error) {
+      setMessage(error.response.data.message || "An error occurred");
+      console.log(message, error);
+    }
+  };
   const handleGoHome = () => {
     router.push("/"); // Navega a la página principal
   };
@@ -96,6 +116,8 @@ const LoginPage = () => {
                     type="text"
                     className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                     placeholder="Usuario"
+                    value={user}
+                    onChange={(e) => setUser(e.target.value)}
                   />
                 </div>
 
@@ -119,6 +141,8 @@ const LoginPage = () => {
                     type="password"
                     className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                     placeholder="Contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
               </div>

@@ -16,7 +16,7 @@ const Sidebar = () => {
   const menuItems = [
     { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
     { name: "Reportes", icon: DocumentChartBarIcon, href: "/reports" },
-    { name: "Equipos", icon: PrinterIcon, href: "/printers" },
+    { name: "Productos", icon: PrinterIcon, href: "/products" },
     { name: "Configuración", icon: Cog6ToothIcon, href: "/settings" },
   ];
 

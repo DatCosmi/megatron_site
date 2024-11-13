@@ -242,3 +242,22 @@ table td {
   color: #ff006e; /* Rojo para inactivo */
   font-weight: bold;
 }
+
+.container {
+  display: flex;
+  flex-direction: column; /* or 'row' depending on your layout */
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+}
+
+.statistics-frame,
+.table-frame {
+  width: 80%; /* Adjust width as needed */
+  margin-bottom: 20px;
+}
+
+.chart-container {
+  width: 100%;
+  height: 400px; /* Adjust height as needed */
+}

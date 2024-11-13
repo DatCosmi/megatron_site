@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
-function AddPrinterModal({ printers, setPrinters, closeModal }) {
+function AddProductModal({ printers, setPrinters, closeModal }) {
   const [status, setStatus] = useState("");
   const [number, setNumber] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
@@ -36,21 +37,6 @@ function AddPrinterModal({ printers, setPrinters, closeModal }) {
         </h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
-            {/* Campo Estado */}
-            <div>
-              <label className="block text-gray-600 mb-1 text-sm font-medium">
-                Estado
-              </label>
-              <input
-                type="text"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-                placeholder="Escribe el estado"
-                required
-              />
-            </div>
-
             {/* Campo Número */}
             <div>
               <label className="block text-gray-600 mb-1 text-sm font-medium">
@@ -141,6 +127,25 @@ function AddPrinterModal({ printers, setPrinters, closeModal }) {
               />
             </div>
 
+            {/* Campo Estado */}
+            <div>
+              <label className="block text-gray-600 mb-1 text-sm font-medium">
+                Estado
+              </label>
+              <div className="relative">
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
+                >
+                  <option value="">Activo</option>
+                  <option value="Multifuncional">Inactivo</option>
+                  <option value="Laser">Mantenimiento</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
+            </div>
+
             {/* Campo Características */}
             <div className="col-span-2">
               <label className="block text-gray-600 mb-1 text-sm font-medium">
@@ -178,4 +183,4 @@ function AddPrinterModal({ printers, setPrinters, closeModal }) {
   );
 }
 
-export default AddPrinterModal;
+export default AddProductModal;

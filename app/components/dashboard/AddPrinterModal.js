@@ -129,14 +129,14 @@ function AddPrinterModal({ printers, setPrinters, closeModal }) {
             {/* Campo Stock */}
             <div>
               <label className="block text-gray-600 mb-1 text-sm font-medium">
-                Stock
+                Existencia
               </label>
               <input
                 type="number"
                 value={stock}
                 onChange={(e) => setStock(e.target.value)}
                 className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-                placeholder="Cantidad en stock"
+                placeholder="Cantidad en existencia"
                 required
               />
             </div>

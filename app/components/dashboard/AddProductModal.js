@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
@@ -15,26 +15,22 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
 
   // Populate form fields if editing
   useEffect(() => {
-    console.log("productToEdit changed:", productToEdit);
-    if (productToEdit) {
-      setModelo(productToEdit.modelo || "");
-      setCategoria(productToEdit.categoria || "");
-      setMarca(productToEdit.marca || "");
-      setTipo(productToEdit.tipo || "");
-      setExistencia(productToEdit.existencia || "");
-      setCaracteristicas(productToEdit.caracteristicas || "");
-    } else {
-      setModelo("");
-      setCategoria("");
-      setMarca("");
-      setTipo("");
-      setExistencia("");
-      setCaracteristicas("");
+    if (productToEdit && Object.keys(productToEdit).length > 0) {
+      setModelo(productToEdit.modelo || productToEdit.Modelo || "");
+      setCategoria(productToEdit.categoria || productToEdit.Categoria || "");
+      setMarca(productToEdit.marca || productToEdit.Marca || "");
+      setTipo(productToEdit.tipo || productToEdit.Tipo || "");
+      setExistencia(productToEdit.existencia || productToEdit.Existencia || "");
+      setCaracteristicas(
+        productToEdit.caracteristicas || productToEdit.Caracteristicas || ""
+      );
     }
   }, [productToEdit]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // Datos del producto a enviar
     const productData = {
       modelo,
       categoria,
@@ -46,10 +42,11 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
 
     try {
       let response;
+
       if (productToEdit) {
-        // Edit product
+        // Editar producto existente
         response = await fetch(
-          `https://backend-integradora.vercel.app/api/productos/${productToEdit.id}`,
+          `https://backend-integradora.vercel.app/api/productos/${productToEdit.idProductos}`,
           {
             method: "PUT",
             headers: {
@@ -59,7 +56,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
           }
         );
       } else {
-        // Add new product
+        // Agregar nuevo producto
         response = await fetch(
           "https://backend-integradora.vercel.app/api/productos",
           {
@@ -72,24 +69,30 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
         );
       }
 
-      if (response.ok) {
-        const result = await response.json();
-        if (productToEdit) {
-          setSuccessMessage(`Product updated with ID: ${result.product.id}`);
-          setProducts((prev) =>
-            prev.map((p) => (p.id === result.product.id ? result.product : p))
-          );
-        } else {
-          setSuccessMessage(`Product added with ID: ${result.product.id}`);
-          setProducts((prev) => [...prev, result.product]);
-        }
-        closeModal();
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || "Failed to save product");
+      if (!response.ok) {
+        throw new Error("Error al guardar el producto");
       }
+
+      // Obtener el resultado de la respuesta
+      const result = await response.json();
+
+      if (productToEdit) {
+        // Actualizar el producto editado en el estado
+        setSuccessMessage(`Producto actualizado con ID: ${result.product.id}`);
+        setProducts((prev) =>
+          prev.map((p) => (p.id === result.product.id ? result.product : p))
+        );
+      } else {
+        // Agregar el nuevo producto al estado
+        setSuccessMessage(`Producto agregado con ID: ${result.product.id}`);
+        setProducts((prev) => [...prev, result.product]);
+      }
+
+      // Cerrar el modal y limpiar los campos si es necesario
+      closeModal();
     } catch (error) {
-      setError("Something went wrong");
+      setError(error.message || "Algo salió mal");
+      closeModal();
     }
   };
 
@@ -97,8 +100,23 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-xl w-full max-w-2xl shadow-lg">
         <h2 className="text-xl font-semibold text-gray-800 mb-6">
-          Agregar Producto
+          {productToEdit ? "Editar Producto" : "Agregar Producto"}
         </h2>
+
+        {/* Alerta de éxito */}
+        {successMessage && (
+          <div className="mb-4 text-green-600 bg-green-100 p-3 rounded-md text-sm">
+            {successMessage}
+          </div>
+        )}
+
+        {/* Alerta de error */}
+        {error && (
+          <div className="mb-4 text-red-600 bg-red-100 p-3 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             {/* Campo Modelo */}
@@ -211,9 +229,9 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
             </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm font-medium hover:bg-[#1a42b6] focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
+              className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm font-medium hover:bg-[#1a42b6] focus:outline-none focus:ring-2 focus:ring-[#1a42b6]"
             >
-              Agregar Producto
+              {productToEdit ? "Guardar Cambios" : "Agregar Producto"}
             </button>
           </div>
         </form>

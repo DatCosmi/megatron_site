@@ -17,6 +17,7 @@ const Sidebar = () => {
     { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
     { name: "Reportes", icon: DocumentChartBarIcon, href: "/reports" },
     { name: "Productos", icon: PrinterIcon, href: "/products" },
+    { name: "Ubicaciones", icon: PrinterIcon, href: "/ubicaciones" },
     { name: "Configuración", icon: Cog6ToothIcon, href: "/settings" },
   ];
 

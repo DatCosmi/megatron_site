@@ -4,35 +4,45 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import axios from "axios";
 
 const LoginPage = () => {
   const router = useRouter();
 
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent form from refreshing
+    setLoading(true);
+    setError("");
     try {
-      const response = await axios.post(
+      const response = await fetch(
         "https://backend-integradora.vercel.app/api/auth/iniciar-sesion",
         {
-          user,
-          password,
+          // Replace with your actual API route
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user, password }), // Pass user and password as JSON
         }
       );
-      setMessage(response.data.message);
-      // Store the token in localStorage or a cookie
-      localStorage.setItem("token", response.data.token);
-
-      router.push("/dashboard");
-    } catch (error) {
-      setMessage(error.response.data.message || "An error occurred");
-      console.log(message, error);
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        router.push("/dashboard");
+      } else {
+        setError(
+          data.message || "Ocurrió un error. Por favor, intenta de nuevo."
+        );
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
+
   const handleGoHome = () => {
     router.push("/"); // Navega a la página principal
   };
@@ -88,74 +98,83 @@ const LoginPage = () => {
               </p>
             </motion.div>
 
-            <motion.form
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              onSubmit={handleSubmit}
-              className="space-y-6"
-            >
-              <div className="space-y-4">
-                <div className="relative">
-                  <span className="absolute left-4 top-3.5 text-gray-400">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                  </span>
-                  <input
-                    type="text"
-                    className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                    placeholder="Usuario"
-                    value={user}
-                    onChange={(e) => setUser(e.target.value)}
-                  />
-                </div>
-
-                <div className="relative">
-                  <span className="absolute left-4 top-3.5 text-gray-400">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      />
-                    </svg>
-                  </span>
-                  <input
-                    type="password"
-                    className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                    placeholder="Contraseña"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors font-semibold shadow-lg"
+            {loading ? (
+              <p className="flex font-semibold text-blue-400">
+                Verificando usuario...
+              </p>
+            ) : (
+              <motion.form
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                onSubmit={handleSubmit}
+                className="space-y-6"
               >
-                Iniciar Sesión
-              </motion.button>
-            </motion.form>
+                <div className="space-y-4">
+                  <div className="relative">
+                    <span className="absolute left-4 top-3.5 text-gray-400">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </span>
+                    <input
+                      type="text"
+                      className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      placeholder="Usuario"
+                      value={user}
+                      onChange={(e) => setUser(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <span className="absolute left-4 top-3.5 text-gray-400">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        />
+                      </svg>
+                    </span>
+                    <input
+                      type="password"
+                      className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      placeholder="Contraseña"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors font-semibold shadow-lg"
+                >
+                  Iniciar Sesión
+                </motion.button>
+              </motion.form>
+            )}
+            {error && (
+              <p className="flex font-semibold text-red-400">{error}</p>
+            )}
           </div>
         </motion.div>
 

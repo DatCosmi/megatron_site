@@ -13,8 +13,23 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const [ubicaciones, setUbicaciones] = useState([]);
+
+  const fetchUbicaciones = async () => {
+    try {
+      const response = await fetch(
+        "https://backend-integradora.vercel.app/api/ubicacion"
+      );
+      const data = await response.json();
+      setUbicaciones(data);
+    } catch (error) {
+      console.error("Error fetching Ubicaciones:", error);
+    }
+  };
+
   // Populate form fields if editing
   useEffect(() => {
+    fetchUbicaciones();
     if (productToEdit && Object.keys(productToEdit).length > 0) {
       setModelo(productToEdit.modelo || productToEdit.Modelo || "");
       setCategoria(productToEdit.categoria || productToEdit.Categoria || "");
@@ -100,7 +115,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-xl w-full max-w-2xl shadow-lg">
         <h2 className="text-xl font-semibold text-gray-800 mb-6">
-          {productToEdit ? "Editar Producto" : "Agregar Producto"}
+          {productToEdit ? "Editar Equipo" : "Agregar Equipo"}
         </h2>
 
         {/* Alerta de éxito */}
@@ -152,7 +167,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
             {/* Campo Categoría */}
             <div>
               <label className="block text-gray-600 mb-1 text-sm font-medium">
-                Categoría
+                Ubicación
               </label>
               <div className="relative">
                 <select
@@ -160,10 +175,11 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
                   onChange={(e) => setCategoria(e.target.value)}
                   className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
                 >
-                  <option value="Impresora">Impresora</option>
-                  <option value="Multifuncional">Multifuncional</option>
-                  <option value="Laser">Escáner</option>
-                  <option value="Toner">Toner</option>
+                  {ubicaciones.map((ubicacion) => (
+                    <option key={ubicacion.Nombre} value={ubicacion.Nombre}>
+                      {ubicacion.Nombre}
+                    </option>
+                  ))}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
               </div>

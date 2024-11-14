@@ -16,7 +16,7 @@ import AddEquipoModal from "../components/dashboard/AddEquipoModal";
 const Equipos = () => {
   const [equipos, setEquipos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [equipo, setEquipoToEdit] = useState(null);
+  const [equipoToEdit, setEquipoToEdit] = useState(null);
 
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -33,14 +33,14 @@ const Equipos = () => {
   const totalPages = Math.ceil(equipos.length / itemsPerPage);
 
   const handleEditClick = (equipos) => {
-    setEquiposToEdit(equipos); // Set the product to edit
+    setEquipoToEdit(equipos); // Set the product to edit
     setIsAddEquipoModalOpen(true); // Open the modal
   };
 
   const closeModal = () => {
     setIsAddEquipoModalOpen(false);
     fetchEquipos();
-    setEquiposToEdit(null);
+    setEquipoToEdit(null);
   };
 
   const fetchEquipos = async () => {
@@ -162,7 +162,7 @@ const Equipos = () => {
         <div className="dashboard space-y-6">
           {/* Header */}
           <h1 className="text-2xl font-semibold text-gray-800">
-            Dashboard de Productos
+            Dashboard de Equipos
           </h1>
 
           {/* Filtros y búsqueda */}

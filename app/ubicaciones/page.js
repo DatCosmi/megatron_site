@@ -8,6 +8,8 @@ import {
   ChevronDown,
   Plus,
   Search,
+  Trash2,
+  SquarePen,
 } from "lucide-react";
 import AddUbicModal from "../components/dashboard/AddUbicModal";
 
@@ -191,10 +193,13 @@ const Ubicaciones = () => {
 
           {/* Ubicaciones Table */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 recent-orders">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="pl-6 pr-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="pl-6 pr-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  >
                     #
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -230,7 +235,7 @@ const Ubicaciones = () => {
                 ) : currentItems.length > 0 ? (
                   currentItems.map((ubicacion) => (
                     <tr key={ubicacion.idUbicaciones}>
-                      <td className="px-3 py-3 text-sm font-medium text-gray-900">
+                      <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {ubicacion.idUbicaciones}
                       </td>
                       <td className="px-3 py-3 text-sm text-gray-500">
@@ -248,18 +253,18 @@ const Ubicaciones = () => {
                       <td className="px-3 py-3 text-sm text-gray-500">
                         {ubicacion.Direccion}
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-500">
-                        <button
-                          onClick={() => handleEditClick(ubicacion)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          Editar
-                        </button>
+                      <td className="px-3 py-4 whitespace-nowrap text-xs flex">
                         <button
                           onClick={() => handleDelete(ubicacion.idUbicaciones)}
-                          className="ml-3 text-red-600 hover:text-red-800"
+                          className="text-[#ff006e] flex"
                         >
-                          Eliminar
+                          <Trash2 />
+                        </button>
+                        <button
+                          onClick={() => handleEditClick(ubicacion)}
+                          className="text-[#007bff] flex"
+                        >
+                          <SquarePen />
                         </button>
                       </td>
                     </tr>
@@ -281,9 +286,9 @@ const Ubicaciones = () => {
           {/* Modal Add/Edit Ubicación */}
           {isAddUbicModalOpen && (
             <AddUbicModal
-              ubicacion={ubicacionToEdit}
+              ubicacionToEdit={ubicacionToEdit}
               closeModal={closeModal}
-              onSave={fetchUbicaciones}
+              setUbicaciones={setUbicaciones}
             />
           )}
         </div>

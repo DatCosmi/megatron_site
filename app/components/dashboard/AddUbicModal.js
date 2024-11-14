@@ -19,11 +19,15 @@ function AddUbicModal({
   // Populate form fields if editing
   useEffect(() => {
     if (ubicacionToEdit && Object.keys(ubicacionToEdit).length > 0) {
-      setNombre(ubicacionToEdit.nombre || "");
-      setCiudad(ubicacionToEdit.ciudad || "");
-      setEstado(ubicacionToEdit.estado || "");
-      setCodigoPostal(ubicacionToEdit.codigoPostal || "");
-      setDireccion(ubicacionToEdit.direccion || "");
+      setNombre(ubicacionToEdit.nombre || ubicacionToEdit.Nombre || "");
+      setCiudad(ubicacionToEdit.ciudad || ubicacionToEdit.Ciudad || "");
+      setEstado(ubicacionToEdit.estado || ubicacionToEdit.Estado || "");
+      setCodigoPostal(
+        ubicacionToEdit.codigoPostal || ubicacionToEdit.CodigoPostal || ""
+      );
+      setDireccion(
+        ubicacionToEdit.direccion || ubicacionToEdit.Direccion || ""
+      );
     }
   }, [ubicacionToEdit]);
 
@@ -77,15 +81,17 @@ function AddUbicModal({
 
       if (ubicacionToEdit) {
         // Update the edited location in state
-        setSuccessMessage(`Ubicación actualizada con ID: ${result.ubicacion.ididUbicaciones}`);
+        setSuccessMessage(
+          `Ubicación actualizada con ID: ${result.ubicacion.ididUbicaciones}`
+        );
         setUbicaciones((prev) =>
-          prev.map((u) =>
-            u.id === result.ubicacion.id ? result.ubicacion : u
-          )
+          prev.map((u) => (u.id === result.ubicacion.id ? result.ubicacion : u))
         );
       } else {
         // Add new location to state
-        setSuccessMessage(`Ubicación agregada con ID: ${result.ubicacion.idUbicaciones}`);
+        setSuccessMessage(
+          `Ubicación agregada con ID: ${result.ubicacion.idUbicaciones}`
+        );
         setUbicaciones((prev) => [...prev, result.ubicacion]);
       }
 

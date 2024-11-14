@@ -11,13 +11,12 @@ import {
   Trash2,
   SquarePen,
 } from "lucide-react";
-import AddProductModal from "../components/dashboard/AddProductModal";
+import AddEquipoModal from "../components/dashboard/AddEquipoModal";
 
-const Products = () => {
-  const [products, setProducts] = useState([]);
-  const [productList, setProductList] = useState(products);
+const Equipos = () => {
+  const [equipos, setEquipos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [productToEdit, setProductToEdit] = useState(null);
+  const [equipo, setEquipoToEdit] = useState(null);
 
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -26,32 +25,32 @@ const Products = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [isAddEquipoModalOpen, setIsAddEquipoModalOpen] = useState(false);
 
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const totalPages = Math.ceil(equipos.length / itemsPerPage);
 
-  const handleEditClick = (product) => {
-    setProductToEdit(product); // Set the product to edit
-    setIsAddProductModalOpen(true); // Open the modal
+  const handleEditClick = (equipos) => {
+    setEquiposToEdit(equipos); // Set the product to edit
+    setIsAddEquipoModalOpen(true); // Open the modal
   };
 
   const closeModal = () => {
-    setIsAddProductModalOpen(false);
-    fetchProducts();
-    setProductToEdit(null);
+    setIsAddEquipoModalOpen(false);
+    fetchEquipos();
+    setEquiposToEdit(null);
   };
 
-  const fetchProducts = async () => {
+  const fetchEquipos = async () => {
     try {
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/productos"
+        "https://backend-integradora.vercel.app/api/getEquipoUbicaciones"
       );
-      setProducts(response.data);
+      setEquipos(response.data);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetching equipos:", error);
     } finally {
       setLoading(false);
     }
@@ -59,15 +58,15 @@ const Products = () => {
 
   // Fetch products from the backend
   useEffect(() => {
-    fetchProducts();
+    fetchEquipos();
   }, []);
 
   // Function to handle delete action
-  const handleDelete = async (productId) => {
+  const handleDelete = async (equipoId) => {
     try {
       // Call the backend API to delete the product
       const response = await fetch(
-        `https://backend-integradora.vercel.app/api/productos/${productId}`,
+        `https://backend-integradora.vercel.app/api/equipos/${equipoId}`,
         {
           method: "DELETE",
         }
@@ -88,7 +87,7 @@ const Products = () => {
     switch (type) {
       case "Impresora":
         return `${baseClasses} bg-blue-50 text-[#007bff] border border-blue-200`;
-      case "Escáner":
+      case "activo":
         return `${baseClasses} bg-green-50 text-[#28a745] border border-green-200`;
       case "Suministro":
         return `${baseClasses} bg-yellow-50 text-[#ffc107] border border-yellow-200`;
@@ -105,18 +104,18 @@ const Products = () => {
     setSortConfig({ key, direction });
   };
 
-  const getSortedProducts = () => {
-    const filteredProducts = products.filter(
-      (product) =>
-        (categoryFilter === "" || product.Categoria === categoryFilter) &&
-        (statusFilter === "" || product.Tipo === statusFilter) &&
-        (product.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.idProductos.toString().includes(searchQuery.toLowerCase()))
+  const getSortedEquipos = () => {
+    const filteredEquipos = equipos.filter(
+      (equipo) =>
+        (categoryFilter === "" || equipo.Categoria === categoryFilter) &&
+        (statusFilter === "" || equipo.Tipo === statusFilter) &&
+        (equipo.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          equipo.idEquipoos.toString().includes(searchQuery.toLowerCase()))
     );
 
-    if (!sortConfig.key) return filteredProducts;
+    if (!sortConfig.key) return filteredEquipos;
 
-    return filteredProducts.sort((a, b) => {
+    return filteredEquipos.sort((a, b) => {
       if (a[sortConfig.key] < b[sortConfig.key]) {
         return sortConfig.direction === "asc" ? -1 : 1;
       }
@@ -149,9 +148,9 @@ const Products = () => {
     return [1, ...range, totalPages];
   };
 
-  const sortedProducts = getSortedProducts();
+  const sortedEquipos = getSortedEquipos();
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = sortedProducts.slice(
+  const currentItems = sortedEquipos.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -228,7 +227,7 @@ const Products = () => {
               {/* Add Product Button */}
               <div className="relative min-w-[100px] flex items-end">
                 <button
-                  onClick={() => setIsAddProductModalOpen(true)}
+                  onClick={() => setIsAddEquipoModalOpen(true)}
                   className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors flex items-center"
                 >
                   <Plus className="w-5 h-5" />
@@ -291,9 +290,9 @@ const Products = () => {
                   <th
                     scope="col"
                     className="pl-6 pr-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("idProductos")}
+                    onClick={() => handleSort("numeroEquipo")}
                   >
-                    #
+                    No. Equipo
                   </th>
                   <th
                     scope="col"
@@ -305,30 +304,30 @@ const Products = () => {
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("Categoria")}
+                    onClick={() => handleSort("numeroSerie")}
                   >
-                    Categoría
+                    No. Serie
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("Marca")}
+                    onClick={() => handleSort("marca")}
                   >
                     Marca
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("Tipo")}
+                    onClick={() => handleSort("estatus")}
                   >
-                    Tipo
+                    Estado
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("Existencia")}
+                    onClick={() => handleSort("lugar")}
                   >
-                    Existencia
+                    Lugar
                   </th>
                   <th
                     scope="col"
@@ -345,42 +344,42 @@ const Products = () => {
                       colSpan="100%"
                       className="text-center py-4 text-gray-500"
                     >
-                      Cargando productos...
+                      Cargando equipos...
                     </td>
                   </tr>
                 ) : currentItems.length > 0 ? (
-                  currentItems.map((product) => (
-                    <tr key={product.idProductos} className="hover:bg-gray-50">
+                  currentItems.map((equipo) => (
+                    <tr key={equipo.idEquipos} className="hover:bg-gray-50">
                       <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {product.idProductos}
+                        {equipo.numeroEquipo}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {product.modelo}
+                        {equipo.modelo}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {product.Categoria}
+                        {equipo.numeroSerie}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {product.Marca}
+                        {equipo.marca}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm">
-                        <span className={getTypeBadge(product.Tipo)}>
-                          {product.Tipo}
+                        <span className={getTypeBadge(equipo.estatus)}>
+                          {equipo.estatus}
                         </span>
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {product.Existencia}
+                        {equipo.nombre}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-xs flex">
                         <button
-                          onClick={() => handleDelete(product.idProductos)}
+                          onClick={() => handleDelete(equipo.idEquipos)}
                           className="text-[#ff006e] flex"
                         >
                           <Trash2 />
                         </button>
                         <button
                           className="text-[#007bff] flex"
-                          onClick={() => handleEditClick(product)}
+                          onClick={() => handleEditClick(equipo)}
                         >
                           <SquarePen />
                         </button>
@@ -393,7 +392,7 @@ const Products = () => {
                       colSpan="100%"
                       className="text-center py-4 text-gray-500"
                     >
-                      No hay productos.
+                      No hay equipos.
                     </td>
                   </tr>
                 )}
@@ -403,10 +402,10 @@ const Products = () => {
         </div>
 
         {/* Modal for adding products */}
-        {isAddProductModalOpen && (
-          <AddProductModal
-            productToEdit={productToEdit}
-            setProducts={setProducts}
+        {isAddEquipoModalOpen && (
+          <AddEquipoModal
+            equipoToEdit={equipoToEdit}
+            setEquipos={setEquipos}
             closeModal={closeModal}
           />
         )}
@@ -415,4 +414,4 @@ const Products = () => {
   );
 };
 
-export default Products;
+export default Equipos;

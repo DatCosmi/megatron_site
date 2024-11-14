@@ -123,7 +123,7 @@ const Dashboard = () => {
               </h2>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 recent-orders">
                 <thead>
                   <tr className="bg-gray-50">
                     <th
@@ -184,7 +184,7 @@ const Dashboard = () => {
                       <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">
                         #{service.id}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         {service.title}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">

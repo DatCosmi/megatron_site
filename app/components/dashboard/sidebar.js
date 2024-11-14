@@ -9,6 +9,8 @@ import {
   PrinterIcon,
   MapPinIcon,
   ArchiveBoxIcon,
+  UserIcon,
+  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -19,9 +21,11 @@ const Sidebar = () => {
   const menuItems = [
     { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
     { name: "Reportes", icon: DocumentChartBarIcon, href: "/reports" },
+    { name: "Equipos", icon: PrinterIcon, href: "/equipos" },
     { name: "Productos", icon: ArchiveBoxIcon, href: "/products" },
     { name: "Ubicaciones", icon: MapPinIcon, href: "/ubicaciones" },
-    { name: "Equipos", icon: PrinterIcon, href: "/equipos" },
+    { name: "Clientes", icon: UserIcon, href: "/clientes" },
+    { name: "Técnicos", icon: WrenchScrewdriverIcon, href: "/tecnicos" },
     { name: "Configuración", icon: Cog6ToothIcon, href: "/settings" },
   ];
 

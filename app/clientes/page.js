@@ -2,121 +2,60 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Sidebar from "../components/dashboard/sidebar";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Plus,
-  Search,
-  Trash2,
-  SquarePen,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import AddProductModal from "../components/dashboard/AddProductModal";
 
-const Products = () => {
-  const [products, setProducts] = useState([]);
-  const [productList, setProductList] = useState(products);
+const ClientesPage = () => {
+  const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [productToEdit, setProductToEdit] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
 
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
   });
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
 
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const totalPages = Math.ceil(clientes.length / itemsPerPage);
 
-  const handleEditClick = (product) => {
-    setProductToEdit(product); // Set the product to edit
-    setIsAddProductModalOpen(true); // Open the modal
+  const handleEditClick = (cliente) => {
+    setIsAddProductModalOpen(true); // Abre el modal para editar
   };
 
   const closeModal = () => {
     setIsAddProductModalOpen(false);
-    fetchProducts();
-    setProductToEdit(null);
+    fetchClientes();
   };
 
-  const fetchProducts = async () => {
+  const fetchClientes = async () => {
     try {
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/productos"
+        "https://backend-integradora.vercel.app/api/clienteusuarios"
       );
-      setProducts(response.data);
+      setClientes(response.data);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetching clients:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch products from the backend
+  // Obtener datos al cargar la página
   useEffect(() => {
-    fetchProducts();
+    fetchClientes();
   }, []);
 
-  // Function to handle delete action
-  const handleDelete = async (productId) => {
-    try {
-      // Call the backend API to delete the product
-      const response = await fetch(
-        `https://backend-integradora.vercel.app/api/productos/${productId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (response.ok) {
-        fetchProducts();
-      } else {
-        console.error("Failed to delete product");
-      }
-    } catch (error) {
-      console.error("Error deleting product:", error);
-    }
-  };
-
-  const getTypeBadge = (type) => {
-    const baseClasses = "px-2.5 py-0.5 rounded-full text-xs font-medium";
-    switch (type) {
-      case "Impresora":
-        return `${baseClasses} bg-blue-50 text-[#007bff] border border-blue-200`;
-      case "Escáner":
-        return `${baseClasses} bg-green-50 text-[#28a745] border border-green-200`;
-      case "Suministro":
-        return `${baseClasses} bg-yellow-50 text-[#ffc107] border border-yellow-200`;
-      default:
-        return `${baseClasses} bg-gray-50 text-gray-800 border border-gray-200`;
-    }
-  };
-
-  const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const getSortedProducts = () => {
-    const filteredProducts = products.filter(
-      (product) =>
-        (categoryFilter === "" || product.Categoria === categoryFilter) &&
-        (statusFilter === "" || product.Tipo === statusFilter) &&
-        (product.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.idProductos.toString().includes(searchQuery.toLowerCase()))
+  const getSortedClientes = () => {
+    const filteredClientes = clientes.filter((cliente) =>
+      cliente.Cliente.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    if (!sortConfig.key) return filteredProducts;
+    if (!sortConfig.key) return filteredClientes;
 
-    return filteredProducts.sort((a, b) => {
+    return filteredClientes.sort((a, b) => {
       if (a[sortConfig.key] < b[sortConfig.key]) {
         return sortConfig.direction === "asc" ? -1 : 1;
       }
@@ -133,10 +72,9 @@ const Products = () => {
     }
   };
 
-  // Cálculo de los elementos de paginación
   const paginationRange = () => {
     const range = [];
-    const delta = 2; // Número de páginas cercanas a mostrar
+    const delta = 2;
     const start = Math.max(2, currentPage - delta);
     const end = Math.min(totalPages - 1, currentPage + delta);
 
@@ -149,9 +87,9 @@ const Products = () => {
     return [1, ...range, totalPages];
   };
 
-  const sortedProducts = getSortedProducts();
+  const sortedClientes = getSortedClientes();
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = sortedProducts.slice(
+  const currentItems = sortedClientes.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -161,15 +99,12 @@ const Products = () => {
       <Sidebar />
       <main className="flex-1 p-6 overflow-y-auto bg-[#eff1f6]">
         <div className="dashboard space-y-6">
-          {/* Header */}
           <h1 className="text-2xl font-semibold text-gray-800">
             Dashboard de Clientes
           </h1>
 
-          {/* Filtros y búsqueda */}
           <div className="flex flex-col w-full bg-white rounded-lg p-4">
             <div className="flex gap-3 w-[1190px]">
-              {/* Search Input with Label */}
               <div className="relative flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   ¿Qué estás buscando?
@@ -178,7 +113,7 @@ const Products = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Buscar por modelo o ID"
+                    placeholder="Buscar por nombre o usuario"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -186,46 +121,6 @@ const Products = () => {
                 </div>
               </div>
 
-              {/* Category Dropdown */}
-              <div className="relative min-w-[140px]">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Categoría
-                </label>
-                <div className="relative">
-                  <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="w-full appearance-none px-4 py-2 pr-10 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Todas</option>
-                    <option value="Multifuncional">Multifuncional</option>
-                    <option value="Impresora">Impresora</option>
-                    <option value="Toner">Toner</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Status Dropdown */}
-              <div className="relative min-w-[140px]">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tipo
-                </label>
-                <div className="relative">
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full appearance-none px-4 py-2 pr-10 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Todos</option>
-                    <option value="Impresora">Impresora</option>
-                    <option value="Suministro">Suministro</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Add Product Button */}
               <div className="relative min-w-[100px] flex items-end">
                 <button
                   onClick={() => setIsAddProductModalOpen(true)}
@@ -237,7 +132,6 @@ const Products = () => {
             </div>
           </div>
 
-          {/* Table Header and Controls */}
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <span className="text-lg font-semibold text-gray-700">
@@ -245,7 +139,6 @@ const Products = () => {
               </span>
             </div>
 
-            {/* Pagination */}
             <div className="pagination flex items-center space-x-2 bg-white p-2 rounded-md shadow">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -283,43 +176,23 @@ const Products = () => {
             </div>
           </div>
 
-          {/* Products Table */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200 recent-orders">
               <thead>
                 <tr className="bg-gray-50">
-                  <th
-                    scope="col"
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("modelo")}
-                  >
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Nombre
                   </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("Categoria")}
-                  >
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Usuario
                   </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("Marca")}
-                  >
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Teléfono
                   </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("Tipo")}
-                  >
-                    Correo electronico
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Correo Electrónico
                   </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acciones
                   </th>
                 </tr>
@@ -327,59 +200,36 @@ const Products = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td
-                      colSpan="100%"
-                      className="text-center py-4 text-gray-500"
-                    >
-                      Cargando productos...
+                    <td colSpan="100%" className="text-center py-4 text-gray-500">
+                      Cargando clientes...
                     </td>
                   </tr>
                 ) : currentItems.length > 0 ? (
-                  currentItems.map((product) => (
-                    <tr key={product.idProductos} className="hover:bg-gray-50">
-                      <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {product.idProductos}
+                  currentItems.map((cliente, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {cliente.Cliente}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {product.modelo}
+                        {cliente.user}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {product.Categoria}
+                        {cliente.telefono}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {product.Marca}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">
-                        <span className={getTypeBadge(product.Tipo)}>
-                          {product.Tipo}
-                        </span>
+                        {cliente.correoElectronico}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {product.Existencia}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-xs flex">
-                        <button
-                          onClick={() => handleDelete(product.idProductos)}
-                          className="text-[#ff006e] flex"
-                        >
-                          <Trash2 />
-                        </button>
-                        <button
-                          className="text-[#007bff] flex"
-                          onClick={() => handleEditClick(product)}
-                        >
-                          <SquarePen />
+                        <button onClick={() => handleEditClick(cliente)}>
+                          Editar
                         </button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td
-                      colSpan="100%"
-                      className="text-center py-4 text-gray-500"
-                    >
-                      No hay productos.
+                    <td colSpan="100%" className="text-center py-4 text-gray-500">
+                      No se encontraron clientes.
                     </td>
                   </tr>
                 )}
@@ -388,17 +238,12 @@ const Products = () => {
           </div>
         </div>
 
-        {/* Modal for adding products */}
         {isAddProductModalOpen && (
-          <AddProductModal
-            productToEdit={productToEdit}
-            setProducts={setProducts}
-            closeModal={closeModal}
-          />
+          <AddProductModal isOpen={isAddProductModalOpen} onClose={closeModal} />
         )}
       </main>
     </div>
   );
 };
 
-export default Products;
+export default ClientesPage;

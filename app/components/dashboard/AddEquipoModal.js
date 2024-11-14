@@ -2,18 +2,18 @@
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
-  const [modelo, setModelo] = useState("");
-  const [categoria, setCategoria] = useState("");
-  const [marca, setMarca] = useState("");
-  const [tipo, setTipo] = useState("");
-  const [existencia, setExistencia] = useState("");
-  const [caracteristicas, setCaracteristicas] = useState("");
+function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
+  const [Estatus, setEstatus] = useState("");
+  const [NumeroEquipo, setNumeroEquipo] = useState("");
+  const [NumeroSerie, setNumeroSerie] = useState("");
+  const [IdProductos, setIdProductos] = useState("");
+  const [idUbicaciones, setIdUbicaciones] = useState("");
 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const [ubicaciones, setUbicaciones] = useState([]);
+  const [products, setProducts] = useState([]);
 
   const fetchUbicaciones = async () => {
     try {
@@ -27,59 +27,76 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
     }
   };
 
+  const fetchProductos = async () => {
+    try {
+      const response = await fetch(
+        "https://backend-integradora.vercel.app/api/productos"
+      );
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching Productos:", error);
+    }
+  };
+
   // Populate form fields if editing
   useEffect(() => {
     fetchUbicaciones();
-    if (productToEdit && Object.keys(productToEdit).length > 0) {
-      setModelo(productToEdit.modelo || productToEdit.Modelo || "");
-      setCategoria(productToEdit.categoria || productToEdit.Categoria || "");
-      setMarca(productToEdit.marca || productToEdit.Marca || "");
-      setTipo(productToEdit.tipo || productToEdit.Tipo || "");
-      setExistencia(productToEdit.existencia || productToEdit.Existencia || "");
-      setCaracteristicas(
-        productToEdit.caracteristicas || productToEdit.Caracteristicas || ""
+    fetchProductos();
+    if (equipoToEdit && Object.keys(equipoToEdit).length > 0) {
+      setEstatus(equipoToEdit.estatus || equipoToEdit.Estatus || "");
+      setNumeroEquipo(
+        equipoToEdit.numeroEquipo || equipoToEdit.NumeroEquipo || ""
+      );
+      setNumeroSerie(
+        equipoToEdit.numeroSerie || equipoToEdit.NumeroSerie || ""
+      );
+      setIdProductos(
+        equipoToEdit.idProductos || equipoToEdit.IdProductos || ""
+      );
+      setIdUbicaciones(
+        equipoToEdit.idUbicaciones || equipoToEdit.IdUbicaciones || ""
       );
     }
-  }, [productToEdit]);
+  }, [equipoToEdit]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     // Datos del producto a enviar
-    const productData = {
-      modelo,
-      categoria,
-      marca,
-      tipo,
-      existencia,
-      caracteristicas,
+    const equipoData = {
+      Estatus,
+      NumeroEquipo,
+      NumeroSerie,
+      IdProductos,
+      idUbicaciones,
     };
 
     try {
       let response;
 
-      if (productToEdit) {
+      if (equipoToEdit) {
         // Editar producto existente
         response = await fetch(
-          `https://backend-integradora.vercel.app/api/productos/${productToEdit.idProductos}`,
+          `https://backend-integradora.vercel.app/api/equipos/${equipoToEdit.idEquipos}`,
           {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(productData),
+            body: JSON.stringify(equipoData),
           }
         );
       } else {
         // Agregar nuevo producto
         response = await fetch(
-          "https://backend-integradora.vercel.app/api/productos",
+          "https://backend-integradora.vercel.app/api/equipos",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(productData),
+            body: JSON.stringify(equipoData),
           }
         );
       }
@@ -91,16 +108,16 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
       // Obtener el resultado de la respuesta
       const result = await response.json();
 
-      if (productToEdit) {
+      if (equipoToEdit) {
         // Actualizar el producto editado en el estado
-        setSuccessMessage(`Producto actualizado con ID: ${result.product.id}`);
-        setProducts((prev) =>
-          prev.map((p) => (p.id === result.product.id ? result.product : p))
+        setSuccessMessage(`Producto actualizado con ID: ${result.equipo.id}`);
+        setEquipos((prev) =>
+          prev.map((p) => (p.id === result.equipo.id ? result.equipo : p))
         );
       } else {
         // Agregar el nuevo producto al estado
-        setSuccessMessage(`Producto agregado con ID: ${result.product.id}`);
-        setProducts((prev) => [...prev, result.product]);
+        setSuccessMessage(`Producto agregado con ID: ${result.equipo.id}`);
+        setEquipos((prev) => [...prev, result.equipo]);
       }
 
       // Cerrar el modal y limpiar los campos si es necesario
@@ -115,7 +132,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-xl w-full max-w-2xl shadow-lg">
         <h2 className="text-xl font-semibold text-gray-800 mb-6">
-          {productToEdit ? "Editar Equipo" : "Agregar Equipo"}
+          {equipoToEdit ? "Editar Equipo" : "Agregar Equipo"}
         </h2>
 
         {/* Alerta de éxito */}
@@ -134,49 +151,53 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
-            {/* Campo Modelo */}
+            {/* Campo Numero de Serie */}
             <div>
               <label className="block text-gray-600 mb-1 text-sm font-medium">
-                Modelo
+                Número de Serie
               </label>
               <input
                 type="text"
-                value={modelo}
-                onChange={(e) => setModelo(e.target.value)}
+                value={NumeroSerie}
+                onChange={(e) => setNumeroSerie(e.target.value)}
                 className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-                placeholder="Modelo de la impresora"
+                placeholder="Número de serie del equipo"
                 required
               />
             </div>
 
-            {/* Campo Marca */}
+            {/* Campo Número de Equipo */}
             <div>
               <label className="block text-gray-600 mb-1 text-sm font-medium">
-                Marca
+                Número de Equipo
               </label>
               <input
                 type="text"
-                value={marca}
-                onChange={(e) => setMarca(e.target.value)}
+                value={NumeroEquipo}
+                onChange={(e) => setNumeroEquipo(e.target.value)}
                 className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-                placeholder="Marca de la impresora"
+                placeholder="Número de equipo (M20, CED3)"
                 required
               />
             </div>
 
-            {/* Campo Categoría */}
+            {/* Campo Ubicacion */}
             <div>
               <label className="block text-gray-600 mb-1 text-sm font-medium">
                 Ubicación
               </label>
               <div className="relative">
                 <select
-                  value={categoria}
-                  onChange={(e) => setCategoria(e.target.value)}
+                  value={idUbicaciones}
+                  onChange={(e) => setIdUbicaciones(e.target.value)}
                   className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
                 >
+                  <option value="">Selecciona la ubicación</option>
                   {ubicaciones.map((ubicacion) => (
-                    <option key={ubicacion.Nombre} value={ubicacion.Nombre}>
+                    <option
+                      key={ubicacion.idUbicaciones}
+                      value={ubicacion.idUbicaciones}
+                    >
                       {ubicacion.Nombre}
                     </option>
                   ))}
@@ -185,52 +206,48 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
               </div>
             </div>
 
-            {/* Campo Tipo */}
+            {/* Campo Producto */}
             <div>
               <label className="block text-gray-600 mb-1 text-sm font-medium">
-                Tipo
+                Producto
               </label>
               <div className="relative">
                 <select
-                  value={tipo}
-                  onChange={(e) => setTipo(e.target.value)}
+                  value={IdProductos}
+                  onChange={(e) => setIdProductos(e.target.value)}
                   className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
                 >
-                  <option value="Impresora">Impresora</option>
-                  <option value="Escáner">Escáner</option>
-                  <option value="Suministro">Suministro</option>
+                  <option value="">Selecciona el producto</option>
+                  {products.map((product) => (
+                    <option
+                      key={product.idProductos}
+                      value={product.idProductos}
+                    >
+                      {product.modelo} ({product.Existencia})
+                    </option>
+                  ))}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
               </div>
             </div>
-
-            {/* Campo Existencia */}
+            {/* Campo Estatus */}
             <div>
               <label className="block text-gray-600 mb-1 text-sm font-medium">
-                Existencia
+                Estatus
               </label>
-              <input
-                type="number"
-                value={existencia}
-                onChange={(e) => setExistencia(e.target.value)}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-                placeholder="Cantidad en existencia"
-                required
-              />
-            </div>
-
-            {/* Campo Características */}
-            <div className="col-span-2">
-              <label className="block text-gray-600 mb-1 text-sm font-medium">
-                Características
-              </label>
-              <textarea
-                value={caracteristicas}
-                onChange={(e) => setCaracteristicas(e.target.value)}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-                placeholder="Características del producto"
-                required
-              />
+              <div className="relative">
+                <select
+                  value={Estatus}
+                  onChange={(e) => setEstatus(e.target.value)}
+                  className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
+                >
+                  <option value="">Selecciona el estatus</option>
+                  <option value="activo">Activo</option>
+                  <option value="inventariado">Inventariado</option>
+                  <option value="reparacion">En reparación</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
             </div>
           </div>
 
@@ -247,7 +264,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
               type="submit"
               className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm font-medium hover:bg-[#1a42b6] focus:outline-none focus:ring-2 focus:ring-[#1a42b6]"
             >
-              {productToEdit ? "Guardar Cambios" : "Agregar Producto"}
+              {equipoToEdit ? "Guardar Cambios" : "Agregar Equipo"}
             </button>
           </div>
         </form>
@@ -256,4 +273,4 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
   );
 }
 
-export default AddProductModal;
+export default AddEquipoModal;

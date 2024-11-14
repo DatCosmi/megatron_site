@@ -73,7 +73,7 @@ const Equipos = () => {
       );
 
       if (response.ok) {
-        fetchProducts();
+        fetchEquipos();
       } else {
         console.error("Failed to delete product");
       }
@@ -85,11 +85,11 @@ const Equipos = () => {
   const getTypeBadge = (type) => {
     const baseClasses = "px-2.5 py-0.5 rounded-full text-xs font-medium";
     switch (type) {
-      case "Impresora":
+      case "inventariado":
         return `${baseClasses} bg-blue-50 text-[#007bff] border border-blue-200`;
       case "activo":
         return `${baseClasses} bg-green-50 text-[#28a745] border border-green-200`;
-      case "Suministro":
+      case "reparacion":
         return `${baseClasses} bg-yellow-50 text-[#ffc107] border border-yellow-200`;
       default:
         return `${baseClasses} bg-gray-50 text-gray-800 border border-gray-200`;
@@ -240,7 +240,7 @@ const Equipos = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <span className="text-lg font-semibold text-gray-700">
-                Productos
+                Equipos
               </span>
             </div>
 

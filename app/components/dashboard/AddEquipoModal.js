@@ -242,9 +242,9 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
                   className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
                 >
                   <option value="">Selecciona el estatus</option>
-                  <option value="Activo">Activo</option>
-                  <option value="Bodega">Bodega</option>
-                  <option value="Mantenimiento">Mantenimiento</option>
+                  <option value="activo">Activo</option>
+                  <option value="inventariado">Inventariado</option>
+                  <option value="reparacion">En reparación</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
               </div>

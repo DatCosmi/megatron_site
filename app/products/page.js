@@ -40,23 +40,24 @@ const Products = () => {
 
   const closeModal = () => {
     setIsAddProductModalOpen(false);
-    setProductToEdit(null); // Clear selected product on close
+    fetchProducts();
+    setProductToEdit(null);
+  };
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get(
+        "https://backend-integradora.vercel.app/api/productos"
+      );
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Fetch products from the backend
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get(
-          "https://backend-integradora.vercel.app/api/productos"
-        );
-        setProducts(response.data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProducts();
   }, []);
 
@@ -72,10 +73,7 @@ const Products = () => {
       );
 
       if (response.ok) {
-        // Remove the deleted product from the state
-        setProductList((prevList) =>
-          prevList.filter((product) => product.id !== productId)
-        );
+        fetchProducts();
       } else {
         console.error("Failed to delete product");
       }

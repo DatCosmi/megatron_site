@@ -8,11 +8,17 @@ import {
   ChevronDown,
   Plus,
   Search,
+  Trash,
+  SquarePen,
 } from "lucide-react";
 import AddProductModal from "../components/dashboard/AddProductModal";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
+  const [productList, setProductList] = useState(products);
+  const [loading, setLoading] = useState(true);
+  const [productToEdit, setProductToEdit] = useState(null);
+
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -27,30 +33,65 @@ const Products = () => {
   const itemsPerPage = 10;
   const totalPages = Math.ceil(products.length / itemsPerPage);
 
+  const handleEditClick = (product) => {
+    setProductToEdit(product); // Set the product to edit
+    setIsAddProductModalOpen(true); // Open the modal
+  };
+
+  const closeModal = () => {
+    setIsAddProductModalOpen(false);
+    setProductToEdit(null); // Clear selected product on close
+  };
+
   // Fetch products from the backend
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(
           "https://backend-integradora.vercel.app/api/productos"
-        ); // Use full URL if necessary
-        console.log("Fetched products data:", response.data); // Log response here
-        setProducts(response.data); // Ensure this is pointing to the right data structure
+        );
+        setProducts(response.data);
       } catch (error) {
         console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProducts();
   }, []);
+
+  // Function to handle delete action
+  const handleDelete = async (productId) => {
+    try {
+      // Call the backend API to delete the product
+      const response = await fetch(
+        `https://backend-integradora.vercel.app/api/productos/${productId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (response.ok) {
+        // Remove the deleted product from the state
+        setProductList((prevList) =>
+          prevList.filter((product) => product.id !== productId)
+        );
+      } else {
+        console.error("Failed to delete product");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  };
 
   const getTypeBadge = (type) => {
     const baseClasses = "px-2.5 py-0.5 rounded-full text-xs font-medium";
     switch (type) {
       case "Impresora":
         return `${baseClasses} bg-blue-50 text-[#007bff] border border-blue-200`;
-      case "Multifuncional":
-        return `${baseClasses} bg-green-50 text-[#28a745] border border-green-200`;
       case "Escáner":
+        return `${baseClasses} bg-green-50 text-[#28a745] border border-green-200`;
+      case "Suministro":
         return `${baseClasses} bg-yellow-50 text-[#ffc107] border border-yellow-200`;
       default:
         return `${baseClasses} bg-gray-50 text-gray-800 border border-gray-200`;
@@ -159,7 +200,8 @@ const Products = () => {
                   >
                     <option value="">Todas</option>
                     <option value="Multifuncional">Multifuncional</option>
-                    <option value="Laser">Laser</option>
+                    <option value="Impresora">Impresora</option>
+                    <option value="Toner">Toner</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                 </div>
@@ -178,8 +220,7 @@ const Products = () => {
                   >
                     <option value="">Todos</option>
                     <option value="Impresora">Impresora</option>
-                    <option value="Multifuncional">Multifuncional</option>
-                    <option value="Escáner">Escáner</option>
+                    <option value="Suministro">Suministro</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                 </div>
@@ -253,7 +294,7 @@ const Products = () => {
                     className="pl-6 pr-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                     onClick={() => handleSort("idProductos")}
                   >
-                    ID
+                    #
                   </th>
                   <th
                     scope="col"
@@ -290,33 +331,73 @@ const Products = () => {
                   >
                     Existencia
                   </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {currentItems.map((product) => (
-                  <tr key={product.idProductos} className="hover:bg-gray-50">
-                    <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {product.idProductos}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.modelo}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.Categoria}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.Marca}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">
-                      <span className={getTypeBadge(product.Tipo)}>
-                        {product.Tipo}
-                      </span>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.Existencia}
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan="100%"
+                      className="text-center py-4 text-gray-500"
+                    >
+                      Cargando productos...
                     </td>
                   </tr>
-                ))}
+                ) : currentItems.length > 0 ? (
+                  currentItems.map((product) => (
+                    <tr key={product.idProductos} className="hover:bg-gray-50">
+                      <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {product.idProductos}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.modelo}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.Categoria}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.Marca}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm">
+                        <span className={getTypeBadge(product.Tipo)}>
+                          {product.Tipo}
+                        </span>
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.Existencia}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm">
+                        <button
+                          onClick={() => handleDelete(product.idProductos)}
+                          className="text-[#ff006e]"
+                        >
+                          <Trash />
+                        </button>
+                        <button
+                          className="text-[#007bff]"
+                          onClick={() => handleEditClick(product)}
+                        >
+                          <SquarePen />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="100%"
+                      className="text-center py-4 text-gray-500"
+                    >
+                      No hay productos.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -324,7 +405,11 @@ const Products = () => {
 
         {/* Modal for adding products */}
         {isAddProductModalOpen && (
-          <AddProductModal closeModal={() => setIsAddProductModalOpen(false)} />
+          <AddProductModal
+            productToEdit={productToEdit}
+            setProducts={setProducts}
+            closeModal={closeModal}
+          />
         )}
       </main>
     </div>

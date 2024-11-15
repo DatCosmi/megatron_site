@@ -22,10 +22,12 @@ const Equipos = () => {
     key: null,
     direction: "asc",
   });
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [ubicacionFilter, setUbicacionFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddEquipoModalOpen, setIsAddEquipoModalOpen] = useState(false);
+
+  const [ubicaciones, setUbicaciones] = useState([]);
 
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,9 +58,22 @@ const Equipos = () => {
     }
   };
 
+  const fetchUbicaciones = async () => {
+    try {
+      const response = await fetch(
+        "https://backend-integradora.vercel.app/api/ubicacion"
+      );
+      const data = await response.json();
+      setUbicaciones(data);
+    } catch (error) {
+      console.error("Error fetching Ubicaciones:", error);
+    }
+  };
+
   // Fetch products from the backend
   useEffect(() => {
     fetchEquipos();
+    fetchUbicaciones();
   }, []);
 
   // Function to handle delete action
@@ -74,6 +89,7 @@ const Equipos = () => {
 
       if (response.ok) {
         fetchEquipos();
+        console.log("si se pudo");
       } else {
         console.error("Failed to delete product");
       }
@@ -104,13 +120,24 @@ const Equipos = () => {
     setSortConfig({ key, direction });
   };
 
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return <ChevronDown className="h-4 w-4 text-gray-400" />;
+    }
+    return sortConfig.direction === "asc" ? (
+      <ChevronUp className="h-4 w-4 text-gray-600" />
+    ) : (
+      <ChevronDown className="h-4 w-4 text-gray-600" />
+    );
+  };
+
   const getSortedEquipos = () => {
     const filteredEquipos = equipos.filter(
       (equipo) =>
-        (categoryFilter === "" || equipo.Categoria === categoryFilter) &&
+        (ubicacionFilter === "" || equipo.nombre === ubicacionFilter) &&
         (statusFilter === "" || equipo.Tipo === statusFilter) &&
         (equipo.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          equipo.idEquipoos.toString().includes(searchQuery.toLowerCase()))
+          equipo.idEquipos.toString().includes(searchQuery.toLowerCase()))
     );
 
     if (!sortConfig.key) return filteredEquipos;
@@ -188,18 +215,20 @@ const Equipos = () => {
               {/* Category Dropdown */}
               <div className="relative min-w-[140px]">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Categoría
+                  Ubicación
                 </label>
                 <div className="relative">
                   <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    value={ubicacionFilter}
+                    onChange={(e) => setUbicacionFilter(e.target.value)}
                     className="w-full appearance-none px-4 py-2 pr-10 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Todas</option>
-                    <option value="Multifuncional">Multifuncional</option>
-                    <option value="Impresora">Impresora</option>
-                    <option value="Toner">Toner</option>
+                    {ubicaciones.map((ubicacion) => (
+                      <option key={ubicacion.Nombre} value={ubicacion.Nombre}>
+                        {ubicacion.Nombre}
+                      </option>
+                    ))}
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                 </div>
@@ -325,9 +354,9 @@ const Equipos = () => {
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("lugar")}
+                    onClick={() => handleSort("ubicacion")}
                   >
-                    Lugar
+                    Ubicacion
                   </th>
                   <th
                     scope="col"
@@ -349,7 +378,7 @@ const Equipos = () => {
                   </tr>
                 ) : currentItems.length > 0 ? (
                   currentItems.map((equipo) => (
-                    <tr key={equipo.idEquipos} className="hover:bg-gray-50">
+                    <tr className="hover:bg-gray-50">
                       <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {equipo.numeroEquipo}
                       </td>
@@ -372,7 +401,7 @@ const Equipos = () => {
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-xs flex">
                         <button
-                          onClick={() => handleDelete(equipo.idEquipos)}
+                          onClick={() => handleDelete(equipo.IdEquipos)}
                           className="text-[#ff006e] flex"
                         >
                           <Trash2 />

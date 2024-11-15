@@ -11,32 +11,33 @@ import {
   Trash2,
   SquarePen,
 } from "lucide-react";
-import AddProductModal from "../components/dashboard/AddProductModal";
+import AddCliente from "../components/dashboard/AddCliente"; // Import as a component
 
 const ClientesPage = () => {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [productToEdit, setProductToEdit] = useState(null);
+  const [clienteToEdit, setClienteToEdit] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(""); // Initialize with an empty string
+  const [IsAddclienteModalOpen, setIsAddclienteModalOpen] = useState(false);
 
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
   });
 
-  // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const totalPages = Math.ceil(clientes.length / itemsPerPage);
 
-  const handleEditClick = (product) => {
-    setProductToEdit(product); // Set the product to edit
-    setIsAddProductModalOpen(true); // Open the modal
+  const handleEditClick = (client) => {
+    setClienteToEdit(client);
+    setIsAddclienteModalOpen(true);
   };
 
   const closeModal = () => {
-    setIsAddProductModalOpen(false);
-    fetchProducts();
-    setProductToEdit(null);
+    setIsAddclienteModalOpen(false);
+    fetchClientes();
+    setClienteToEdit(null);
   };
 
   const fetchClientes = async () => {
@@ -45,6 +46,7 @@ const ClientesPage = () => {
         "https://backend-integradora.vercel.app/api/clienteusuarios"
       );
       setClientes(response.data);
+      console.log(response.data);
     } catch (error) {
       console.error("Error fetching clients:", error);
     } finally {
@@ -52,7 +54,6 @@ const ClientesPage = () => {
     }
   };
 
-  // Obtener datos al cargar la página
   useEffect(() => {
     fetchClientes();
   }, []);
@@ -231,9 +232,15 @@ const ClientesPage = () => {
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         {cliente.correoElectronico}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button onClick={() => handleEditClick(cliente)}>
-                          Editar
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 flex gap-2">
+                        <button
+                          onClick={() => handleEditClick(cliente)}
+                          className="text-blue-500 hover:text-blue-700"
+                        >
+                          <SquarePen className="h-4 w-4" />
+                        </button>
+                        <button className="text-red-500 hover:text-red-700">
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </td>
                     </tr>
@@ -244,7 +251,7 @@ const ClientesPage = () => {
                       colSpan="100%"
                       className="text-center py-4 text-gray-500"
                     >
-                      No hay productos.
+                      No se encontraron resultados.
                     </td>
                   </tr>
                 )}
@@ -252,16 +259,11 @@ const ClientesPage = () => {
             </table>
           </div>
         </div>
-
-        {/* Modal for adding products */}
-        {isAddProductModalOpen && (
-          <AddProductModal
-            productToEdit={productToEdit}
-            setProducts={setProducts}
-            closeModal={closeModal}
-          />
-        )}
       </main>
+
+      {IsAddclienteModalOpen && (
+        <AddCliente closeModal={closeModal} clienteToEdit={clienteToEdit} />
+      )}
     </div>
   );
 };

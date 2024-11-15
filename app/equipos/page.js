@@ -22,6 +22,7 @@ const Equipos = () => {
     key: null,
     direction: "asc",
   });
+
   const [ubicacionFilter, setUbicacionFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,7 +49,7 @@ const Equipos = () => {
   const fetchEquipos = async () => {
     try {
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/getEquipoUbicaciones"
+        "https://backend-integradora.vercel.app/api/equipoubicacion"
       );
       setEquipos(response.data);
     } catch (error) {

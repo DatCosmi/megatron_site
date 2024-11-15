@@ -23,6 +23,7 @@ const TecnicosPage = () => {
     key: null,
     direction: "asc",
   });
+
   const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddTechnicianModalOpen, setIsAddTechnicianModalOpen] =
@@ -34,7 +35,7 @@ const TecnicosPage = () => {
   const totalPages = Math.ceil(technicians.length / itemsPerPage);
 
   const handleEditClick = (technician) => {
-    setTechnicianToEdit(technician); // Set the technician to edit
+    setTechnicianToEdit(technician);
     setIsAddTechnicianModalOpen(true); // Open the modal
   };
 
@@ -49,8 +50,10 @@ const TecnicosPage = () => {
       const response = await axios.get(
         "https://backend-integradora.vercel.app/api/tecnicosusuarios"
       );
-      setTechnicians(response.data);
-      console.log(response.data);
+      const data = response.data.map((technician) => ({
+        ...technician,
+      }));
+      setTechnicians(data);
     } catch (error) {
       console.error("Error fetching technicians:", error);
     } finally {
@@ -64,7 +67,7 @@ const TecnicosPage = () => {
   }, []);
 
   // Function to handle delete action
-  const handleDelete = async (technicianId) => {
+  const handleDelete = async (technicianId, userId) => {
     try {
       // Call the backend API to delete the technician
       const response = await fetch(
@@ -73,8 +76,13 @@ const TecnicosPage = () => {
           method: "DELETE",
         }
       );
-
       if (response.ok) {
+        await fetch(
+          `https://backend-integradora.vercel.app/api/auth/delete-user/${userId}`,
+          {
+            method: "DELETE",
+          }
+        );
         fetchTechnicians();
       } else {
         console.error("Failed to delete technician");
@@ -96,8 +104,12 @@ const TecnicosPage = () => {
     const filteredTechnicians = technicians.filter(
       (technician) =>
         (statusFilter === "" || technician.estatus === statusFilter) &&
-        (technician.Tecnico.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          technician.user.toLowerCase().includes(searchQuery.toLowerCase()))
+        ((technician.Tecnico &&
+          technician.Tecnico.toLowerCase().includes(
+            searchQuery.toLowerCase()
+          )) ||
+          (technician.user &&
+            technician.user.toLowerCase().includes(searchQuery.toLowerCase())))
     );
 
     if (!sortConfig.key) return filteredTechnicians;
@@ -322,7 +334,12 @@ const TecnicosPage = () => {
                           <SquarePen className="w-5 h-5" />
                         </button>
                         <button
-                          onClick={() => handleDelete(technician.idTecnicos)}
+                          onClick={() =>
+                            handleDelete(
+                              technician.idTecnicos,
+                              technician.idusers
+                            )
+                          }
                           className="text-red-500 hover:text-red-700"
                         >
                           <Trash2 className="w-5 h-5" />
@@ -344,8 +361,9 @@ const TecnicosPage = () => {
 
         {isAddTechnicianModalOpen && (
           <AddTecnicoModal
-            technicianToEdit={technicianToEdit}
+            tecnicoToEdit={technicianToEdit}
             closeModal={closeModal}
+            setTechnicians={setTechnicians}
           />
         )}
       </main>

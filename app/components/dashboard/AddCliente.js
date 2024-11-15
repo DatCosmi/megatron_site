@@ -9,7 +9,9 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
   const [apellidoMa, setApellidoMa] = useState("");
   const [telefono, setTelefono] = useState("");
   const [correoElectronico, setCorreoElectronico] = useState("");
+
   const [usersId, setUsersId] = useState("");
+  const [clienteId, setClienteId] = useState("");
 
   const [currentTab, setCurrentTab] = useState(1);
   const [error, setError] = useState("");
@@ -17,78 +19,54 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
 
   // Populate form fields if editing
   useEffect(() => {
-    if (clienteToEdit && Object.keys(clienteToEdit).length > 0) {
-      setUser(clienteToEdit.user || clienteToEdit.User || "");
-      setPassword(clienteToEdit.password || clienteToEdit.Password || "");
-      setNombre(clienteToEdit.Nombre || "");
-      setApellidoPa(clienteToEdit.ApellidoPa || "");
-      setApellidoMa(clienteToEdit.ApellidoMa || "");
-      setTelefono(clienteToEdit.Telefono || "");
-      setCorreoElectronico(clienteToEdit.CorreoElectronico || "");
-      setUsersId(clienteToEdit.users_idusers || "");
+    if (clienteToEdit) {
+      setUsersId(clienteToEdit.idusers || "");
+      setClienteId(clienteToEdit.idClientes || "");
+      if (clienteToEdit.idClientes) fetchClienteData(clienteToEdit.idClientes);
+      if (clienteToEdit.idusers) fetchUserData(clienteToEdit.idusers);
     }
   }, [clienteToEdit]);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const clienteData = {
-      user,
-      password,
-      rol: "cliente",
-    };
-
+  const fetchClienteData = async (id) => {
     try {
-      let response = await fetch(
-        "https://backend-integradora.vercel.app/api/auth/registrar",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(clienteData),
-        }
+      const response = await fetch(
+        `https://backend-integradora.vercel.app/api/clientes/${id}`,
+        { method: "GET", headers: { "Content-Type": "application/json" } }
       );
 
-      if (!response.ok) {
-        throw new Error("Error al guardar el usuario");
-      }
+      if (!response.ok)
+        throw new Error("Error al obtener los datos del cliente");
 
-      // Make the second POST request if the first one was successful
-      const result = await response.json();
-      const clienteDetails = {
-        Nombre: nombre,
-        ApellidoPa: apellidoPa,
-        ApellidoMa: apellidoMa,
-        Telefono: telefono,
-        CorreoElectronico: correoElectronico,
-        users_idusers: result.userId,
-      };
+      const data = await response.json();
+      setNombre(data.Nombre || "");
+      setApellidoPa(data.ApellidoPa || "");
+      setApellidoMa(data.ApellidoMa || "");
+      setTelefono(data.Telefono || "");
+      setCorreoElectronico(data.CorreoElectronico || "");
+    } catch (err) {
+      setError(err.message || "Algo salió mal al obtener datos del cliente");
+    }
+  };
 
-      response = await fetch(
-        "https://backend-integradora.vercel.app/api/clientes",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(clienteDetails),
-        }
+  const fetchUserData = async (id) => {
+    try {
+      const response = await fetch(
+        `https://backend-integradora.vercel.app/api/auth/getUser/${id}`,
+        { method: "GET", headers: { "Content-Type": "application/json" } }
       );
 
-      if (!response.ok) {
-        throw new Error("Error al guardar el cliente");
-      }
+      if (!response.ok)
+        throw new Error("Error al obtener los datos del usuario");
 
-      setSuccessMessage("Usuario y cliente agregados exitosamente");
-      closeModal();
-    } catch (error) {
-      setError(error.message || "Algo salió mal");
-      closeModal();
+      const data = await response.json();
+      setUser(data.user);
+    } catch (err) {
+      setError(err.message || "Algo salió mal al obtener datos del usuario");
     }
   };
 
   const handleNextTab = () => {
-    if (user.trim() && password.trim()) {
+    if (clienteToEdit || (user.trim() && password.trim())) {
       setCurrentTab(2);
       setError("");
     } else {
@@ -96,10 +74,98 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
     }
   };
 
+  const handleBackTab = () => {
+    setCurrentTab(1);
+    setError("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const clienteData = {
+      nombre,
+      apellidoPa,
+      apellidoMa,
+      telefono,
+      correoElectronico,
+    };
+
+    try {
+      let userResponse;
+      if (clienteToEdit) {
+        // Update existing client and user
+        userResponse = await fetch(
+          `https://backend-integradora.vercel.app/api/auth/update-password/${usersId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password }),
+          }
+        );
+        if (!userResponse.ok)
+          throw new Error("Error al actualizar la contraseña");
+
+        const clienteResponse = await fetch(
+          `https://backend-integradora.vercel.app/api/clientes/${clienteId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(clienteData),
+          }
+        );
+        if (!clienteResponse.ok)
+          throw new Error("Error al actualizar los datos del cliente");
+
+        setSuccessMessage("Cliente actualizado exitosamente");
+        closeModal();
+      } else {
+        // Create new user and client
+        const userData = {
+          user,
+          password,
+          rol: "cliente",
+        };
+
+        userResponse = await fetch(
+          `https://backend-integradora.vercel.app/api/auth/registrar`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(userData),
+          }
+        );
+        if (!userResponse.ok)
+          throw new Error("Error al guardar los datos del usuario");
+
+        const userResult = await userResponse.json();
+        const users_idusers = userResult.userId;
+
+        const clienteResponse = await fetch(
+          `https://backend-integradora.vercel.app/api/clientes`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...clienteData, users_idusers }),
+          }
+        );
+
+        if (!clienteResponse.ok)
+          throw new Error("Error al guardar los datos del cliente");
+
+        const result = await clienteResponse.json();
+        setSuccessMessage("Cliente agregado exitosamente");
+        setClientes((prev) => [...prev, result]);
+
+        closeModal();
+      }
+    } catch (error) {
+      setError(error.message || "Algo salió mal");
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-xl w-full max-w-2xl shadow-lg relative">
-        {/* Botón de cierre en la esquina superior derecha */}
         <button
           onClick={closeModal}
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -108,17 +174,15 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
         </button>
 
         <h2 className="text-xl font-semibold text-gray-800 mb-6">
-          {clienteToEdit ? "Editar Usuario" : "Agregar Usuario"}
+          {clienteToEdit ? "Editar Cliente" : "Agregar Cliente"}
         </h2>
 
-        {/* Alerta de éxito */}
+        {/* Success and Error Alerts */}
         {successMessage && (
           <div className="mb-4 text-green-600 bg-green-100 p-3 rounded-md text-sm">
             {successMessage}
           </div>
         )}
-
-        {/* Alerta de error */}
         {error && (
           <div className="mb-4 text-red-600 bg-red-100 p-3 rounded-md text-sm">
             {error}
@@ -126,6 +190,7 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Tabs for input */}
           {currentTab === 1 && (
             <div className="space-y-5">
               <label className="block font-medium text-gray-700">
@@ -135,7 +200,8 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
                 type="text"
                 value={user}
                 onChange={(e) => setUser(e.target.value)}
-                required
+                disabled={!!clienteToEdit}
+                required={!clienteToEdit}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200"
               />
               <label className="block font-medium text-gray-700">
@@ -145,14 +211,17 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                placeholder={
+                  clienteToEdit ? "Dejar vacío para no actualizar" : ""
+                }
+                required={!clienteToEdit}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200"
               />
               <div className="flex items-center justify-center space-x-4 mt-6">
                 <button
                   type="button"
                   onClick={handleNextTab}
-                  className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm font-medium hover:bg-[#1a42b6] focus:outline-none focus:ring-2 focus:ring-[#1a42b6]"
+                  className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm font-medium hover:bg-[#1a42b6]"
                 >
                   Siguiente
                 </button>
@@ -210,12 +279,19 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
                 required
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200"
               />
-              <div className="flex items-center justify-center space-x-4 mt-6">
+              <div className="flex space-x-6 mt-6">
+                <button
+                  type="button"
+                  onClick={handleBackTab}
+                  className="px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100"
+                >
+                  Atrás
+                </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm font-medium hover:bg-[#1a42b6] focus:outline-none focus:ring-2 focus:ring-[#1a42b6]"
+                  className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm font-medium hover:bg-[#1a42b6]"
                 >
-                  {clienteToEdit ? "Guardar Cambios" : "Agregar Usuario"}
+                  {clienteToEdit ? "Actualizar" : "Agregar"}
                 </button>
               </div>
             </div>

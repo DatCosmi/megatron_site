@@ -405,6 +405,7 @@ const Products = () => {
         {/* Modal for adding products */}
         {isAddProductModalOpen && (
           <AddProductModal
+
             productToEdit={productToEdit}
             setProducts={setProducts}
             closeModal={closeModal}

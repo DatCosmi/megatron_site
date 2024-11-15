@@ -15,15 +15,18 @@ import AddCliente from "../components/dashboard/AddCliente"; // Import as a comp
 
 const ClientesPage = () => {
   const [clientes, setClientes] = useState([]);
+  const [clientList, setClientList] = useState(clientes);
   const [loading, setLoading] = useState(true);
   const [clienteToEdit, setClienteToEdit] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // Initialize with an empty string
-  const [IsAddclienteModalOpen, setIsAddclienteModalOpen] = useState(false);
 
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
   });
+
+  const [statusFilter, setStatusFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [IsAddclienteModalOpen, setIsAddclienteModalOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -45,8 +48,10 @@ const ClientesPage = () => {
       const response = await axios.get(
         "https://backend-integradora.vercel.app/api/clienteusuarios"
       );
-      setClientes(response.data);
-      console.log(response.data);
+      const data = response.data.map((cliente) => ({
+        ...cliente,
+      }));
+      setClientes(data);
     } catch (error) {
       console.error("Error fetching clients:", error);
     } finally {
@@ -58,11 +63,46 @@ const ClientesPage = () => {
     fetchClientes();
   }, []);
 
+  const handleDelete = async (ClienteId, userId) => {
+    try {
+      // Call the backend API to delete the technician
+      const response = await fetch(
+        `https://backend-integradora.vercel.app/api/clientes/${ClienteId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (response.ok) {
+        await fetch(
+          `https://backend-integradora.vercel.app/api/auth/delete-user/${userId}`,
+          {
+            method: "DELETE",
+          }
+        );
+        fetchClientes();
+      } else {
+        console.error("Failed to delete technician");
+      }
+    } catch (error) {
+      console.error("Error deleting technician:", error);
+    }
+  };
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
   const getSortedClientes = () => {
     const filteredClientes = clientes.filter(
       (cliente) =>
-        cliente.Cliente.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cliente.user.toLowerCase().includes(searchQuery.toLowerCase())
+        (cliente.Cliente &&
+          cliente.Cliente.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (cliente.user &&
+          cliente.user.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     if (!sortConfig.key) return filteredClientes;
@@ -192,16 +232,33 @@ const ClientesPage = () => {
             <table className="min-w-full divide-y divide-gray-200 recent-orders">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                  <th
+                    scope="col"
+                    onClick={() => handleSort("Cliente")}
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  >
                     Nombre
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                  <th
+                    scope="col"
+                    onClick={() => handleSort("user")}
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  >
                     Usuario
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                  <th
+                    scope="col"
+                    onClick={() => handleSort("Telefono")}
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  >
                     Teléfono
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+
+                  <th
+                    scope="col"
+                    onClick={() => handleSort("correoElectronico")}
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  >
                     Correo Electrónico
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -216,12 +273,12 @@ const ClientesPage = () => {
                       colSpan="100%"
                       className="text-center py-4 text-gray-500"
                     >
-                      Cargando productos...
+                      Cargando clientes...
                     </td>
                   </tr>
                 ) : currentItems.length > 0 ? (
-                  currentItems.map((cliente, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
+                  currentItems.map((cliente) => (
+                    <tr key={cliente.idClientes} className="hover:bg-gray-50">
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         {cliente.Cliente}
                       </td>
@@ -241,7 +298,12 @@ const ClientesPage = () => {
                         >
                           <SquarePen className="h-4 w-4" />
                         </button>
-                        <button className="text-red-500 hover:text-red-700">
+                        <button
+                          onClick={() =>
+                            handleDelete(cliente.idClientes, cliente.idusers)
+                          }
+                          className="text-red-500 hover:text-red-700"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </td>
@@ -264,7 +326,11 @@ const ClientesPage = () => {
       </main>
 
       {IsAddclienteModalOpen && (
-        <AddCliente closeModal={closeModal} clienteToEdit={clienteToEdit} />
+        <AddCliente
+          closeModal={closeModal}
+          clienteToEdit={clienteToEdit}
+          setClientes={setClientes}
+        />
       )}
     </div>
   );

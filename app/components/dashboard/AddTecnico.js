@@ -1,96 +1,78 @@
 "use client";
 import { useEffect, useState } from "react";
 
-function AddTecnicoModal({ clientes, setClientes, closeModal, tecnicoToEdit }) {
+function AddTecnicoModal({
+  Technicians,
+  setTechnicians,
+  closeModal,
+  tecnicoToEdit,
+}) {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [nombre, setNombre] = useState("");
+  const [estatus, setEstatus] = useState("");
   const [apellidoPa, setApellidoPa] = useState("");
   const [apellidoMa, setApellidoMa] = useState("");
   const [telefono, setTelefono] = useState("");
   const [correoElectronico, setCorreoElectronico] = useState("");
+
   const [usersId, setUsersId] = useState("");
+  const [TecnicoId, setTecnicoId] = useState("");
 
   const [currentTab, setCurrentTab] = useState(1);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Rellenar los campos del formulario si es edición
   useEffect(() => {
     if (tecnicoToEdit && Object.keys(tecnicoToEdit).length > 0) {
-      setUser(tecnicoToEdit.user || tecnicoToEdit.User || "");
-      setPassword(tecnicoToEdit.password || tecnicoToEdit.Password || "");
-      setNombre(tecnicoToEdit.Nombre || "");
-      setApellidoPa(tecnicoToEdit.ApellidoPa || "");
-      setApellidoMa(tecnicoToEdit.ApellidoMa || "");
-      setTelefono(tecnicoToEdit.Telefono || "");
-      setCorreoElectronico(tecnicoToEdit.CorreoElectronico || "");
-      setUsersId(tecnicoToEdit.users_idusers || "");
+      setTecnicoId(tecnicoToEdit.idTecnicos || "");
+      setUsersId(tecnicoToEdit.idusers || "");
+      if (tecnicoToEdit.idTecnicos) fetchTecnicoData(tecnicoToEdit.idTecnicos);
+      if (tecnicoToEdit.idusers) fetchUserData(tecnicoToEdit.idusers);
     }
-  }, [tecnicoToEdit]);
+  }, [tecnicoToEdit]); // Depender de tecnicoToEdit asegura que se ejecute correctamente
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const tecnicoData = {
-      user,
-      password,
-      rol: "tecnico",
-    };
-
+  const fetchTecnicoData = async (id) => {
     try {
-      // Primera solicitud para registrar el usuario (rol: tecnico)
-      let response = await fetch(
-        "https://backend-integradora.vercel.app/api/auth/registrar",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(tecnicoData),
-        }
+      const response = await fetch(
+        `https://backend-integradora.vercel.app/api/tecnicos/${id}`,
+        { method: "GET", headers: { "Content-Type": "application/json" } }
       );
 
-      if (!response.ok) {
-        throw new Error("Error al guardar el usuario");
-      }
+      if (!response.ok)
+        throw new Error("Error al obtener los datos del técnico");
 
-      // Si la primera solicitud es exitosa, se obtiene el userId y se realiza la segunda solicitud para guardar el técnico
-      const result = await response.json();
-      const tecnicoDetails = {
-        Nombre: nombre,
-        ApellidoPa: apellidoPa,
-        ApellidoMa: apellidoMa,
-        Telefono: telefono,
-        CorreoElectronico: correoElectronico,
-        users_idusers: result.userId,
-        Estatus: "activo", // O "Activo", dependiendo de la lógica de tu sistema
-      };
+      const data = await response.json();
+      setNombre(data.Nombre || "");
+      setApellidoPa(data.ApellidoPa || "");
+      setApellidoMa(data.ApellidoMa || "");
+      setTelefono(data.Telefono || "");
+      setCorreoElectronico(data.CorreoElectronico || "");
+      setEstatus(data.Estatus || "Activo");
+    } catch (err) {
+      setError(err.message || "Algo salió mal al obtener datos del técnico");
+    }
+  };
 
-      response = await fetch(
-        "https://backend-integradora.vercel.app/api/tecnicos", // Cambia la URL a la de los técnicos si es diferente
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(tecnicoDetails),
-        }
+  const fetchUserData = async (id) => {
+    try {
+      const response = await fetch(
+        `https://backend-integradora.vercel.app/api/auth/getUser/${id}`,
+        { method: "GET", headers: { "Content-Type": "application/json" } }
       );
 
-      if (!response.ok) {
-        throw new Error("Error al guardar el técnico");
-      }
+      if (!response.ok)
+        throw new Error("Error al obtener los datos del usuario");
 
-      setSuccessMessage("Usuario y técnico agregados exitosamente");
-      closeModal();
-    } catch (error) {
-      setError(error.message || "Algo salió mal");
-      closeModal();
+      const data = await response.json();
+      setUser(data.user);
+    } catch (err) {
+      setError(err.message || "Algo salió mal al obtener datos del usuario");
     }
   };
 
   const handleNextTab = () => {
-    if (user.trim() && password.trim()) {
+    if (tecnicoToEdit || (user.trim() && password.trim())) {
       setCurrentTab(2);
       setError("");
     } else {
@@ -98,10 +80,99 @@ function AddTecnicoModal({ clientes, setClientes, closeModal, tecnicoToEdit }) {
     }
   };
 
+  const handleBackTab = () => {
+    setCurrentTab(1);
+    setError("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const tecnicoData = {
+      nombre,
+      apellidoPa,
+      apellidoMa,
+      telefono,
+      correoElectronico,
+      estatus,
+    };
+
+    try {
+      if (tecnicoToEdit) {
+        // Actualizar técnico
+        const tecnicoResponse = await fetch(
+          `https://backend-integradora.vercel.app/api/tecnicos/${TecnicoId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(tecnicoData),
+          }
+        );
+
+        if (!tecnicoResponse.ok)
+          throw new Error("Error al actualizar los datos del técnico");
+
+        if (password.trim()) {
+          // Actualizar contraseña
+          const passwordResponse = await fetch(
+            `https://backend-integradora.vercel.app/api/auth/update-password/${usersId}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ password }),
+            }
+          );
+
+          if (!passwordResponse.ok)
+            throw new Error("Error al actualizar la contraseña");
+        }
+
+        setSuccessMessage("Técnico actualizado exitosamente");
+      } else {
+        const userData = {
+          user,
+          password,
+          rol: "tecnico",
+        };
+        // Crear técnico
+        const userResponse = await fetch(
+          `https://backend-integradora.vercel.app/api/auth/registrar`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...userData }),
+          }
+        );
+        if (!userResponse.ok)
+          throw new Error("Error al guardar los datos del usuario");
+        const UserResult = await userResponse.json();
+        const users_idusers = UserResult.userId;
+        const tecnicoResponse = await fetch(
+          `https://backend-integradora.vercel.app/api/tecnicos`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...tecnicoData, users_idusers }),
+          }
+        );
+
+        if (!tecnicoResponse.ok)
+          throw new Error("Error al guardar los datos del técnico");
+
+        const result = await tecnicoResponse.json();
+        setSuccessMessage("Técnico agregado exitosamente");
+        setTechnicians((prev) => [...prev, result]);
+      }
+
+      closeModal();
+    } catch (err) {
+      setError(err.message || "Algo salió mal al guardar los datos");
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-xl w-full max-w-2xl shadow-lg relative">
-        {/* Botón de cierre en la esquina superior derecha */}
         <button
           onClick={closeModal}
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -113,14 +184,12 @@ function AddTecnicoModal({ clientes, setClientes, closeModal, tecnicoToEdit }) {
           {tecnicoToEdit ? "Editar Técnico" : "Agregar Técnico"}
         </h2>
 
-        {/* Alerta de éxito */}
         {successMessage && (
           <div className="mb-4 text-green-600 bg-green-100 p-3 rounded-md text-sm">
             {successMessage}
           </div>
         )}
 
-        {/* Alerta de error */}
         {error && (
           <div className="mb-4 text-red-600 bg-red-100 p-3 rounded-md text-sm">
             {error}
@@ -129,17 +198,18 @@ function AddTecnicoModal({ clientes, setClientes, closeModal, tecnicoToEdit }) {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {currentTab === 1 && (
-            <div className="space-y-5">
-              <label className="block font-medium text-gray-700">
-                Nombre de Usuario
-              </label>
+            <>
+              <label className="block font-medium text-gray-700">Usuario</label>
+
               <input
                 type="text"
                 value={user}
                 onChange={(e) => setUser(e.target.value)}
-                required
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200"
+                className="w-full p-2 border border-gray-300 rounded-md"
+                disabled={!!tecnicoToEdit}
+                required={!tecnicoToEdit}
               />
+
               <label className="block font-medium text-gray-700">
                 Contraseña
               </label>
@@ -147,31 +217,34 @@ function AddTecnicoModal({ clientes, setClientes, closeModal, tecnicoToEdit }) {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200"
+                className="w-full p-2 border border-gray-300 rounded-md"
+                placeholder={
+                  tecnicoToEdit ? "Dejar vacío para no actualizar" : ""
+                }
+                required={!tecnicoToEdit}
               />
-              <div className="flex items-center justify-center space-x-4 mt-6">
-                <button
-                  type="button"
-                  onClick={handleNextTab}
-                  className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm font-medium hover:bg-[#1a42b6] focus:outline-none focus:ring-2 focus:ring-[#1a42b6]"
-                >
-                  Siguiente
-                </button>
-              </div>
-            </div>
+
+              <button
+                type="button"
+                onClick={handleNextTab}
+                className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm"
+              >
+                Siguiente
+              </button>
+            </>
           )}
 
           {currentTab === 2 && (
-            <div className="space-y-5">
+            <>
               <label className="block font-medium text-gray-700">Nombre</label>
               <input
                 type="text"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
                 required
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200"
               />
+
               <label className="block font-medium text-gray-700">
                 Apellido Paterno
               </label>
@@ -179,9 +252,10 @@ function AddTecnicoModal({ clientes, setClientes, closeModal, tecnicoToEdit }) {
                 type="text"
                 value={apellidoPa}
                 onChange={(e) => setApellidoPa(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
                 required
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200"
               />
+
               <label className="block font-medium text-gray-700">
                 Apellido Materno
               </label>
@@ -189,9 +263,9 @@ function AddTecnicoModal({ clientes, setClientes, closeModal, tecnicoToEdit }) {
                 type="text"
                 value={apellidoMa}
                 onChange={(e) => setApellidoMa(e.target.value)}
-                required
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200"
+                className="w-full p-2 border border-gray-300 rounded-md"
               />
+
               <label className="block font-medium text-gray-700">
                 Teléfono
               </label>
@@ -199,9 +273,10 @@ function AddTecnicoModal({ clientes, setClientes, closeModal, tecnicoToEdit }) {
                 type="text"
                 value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
                 required
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200"
               />
+
               <label className="block font-medium text-gray-700">
                 Correo Electrónico
               </label>
@@ -209,18 +284,37 @@ function AddTecnicoModal({ clientes, setClientes, closeModal, tecnicoToEdit }) {
                 type="email"
                 value={correoElectronico}
                 onChange={(e) => setCorreoElectronico(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
                 required
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200"
               />
-              <div className="flex items-center justify-center space-x-4 mt-6">
+
+              <label className="block font-medium text-gray-700">Estatus</label>
+              <select
+                value={estatus}
+                onChange={(e) => setEstatus(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              >
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+              </select>
+
+              <div className="flex justify-between mt-5">
+                <button
+                  type="button"
+                  onClick={handleBackTab}
+                  className="px-6 py-3 bg-gray-400 text-white rounded-lg text-sm"
+                >
+                  Anterior
+                </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm font-medium hover:bg-[#1a42b6] focus:outline-none focus:ring-2 focus:ring-[#1a42b6]"
+                  className="px-6 py-3 bg-[#2d57d1] text-white rounded-lg text-sm"
                 >
-                  {tecnicoToEdit ? "Guardar Cambios" : "Agregar Técnico"}
+                  {tecnicoToEdit ? "Actualizar" : "Guardar"}
                 </button>
               </div>
-            </div>
+            </>
           )}
         </form>
       </div>

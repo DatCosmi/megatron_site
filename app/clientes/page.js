@@ -2,15 +2,21 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Sidebar from "../components/dashboard/sidebar";
-import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
-import AddClienteModal from "../components/dashboard/AddCliente";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Plus,
+  Search,
+  Trash2,
+  SquarePen,
+} from "lucide-react";
+import AddProductModal from "../components/dashboard/AddProductModal";
 
 const ClientesPage = () => {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isAddclienteModalOpen, setIsAddclienteModalOpen] = useState(false);
-  const [clienteToEdit, setClienteToEdit] = useState(null);
+  const [productToEdit, setProductToEdit] = useState(null);
 
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -22,14 +28,15 @@ const ClientesPage = () => {
   const itemsPerPage = 10;
   const totalPages = Math.ceil(clientes.length / itemsPerPage);
 
-  const handleEditClick = (cliente) => {
-    setClienteToEdit(cliente);
-    setIsAddclienteModalOpen(true); // Abre el modal para editar
+  const handleEditClick = (product) => {
+    setProductToEdit(product); // Set the product to edit
+    setIsAddProductModalOpen(true); // Open the modal
   };
 
   const closeModal = () => {
-    setIsAddclienteModalOpen(false);
-    fetchClientes();
+    setIsAddProductModalOpen(false);
+    fetchProducts();
+    setProductToEdit(null);
   };
 
   const fetchClientes = async () => {
@@ -206,7 +213,7 @@ const ClientesPage = () => {
                       colSpan="100%"
                       className="text-center py-4 text-gray-500"
                     >
-                      Cargando clientes...
+                      Cargando productos...
                     </td>
                   </tr>
                 ) : currentItems.length > 0 ? (
@@ -237,7 +244,7 @@ const ClientesPage = () => {
                       colSpan="100%"
                       className="text-center py-4 text-gray-500"
                     >
-                      No se encontraron clientes.
+                      No hay productos.
                     </td>
                   </tr>
                 )}
@@ -246,10 +253,11 @@ const ClientesPage = () => {
           </div>
         </div>
 
-        {isAddclienteModalOpen && (
-          <AddClienteModal
-            clienteToEdit={clienteToEdit}
-            setClientes={setClientes}
+        {/* Modal for adding products */}
+        {isAddProductModalOpen && (
+          <AddProductModal
+            productToEdit={productToEdit}
+            setProducts={setProducts}
             closeModal={closeModal}
           />
         )}

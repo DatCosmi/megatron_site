@@ -47,9 +47,10 @@ const TecnicosPage = () => {
   const fetchTechnicians = async () => {
     try {
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/tecnicos"
+        "https://backend-integradora.vercel.app/api/tecnicosusuarios"
       );
       setTechnicians(response.data);
+      console.log(response.data);
     } catch (error) {
       console.error("Error fetching technicians:", error);
     } finally {
@@ -94,9 +95,9 @@ const TecnicosPage = () => {
   const getSortedTechnicians = () => {
     const filteredTechnicians = technicians.filter(
       (technician) =>
-        (statusFilter === "" || technician.Estatus === statusFilter) &&
-        (technician.Nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          technician.idTecnicos.toString().includes(searchQuery.toLowerCase()))
+        (statusFilter === "" || technician.estatus === statusFilter) &&
+        (technician.Tecnico.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          technician.user.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     if (!sortConfig.key) return filteredTechnicians;
@@ -146,15 +147,12 @@ const TecnicosPage = () => {
       <Sidebar />
       <main className="flex-1 p-6 overflow-y-auto bg-[#eff1f6]">
         <div className="dashboard space-y-6">
-          {/* Header */}
           <h1 className="text-2xl font-semibold text-gray-800">
             Dashboard de Técnicos
           </h1>
 
-          {/* Filtros y búsqueda */}
           <div className="flex flex-col w-full bg-white rounded-lg p-4">
             <div className="flex gap-3 w-[1190px]">
-              {/* Search Input with Label */}
               <div className="relative flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   ¿Qué estás buscando?
@@ -163,7 +161,7 @@ const TecnicosPage = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Buscar por nombre o ID"
+                    placeholder="Buscar por nombre o usuario"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -171,7 +169,6 @@ const TecnicosPage = () => {
                 </div>
               </div>
 
-              {/* Status Dropdown */}
               <div className="relative min-w-[140px]">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Estatus
@@ -183,14 +180,13 @@ const TecnicosPage = () => {
                     className="w-full appearance-none px-4 py-2 pr-10 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Todos</option>
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                 </div>
               </div>
 
-              {/* Add Technician Button */}
               <div className="relative min-w-[100px] flex items-end">
                 <button
                   onClick={() => setIsAddTechnicianModalOpen(true)}
@@ -202,7 +198,6 @@ const TecnicosPage = () => {
             </div>
           </div>
 
-          {/* Table Header and Controls */}
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <span className="text-lg font-semibold text-gray-700">
@@ -210,7 +205,6 @@ const TecnicosPage = () => {
               </span>
             </div>
 
-            {/* Pagination */}
             <div className="pagination flex items-center space-x-2 bg-white p-2 rounded-md shadow">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -248,7 +242,6 @@ const TecnicosPage = () => {
             </div>
           </div>
 
-          {/* Table with Technician Data */}
           <div className="overflow-hidden bg-white rounded-lg shadow-md mt-4">
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
@@ -256,23 +249,16 @@ const TecnicosPage = () => {
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("idTecnicos")}
-                  >
-                    ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("Nombre")}
+                    onClick={() => handleSort("Tecnico")}
                   >
                     Nombre
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("ApellidoPa")}
+                    onClick={() => handleSort("user")}
                   >
-                    Apellido Paterno
+                    Usuario
                   </th>
                   <th
                     scope="col"
@@ -284,7 +270,14 @@ const TecnicosPage = () => {
                   <th
                     scope="col"
                     className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("Estatus")}
+                    onClick={() => handleSort("correoElectronico")}
+                  >
+                    Correo Electronico
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("estatus")}
                   >
                     Estatus
                   </th>
@@ -306,22 +299,22 @@ const TecnicosPage = () => {
                 ) : currentItems.length > 0 ? (
                   currentItems.map((technician) => (
                     <tr key={technician.idTecnicos}>
-                      <td className="pl-6 pr-3 py-3 text-sm font-medium text-gray-900">
-                        {technician.idTecnicos}
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {technician.Tecnico}
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-500">
-                        {technician.Nombre}
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {technician.user}
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-500">
-                        {technician.ApellidoPa}
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {technician.telefono}
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-500">
-                        {technician.Telefono}
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {technician.correoElectronico}
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-500">
-                        {technician.Estatus}
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {technician.estatus}
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-500">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         <button
                           onClick={() => handleEditClick(technician)}
                           className="text-blue-500 hover:text-blue-700 mr-3"
@@ -349,7 +342,6 @@ const TecnicosPage = () => {
           </div>
         </div>
 
-        {/* Modal */}
         {isAddTechnicianModalOpen && (
           <AddTecnicoModal
             technicianToEdit={technicianToEdit}

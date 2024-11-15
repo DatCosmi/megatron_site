@@ -63,7 +63,7 @@ function AddTecnicoModal({ clientes, setClientes, closeModal, tecnicoToEdit }) {
         Telefono: telefono,
         CorreoElectronico: correoElectronico,
         users_idusers: result.userId,
-        Estatus: "Inactivo", // O "Activo", dependiendo de la lógica de tu sistema
+        Estatus: "activo", // O "Activo", dependiendo de la lógica de tu sistema
       };
 
       response = await fetch(

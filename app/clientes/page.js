@@ -59,8 +59,10 @@ const ClientesPage = () => {
   }, []);
 
   const getSortedClientes = () => {
-    const filteredClientes = clientes.filter((cliente) =>
-      cliente.Cliente.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredClientes = clientes.filter(
+      (cliente) =>
+        cliente.Cliente.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        cliente.user.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     if (!sortConfig.key) return filteredClientes;
@@ -190,16 +192,16 @@ const ClientesPage = () => {
             <table className="min-w-full divide-y divide-gray-200 recent-orders">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
                     Nombre
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
                     Usuario
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
                     Teléfono
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
                     Correo Electrónico
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

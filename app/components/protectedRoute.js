@@ -4,11 +4,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+export const token =
+  typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  
 const ProtectedRoute = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   useEffect(() => {
     // Check if token exists
@@ -17,7 +18,7 @@ const ProtectedRoute = ({ children }) => {
     } else {
       setIsLoading(false); // Token exists, stop loading
     }
-  }, [router, token]);
+  }, [router]);
 
   if (isLoading) {
     // Render a loading state while determining authentication

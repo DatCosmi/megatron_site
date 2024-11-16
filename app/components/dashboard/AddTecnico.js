@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-
+import { token } from "../protectedRoute";
 function AddTecnicoModal({
   Technicians,
   setTechnicians,
@@ -36,7 +36,13 @@ function AddTecnicoModal({
     try {
       const response = await fetch(
         `https://backend-integradora.vercel.app/api/tecnicos/${id}`,
-        { method: "GET", headers: { "Content-Type": "application/json" } }
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (!response.ok)
@@ -58,7 +64,13 @@ function AddTecnicoModal({
     try {
       const response = await fetch(
         `https://backend-integradora.vercel.app/api/auth/getUser/${id}`,
-        { method: "GET", headers: { "Content-Type": "application/json" } }
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (!response.ok)
@@ -104,7 +116,10 @@ function AddTecnicoModal({
           `https://backend-integradora.vercel.app/api/tecnicos/${TecnicoId}`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(tecnicoData),
           }
         );
@@ -118,7 +133,10 @@ function AddTecnicoModal({
             `https://backend-integradora.vercel.app/api/auth/update-password/${usersId}`,
             {
               method: "PUT",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
               body: JSON.stringify({ password }),
             }
           );
@@ -139,7 +157,9 @@ function AddTecnicoModal({
           `https://backend-integradora.vercel.app/api/auth/registrar`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify({ ...userData }),
           }
         );
@@ -151,7 +171,10 @@ function AddTecnicoModal({
           `https://backend-integradora.vercel.app/api/tecnicos`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ ...tecnicoData, users_idusers }),
           }
         );

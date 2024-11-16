@@ -12,7 +12,7 @@ import {
   SquarePen,
 } from "lucide-react";
 import AddTecnicoModal from "../components/dashboard/AddTecnico";
-import ProtectedRoute from "../components/protectedRoute";
+import ProtectedRoute, { token } from "../components/protectedRoute";
 import { useRouter } from "next/navigation";
 
 const TecnicosPage = () => {
@@ -53,7 +53,12 @@ const TecnicosPage = () => {
   const fetchTechnicians = async () => {
     try {
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/tecnicosusuarios"
+        "https://backend-integradora.vercel.app/api/tecnicosusuarios",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
       );
       const data = response.data.map((technician) => ({
         ...technician,

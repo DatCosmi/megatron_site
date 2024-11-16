@@ -12,13 +12,16 @@ import {
   SquarePen,
 } from "lucide-react";
 import AddCliente from "../components/dashboard/AddCliente"; // Import as a component
+import { useRouter } from "next/navigation";
 
 const ClientesPage = () => {
+  const router = useRouter();
+
   const [clientes, setClientes] = useState([]);
   const [clientList, setClientList] = useState(clientes);
   const [loading, setLoading] = useState(true);
   const [clienteToEdit, setClienteToEdit] = useState(null);
-
+  const [role, setRole] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -60,8 +63,15 @@ const ClientesPage = () => {
   };
 
   useEffect(() => {
-    fetchClientes();
-  }, []);
+    const roleFromLocalStorage = localStorage.getItem("role");
+    setRole(roleFromLocalStorage);
+
+    if (roleFromLocalStorage !== "admin") {
+      router.push("/NotAuthorized ");
+    } else {
+      fetchClientes();
+    }
+  }, [role, router]);
 
   const handleDelete = async (ClienteId, userId) => {
     try {

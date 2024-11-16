@@ -13,12 +13,16 @@ import {
 } from "lucide-react";
 import AddTecnicoModal from "../components/dashboard/AddTecnico";
 import ProtectedRoute from "../components/protectedRoute";
+import { useRouter } from "next/navigation";
 
 const TecnicosPage = () => {
+  const router = useRouter();
+
   const [technicians, setTechnicians] = useState([]);
   const [technicianList, setTechnicianList] = useState(technicians);
   const [loading, setLoading] = useState(true);
   const [technicianToEdit, setTechnicianToEdit] = useState(null);
+  const [role, setRole] = useState(null);
 
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -64,8 +68,15 @@ const TecnicosPage = () => {
 
   // Fetch technicians from the backend
   useEffect(() => {
-    fetchTechnicians();
-  }, []);
+    const roleFromLocalStorage = localStorage.getItem("role");
+    setRole(roleFromLocalStorage);
+
+    if (roleFromLocalStorage !== "admin") {
+      router.push("/NotAuthorized ");
+    } else {
+      fetchTechnicians();
+    }
+  }, [role, router]);
 
   // Function to handle delete action
   const handleDelete = async (technicianId, userId) => {

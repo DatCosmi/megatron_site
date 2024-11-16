@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -17,6 +17,12 @@ import { usePathname, useRouter } from "next/navigation";
 const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    const roleFromLocalStorage = localStorage.getItem("role");
+    setRole(roleFromLocalStorage);
+  }, []); // Dependencias vacías para ejecutar solo al montar el componente
 
   const menuItems = [
     { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
@@ -24,8 +30,12 @@ const Sidebar = () => {
     { name: "Equipos", icon: PrinterIcon, href: "/equipos" },
     { name: "Productos", icon: ArchiveBoxIcon, href: "/products" },
     { name: "Ubicaciones", icon: MapPinIcon, href: "/ubicaciones" },
-    { name: "Clientes", icon: UserIcon, href: "/clientes" },
-    { name: "Técnicos", icon: WrenchScrewdriverIcon, href: "/tecnicos" },
+    ...(role === "admin"
+      ? [
+          { name: "Clientes", icon: UserIcon, href: "/clientes" },
+          { name: "Técnicos", icon: WrenchScrewdriverIcon, href: "/tecnicos" },
+        ]
+      : []),
     { name: "Configuración", icon: Cog6ToothIcon, href: "/settings" },
   ];
 

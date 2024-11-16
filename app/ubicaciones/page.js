@@ -12,7 +12,7 @@ import {
   SquarePen,
 } from "lucide-react";
 import AddUbicModal from "../components/dashboard/AddUbicModal";
-import ProtectedRoute from "../components/protectedRoute";
+import ProtectedRoute, { token } from "../components/protectedRoute";
 
 const Ubicaciones = () => {
   const [ubicaciones, setUbicaciones] = useState([]);
@@ -28,7 +28,12 @@ const Ubicaciones = () => {
   const fetchUbicaciones = async () => {
     try {
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/ubicacion"
+        "https://backend-integradora.vercel.app/api/ubicacion",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       setUbicaciones(response.data);
     } catch (error) {
@@ -48,6 +53,9 @@ const Ubicaciones = () => {
         `https://backend-integradora.vercel.app/api/ubicacion/${ubicacionID}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 

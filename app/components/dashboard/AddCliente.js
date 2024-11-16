@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-
+import { token } from "../protectedRoute";
 function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +31,13 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
     try {
       const response = await fetch(
         `https://backend-integradora.vercel.app/api/clientes/${id}`,
-        { method: "GET", headers: { "Content-Type": "application/json" } }
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (!response.ok)
@@ -52,7 +58,13 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
     try {
       const response = await fetch(
         `https://backend-integradora.vercel.app/api/auth/getUser/${id}`,
-        { method: "GET", headers: { "Content-Type": "application/json" } }
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (!response.ok)
@@ -109,7 +121,10 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
           `https://backend-integradora.vercel.app/api/clientes/${clienteId}`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(clienteData),
           }
         );
@@ -144,7 +159,10 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
           `https://backend-integradora.vercel.app/api/clientes`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ ...clienteData, users_idusers }),
           }
         );

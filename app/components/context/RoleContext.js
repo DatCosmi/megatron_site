@@ -15,8 +15,12 @@ export const RoleProvider = ({ children }) => {
     setRole(null);
     localStorage.removeItem("role"); // Limpiar también localStorage
   };
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const fetchPerfil = async () => {
+    
+    await delay(2);
+
     try {
       const response = await axios.get(
         "https://backend-integradora.vercel.app/api/auth/perfil",

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-
+import { token } from "../protectedRoute";
 function AddUbicModal({
   ubicaciones,
   setUbicaciones,
@@ -54,6 +54,7 @@ function AddUbicModal({
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(ubicData),
           }
@@ -66,6 +67,7 @@ function AddUbicModal({
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(ubicData),
           }

@@ -14,65 +14,111 @@ import {
   Users,
   Calendar,
 } from "lucide-react";
-import ProtectedRoute from "../components/protectedRoute";
+import ProtectedRoute, { token } from "../components/protectedRoute";
+import axios from "axios";
 
 function Reports() {
-  const [services, setServices] = useState(SERVICES);
+  const [reports, setReports] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("todos");
-  const [selectedService, setSelectedService] = useState(null);
+  const [selectedReport, setSelectedReport] = useState(null);
   const [isTechnicianListOpen, setIsTechnicianListOpen] = useState(false);
   const [isAddReportModalOpen, setIsAddReportModalOpen] = useState(false);
-  const [isServiceDetailModalOpen, setIsServiceDetailModalOpen] =
-    useState(false);
+  const [isReportDetailModalOpen, setIsReportDetailModalOpen] = useState(false);
 
-  const filteredServices = services.filter((service) =>
-    activeFilter === "todos" ? true : service.status === activeFilter
+  const fetchReports = async () => {
+    try {
+      const response = await axios.get(
+        "https://backend-integradora.vercel.app/api/reportesCreados",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setReports(response.data);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTechnicians = async () => {
+    try {
+      const response = await axios.get(
+        "https://backend-integradora.vercel.app/api/tecnicos",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setTechnicians(response.data);
+    } catch (error) {
+      console.error("Error fetching technicians:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch reports from the backend
+  useEffect(() => {
+    fetchReports();
+    fetchTechnicians();
+  }, []);
+
+  const filteredReports = reports.filter((report) =>
+    activeFilter === "todos" ? true : report.estadoReporte === activeFilter
   );
 
   const handleAssign = (technicianId) => {
-    setServices((prevServices) =>
-      prevServices.map((service) =>
-        service.id === selectedService.id
+    setReports((prevReports) =>
+      prevReports.map((report) =>
+        report.IdReporte === selectedReport.IdReporte
           ? {
-              ...service,
-              status: "en-curso",
-              assignedTo: TECHNICIANS.find((tech) => tech.id === technicianId)
-                .name,
+              ...report,
+              status: "ejecucion",
+              assignedTo: technicians.find(
+                (tech) => tech.idTecnicos === technicianId
+              ).name,
             }
-          : service
+          : report
       )
     );
-    setSelectedService(null);
+    setSelectedReport(null);
     setIsTechnicianListOpen(false);
   };
 
-  const handleReassign = (technicianId, serviceId) => {
-    setServices((prevServices) =>
-      prevServices.map((service) =>
-        service.id === serviceId
+  const handleReassign = (technicianId, reportId) => {
+    setReports((prevReports) =>
+      prevReports.map((report) =>
+        report.IdReporte === reportId
           ? {
-              ...service,
-              assignedTo: TECHNICIANS.find((tech) => tech.id === technicianId)
-                .name,
+              ...report,
+              assignedTo: technicians.find(
+                (tech) => tech.idTecnicos === technicianId
+              ).name,
             }
-          : service
+          : report
       )
     );
   };
 
-  const handleComplete = (serviceId) => {
-    setServices((prevServices) =>
-      prevServices.map((service) =>
-        service.id === serviceId
-          ? { ...service, status: "completada" }
-          : service
+  const handleComplete = (reportId) => {
+    setReports((prevReports) =>
+      prevReports.map((report) =>
+        report.IdReporte === reportId
+          ? { ...report, status: "concluido" }
+          : report
       )
     );
   };
 
-  const handleDelete = (serviceId) => {
-    setServices((prevServices) =>
-      prevServices.filter((s) => s.id !== serviceId)
+  const handleDelete = (reportId) => {
+    setReports((prevReports) =>
+      prevReports.filter((s) => s.IdReporte !== reportId)
     );
   };
 
@@ -80,9 +126,9 @@ function Reports() {
     switch (status) {
       case "pendiente":
         return <AlertCircle className="w-6 h-6 text-[#ff006e]" />;
-      case "en-curso":
+      case "ejecucion":
         return <Clock className="w-6 h-6 text-[#ffbe0b]" />;
-      case "completada":
+      case "concluido":
         return <CheckCircle className="w-6 h-6 text-[#06d6a0]" />;
       default:
         return <AlertCircle className="w-6 h-6 text-gray-500" />;
@@ -93,7 +139,7 @@ function Reports() {
     switch (status) {
       case "pendiente":
         return "bg-[#ff006e]";
-      case "en-curso":
+      case "ejecucion":
         return "bg-[#ffbe0b]";
       case "completada":
         return "bg-[#06d6a0]";
@@ -140,8 +186,8 @@ function Reports() {
                   {filter.label}
                   <span className="ml-2 text-xs">
                     {
-                      services.filter((s) =>
-                        filter.id === "todos" ? true : s.status === filter.id
+                      reports.filter((s) =>
+                        filter.id === "todos" ? true : s.estado === filter.id
                       ).length
                     }
                   </span>
@@ -150,29 +196,29 @@ function Reports() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredServices.map((service) => (
+              {filteredReports.map((report) => (
                 <div
-                  key={service.id}
+                  key={report.IdReporte}
                   className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex"
                 >
                   <div
-                    className={`w-1 ${getStatusColor(service.status)}`}
+                    className={`w-1 ${getStatusColor(report.estadoReporte)}`}
                   ></div>
                   <div className="flex-1 p-6">
                     <div className="flex items-center gap-4 mb-4">
                       <div
                         className={`p-2 rounded-xl ${getStatusColor(
-                          service.status
+                          report.estado
                         )} bg-opacity-10`}
                       >
-                        {getStatusIcon(service.status)}
+                        {getStatusIcon(report.estadoReporte)}
                       </div>
                       <div>
                         <h2 className="font-semibold text-gray-800">
-                          {service.title}
+                          {report.tituloReporte}
                         </h2>
                         <p className="text-sm text-gray-500">
-                          {service.department}
+                          {report.nombreUbicacion}
                         </p>
                       </div>
                     </div>
@@ -180,11 +226,11 @@ function Reports() {
                     <div className="space-y-4 mb-6">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Users className="w-4 h-4" />
-                        <span>{service.assignedTo || "Sin asignar"}</span>
+                        <span>{report.TecnicoAsignado || "Sin asignar"}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Calendar className="w-4 h-4" />
-                        <span>{service.date}</span>
+                        <span>{report.fechaCreacion}</span>
                       </div>
                     </div>
 
@@ -192,31 +238,30 @@ function Reports() {
                       <button
                         className="w-full px-4 py-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors text-sm font-medium"
                         onClick={() => {
-                          setSelectedService(service);
-                          setIsServiceDetailModalOpen(true);
+                          setSelectedReport(report);
+                          setIsReportDetailModalOpen(true);
                         }}
                       >
                         Ver Detalles
                       </button>
 
-                      {service.status === "pendiente" &&
-                        !service.assignedTo && (
-                          <button
-                            className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                            onClick={() => {
-                              setSelectedService(service);
-                              setIsTechnicianListOpen(true);
-                            }}
-                          >
-                            Asignar
-                          </button>
-                        )}
-
-                      {service.status === "pendiente" && service.assignedTo && (
+                      {report.status === "pendiente" && !report.assignedTo && (
                         <button
                           className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                           onClick={() => {
-                            setSelectedService(service);
+                            setSelectedReport(report);
+                            setIsTechnicianListOpen(true);
+                          }}
+                        >
+                          Asignar
+                        </button>
+                      )}
+
+                      {report.status === "pendiente" && report.assignedTo && (
+                        <button
+                          className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                          onClick={() => {
+                            setSelectedReport(report);
                             setIsTechnicianListOpen(true);
                           }}
                         >
@@ -224,12 +269,12 @@ function Reports() {
                         </button>
                       )}
 
-                      {service.status === "en-curso" && (
+                      {report.status === "ejecucion" && (
                         <>
                           <button
                             className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                             onClick={() => {
-                              setSelectedService(service);
+                              setSelectedReport(report);
                               setIsTechnicianListOpen(true);
                             }}
                           >
@@ -237,17 +282,17 @@ function Reports() {
                           </button>
                           <button
                             className="w-full px-4 py-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
-                            onClick={() => handleComplete(service.id)}
+                            onClick={() => handleComplete(report.id)}
                           >
                             Completar
                           </button>
                         </>
                       )}
 
-                      {service.status === "completada" && (
+                      {report.status === "completada" && (
                         <button
                           className="w-full px-4 py-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
-                          onClick={() => handleDelete(service.id)}
+                          onClick={() => handleDelete(report.id)}
                         >
                           Eliminar
                         </button>
@@ -268,22 +313,22 @@ function Reports() {
           )}
           {isAddReportModalOpen && (
             <AddReportModal
-              services={services}
-              setServices={setServices}
+              reports={reports}
+              setReports={setReports}
               closeModal={() => setIsAddReportModalOpen(false)}
             />
           )}
-          {isServiceDetailModalOpen && selectedService && (
-            <ServiceDetailModal
-              service={selectedService}
-              closeModal={() => setIsServiceDetailModalOpen(false)}
+          {isReportDetailModalOpen && selectedReport && (
+            <ReportDetailModal
+              report={selectedReport}
+              closeModal={() => setIsReportDetailModalOpen(false)}
             />
           )}
         </main>
 
         <TechnicianSidebar
-          services={services}
-          setSelectedService={setSelectedService}
+          reports={reports}
+          setSelectedReport={setSelectedReport}
           setIsTechnicianListOpen={setIsTechnicianListOpen}
         />
       </div>

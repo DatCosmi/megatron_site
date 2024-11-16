@@ -132,8 +132,8 @@ export const SERVICES = [
 export const FILTERS = [
   { id: "todos", label: "Todos" },
   { id: "pendiente", label: "Pendientes" },
-  { id: "en-curso", label: "En curso" },
-  { id: "completada", label: "Completadas" },
+  { id: "ejecucion", label: "En curso" },
+  { id: "concluido", label: "Completadas" },
 ];
 
 export const PRINTERS = [

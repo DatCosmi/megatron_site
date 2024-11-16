@@ -12,7 +12,7 @@ import {
   SquarePen,
 } from "lucide-react";
 import AddProductModal from "../components/dashboard/AddProductModal";
-import ProtectedRoute from "../components/protectedRoute";
+import ProtectedRoute, { token } from "../components/protectedRoute";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -48,7 +48,12 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/productos"
+        "https://backend-integradora.vercel.app/api/productos",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       setProducts(response.data);
     } catch (error) {

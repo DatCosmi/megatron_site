@@ -268,7 +268,7 @@ const TecnicosPage = () => {
             </div>
 
             <div className="overflow-hidden bg-white rounded-lg shadow-md mt-4">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 recent-orders">
                 <thead>
                   <tr>
                     <th

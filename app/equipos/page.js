@@ -12,7 +12,7 @@ import {
   SquarePen,
 } from "lucide-react";
 import AddEquipoModal from "../components/dashboard/AddEquipoModal";
-import ProtectedRoute from "../components/protectedRoute";
+import ProtectedRoute, { token } from "../components/protectedRoute";
 
 const Equipos = () => {
   const [equipos, setEquipos] = useState([]);
@@ -50,7 +50,12 @@ const Equipos = () => {
   const fetchEquipos = async () => {
     try {
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/equipoubicacion"
+        "https://backend-integradora.vercel.app/api/equipoubicacion",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       setEquipos(response.data);
     } catch (error) {
@@ -63,7 +68,12 @@ const Equipos = () => {
   const fetchUbicaciones = async () => {
     try {
       const response = await fetch(
-        "https://backend-integradora.vercel.app/api/ubicacion"
+        "https://backend-integradora.vercel.app/api/ubicacion",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       const data = await response.json();
       setUbicaciones(data);

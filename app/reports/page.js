@@ -82,7 +82,7 @@ function Reports() {
               status: "ejecucion",
               assignedTo: technicians.find(
                 (tech) => tech.idTecnicos === technicianId
-              ).name,
+              ).Nombre,
             }
           : report
       )
@@ -99,7 +99,7 @@ function Reports() {
               ...report,
               assignedTo: technicians.find(
                 (tech) => tech.idTecnicos === technicianId
-              ).name,
+              ).Nombre,
             }
           : report
       )
@@ -245,31 +245,33 @@ function Reports() {
                         Ver Detalles
                       </button>
 
-                      {report.status === "pendiente" && !report.assignedTo && (
-                        <button
-                          className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                          onClick={() => {
-                            setSelectedReport(report);
-                            setIsTechnicianListOpen(true);
-                          }}
-                        >
-                          Asignar
-                        </button>
-                      )}
+                      {report.estadoReporte === "pendiente" &&
+                        !report.TecnicoAsignado && (
+                          <button
+                            className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                            onClick={() => {
+                              setSelectedReport(report);
+                              setIsTechnicianListOpen(true);
+                            }}
+                          >
+                            Asignar
+                          </button>
+                        )}
 
-                      {report.status === "pendiente" && report.assignedTo && (
-                        <button
-                          className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                          onClick={() => {
-                            setSelectedReport(report);
-                            setIsTechnicianListOpen(true);
-                          }}
-                        >
-                          Reasignar
-                        </button>
-                      )}
+                      {report.estadoReporte === "pendiente" &&
+                        report.TecnicoAsignado && (
+                          <button
+                            className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                            onClick={() => {
+                              setSelectedReport(report);
+                              setIsTechnicianListOpen(true);
+                            }}
+                          >
+                            Reasignar
+                          </button>
+                        )}
 
-                      {report.status === "ejecucion" && (
+                      {report.estadoReporte === "ejecucion" && (
                         <>
                           <button
                             className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
@@ -289,7 +291,7 @@ function Reports() {
                         </>
                       )}
 
-                      {report.status === "completada" && (
+                      {report.estadoReporte === "concluido" && (
                         <button
                           className="w-full px-4 py-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
                           onClick={() => handleDelete(report.id)}

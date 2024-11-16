@@ -30,9 +30,7 @@ const LoginPage = () => {
       const data = await response.json();
       if (data.token) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.usuario.rol);
-        localStorage.setItem("username", data.usuario.user);
-        localStorage.setItem("userId", data.usuario.idusers);
+     
 
         router.push("/dashboard");
       } else {

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 export const token =
   typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  
+
 const ProtectedRoute = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -21,11 +21,15 @@ const ProtectedRoute = ({ children }) => {
   }, [router]);
 
   if (isLoading) {
-    // Render a loading state while determining authentication
-    return <div>Cargando...</div>;
+    // Render a spinner while determining authentication
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
-  return token ? children : null; // Render   children if authenticated
+  return token ? children : null; // Render children if authenticated
 };
 
 export default ProtectedRoute;

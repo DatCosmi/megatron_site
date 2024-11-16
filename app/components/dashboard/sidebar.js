@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -13,24 +14,24 @@ import {
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
+import { useRole } from "../context/RoleContext"; // Usamos el contexto
 
 const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const [role, setRole] = useState(null);
+  const { role, clearRole } = useRole(); // Accedemos al rol desde el contexto
 
-  useEffect(() => {
-    const roleFromLocalStorage = localStorage.getItem("role");
-    setRole(roleFromLocalStorage);
-  }, []); // Dependencias vacías para ejecutar solo al montar el componente
-
+  if (role === null) {
+    clearRole();
+    return <div></div>; // Puedes mostrar un loading mientras se carga el rol
+  }
   const menuItems = [
     { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
     { name: "Reportes", icon: DocumentChartBarIcon, href: "/reports" },
     { name: "Equipos", icon: PrinterIcon, href: "/equipos" },
     { name: "Productos", icon: ArchiveBoxIcon, href: "/products" },
     { name: "Ubicaciones", icon: MapPinIcon, href: "/ubicaciones" },
-    ...(role === "admin"
+    ...(role === "admin" && role !== "cliente" && role !== "tecnico"
       ? [
           { name: "Clientes", icon: UserIcon, href: "/clientes" },
           { name: "Técnicos", icon: WrenchScrewdriverIcon, href: "/tecnicos" },
@@ -43,6 +44,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    clearRole();
     router.push("/");
   };
 

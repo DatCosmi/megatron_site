@@ -98,6 +98,38 @@ function Reports() {
     fetchReports();
   };
 
+  const handleStart = async (IdReporte) => {
+    // Preparar los datos para enviar
+    const reportData = {
+      estado: "ejecucion",
+    };
+
+    try {
+      const response = await fetch(
+        `https://backend-integradora.vercel.app/api/reportes/${IdReporte}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(reportData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error al completar el reporte");
+      }
+
+      setSuccessMessage("Reporte completado exitosamente.");
+      closeModal();
+    } catch (error) {
+      setError(error.message || "Algo salió mal");
+      console.error(error);
+    }
+    fetchReports();
+  };
+
   // Fetch reports from the backend
   useEffect(() => {
     fetchReports();
@@ -155,7 +187,7 @@ function Reports() {
 
   //Formatear fecha y hora
   const formatFechaHora = (fecha) => {
-    const fechaObj = new Date(fecha); // Convierte la cadena en un objeto Date
+    const fechaObj = new Date(fecha);
     const opcionesFecha = { day: "2-digit", month: "2-digit", year: "numeric" };
     const opcionesHora = { hour: "2-digit", minute: "2-digit", hour12: true };
 
@@ -277,14 +309,22 @@ function Reports() {
 
                         {report.estadoReporte === "pendiente" &&
                           report.TecnicoAsignado && (
-                            <button
-                              className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                              onClick={() => {
-                                handleAssign(report.IdReporte);
-                              }}
-                            >
-                              Reasignar
-                            </button>
+                            <>
+                              <button
+                                className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                                onClick={() => {
+                                  handleAssign(report.IdReporte);
+                                }}
+                              >
+                                Reasignar
+                              </button>
+                              <button
+                                className="w-full px-4 py-2 bg-[#ffbe0b] text-white rounded-lg hover:bg-[#edb20e] transition-colors text-sm font-medium"
+                                onClick={() => handleStart(report.IdReporte)}
+                              >
+                                Comenzar
+                              </button>
+                            </>
                           )}
 
                         {report.estadoReporte === "ejecucion" && (

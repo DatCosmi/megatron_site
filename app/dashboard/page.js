@@ -119,6 +119,15 @@ const Dashboard = () => {
     });
   };
 
+  // Función para manejar el ordenamiento
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
   const getSortedReports = () => {
     const reportsCopy = [...reports];
     if (!sortConfig.key) return reportsCopy.slice(-5);
@@ -357,7 +366,7 @@ const Dashboard = () => {
               {/* Fastest Locations */}
               <div className="bg-white rounded-lg shadow p-4 min-w-80">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
-                  Lugares de atención más rápida
+                  Lugares mas rápidos de atender
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="min-w-full">
@@ -390,7 +399,7 @@ const Dashboard = () => {
               {/* Slowest Locations */}
               <div className="bg-white rounded-lg shadow p-4 min-w-80">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
-                  Lugares de atención más lenta
+                  Lugares más lentos de atender
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="min-w-full">

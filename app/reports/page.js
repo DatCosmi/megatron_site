@@ -5,7 +5,7 @@ import TechnicianSidebar from "../components/dashboard/TechnicianSidebar";
 import TechnicianModal from "../components/dashboard/TechnicianModal";
 import AddReportModal from "../components/dashboard/AddReportModal";
 import ServiceDetailModal from "../components/dashboard/SerciceDetailModal";
-import { SERVICES, FILTERS, TECHNICIANS } from "../data/constants";
+import { FILTERS } from "../data/constants";
 import {
   AlertCircle,
   Clock,
@@ -20,6 +20,7 @@ import { RoleProvider } from "../components/context/RoleContext";
 
 function Reports() {
   const [reports, setReports] = useState([]);
+  const [reportToEdit, setReportToEdit] = useState(null);
   const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("todos");
@@ -27,6 +28,7 @@ function Reports() {
   const [isTechnicianListOpen, setIsTechnicianListOpen] = useState(false);
   const [isAddReportModalOpen, setIsAddReportModalOpen] = useState(false);
   const [isReportDetailModalOpen, setIsReportDetailModalOpen] = useState(false);
+  const [error, setError] = useState("");
 
   const fetchReports = async () => {
     try {
@@ -64,6 +66,38 @@ function Reports() {
     }
   };
 
+  const handleComplete = async (IdReporte) => {
+    // Preparar los datos para enviar
+    const reportData = {
+      estado: "concluido",
+    };
+
+    try {
+      const response = await fetch(
+        `https://backend-integradora.vercel.app/api/reportes/${IdReporte}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(reportData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error al completar el reporte");
+      }
+
+      setSuccessMessage("Reporte completado exitosamente.");
+      closeModal();
+    } catch (error) {
+      setError(error.message || "Algo salió mal");
+      console.error(error);
+    }
+    fetchReports();
+  };
+
   // Fetch reports from the backend
   useEffect(() => {
     fetchReports();
@@ -74,47 +108,9 @@ function Reports() {
     activeFilter === "todos" ? true : report.estadoReporte === activeFilter
   );
 
-  const handleAssign = (technicianId) => {
-    setReports((prevReports) =>
-      prevReports.map((report) =>
-        report.IdReporte === selectedReport.IdReporte
-          ? {
-              ...report,
-              status: "ejecucion",
-              assignedTo: technicians.find(
-                (tech) => tech.idTecnicos === technicianId
-              ).Nombre,
-            }
-          : report
-      )
-    );
-    setSelectedReport(null);
-    setIsTechnicianListOpen(false);
-  };
-
-  const handleReassign = (technicianId, reportId) => {
-    setReports((prevReports) =>
-      prevReports.map((report) =>
-        report.IdReporte === reportId
-          ? {
-              ...report,
-              assignedTo: technicians.find(
-                (tech) => tech.idTecnicos === technicianId
-              ).Nombre,
-            }
-          : report
-      )
-    );
-  };
-
-  const handleComplete = (reportId) => {
-    setReports((prevReports) =>
-      prevReports.map((report) =>
-        report.IdReporte === reportId
-          ? { ...report, status: "concluido" }
-          : report
-      )
-    );
+  const handleAssign = (reportId) => {
+    setReportToEdit(reportId);
+    setIsTechnicianListOpen(true);
   };
 
   const handleDelete = (reportId) => {
@@ -142,11 +138,31 @@ function Reports() {
         return "bg-[#ff006e]";
       case "ejecucion":
         return "bg-[#ffbe0b]";
-      case "completada":
+      case "concluido":
         return "bg-[#06d6a0]";
       default:
         return "bg-gray-500";
     }
+  };
+
+  const closeModal = () => {
+    setIsAddReportModalOpen(false);
+    setIsTechnicianListOpen(false);
+    setIsReportDetailModalOpen(false);
+    fetchReports();
+    setReportToEdit(null);
+  };
+
+  //Formatear fecha y hora
+  const formatFechaHora = (fecha) => {
+    const fechaObj = new Date(fecha); // Convierte la cadena en un objeto Date
+    const opcionesFecha = { day: "2-digit", month: "2-digit", year: "numeric" };
+    const opcionesHora = { hour: "2-digit", minute: "2-digit", hour12: true };
+
+    const fechaFormateada = fechaObj.toLocaleDateString("es-ES", opcionesFecha);
+    const horaFormateada = fechaObj.toLocaleTimeString("es-ES", opcionesHora);
+
+    return `${fechaFormateada} a las ${horaFormateada}`;
   };
 
   return (
@@ -232,7 +248,7 @@ function Reports() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Calendar className="w-4 h-4" />
-                          <span>{report.fechaCreacion}</span>
+                          <span>{formatFechaHora(report.fechaCreacion)}</span>
                         </div>
                       </div>
 
@@ -252,8 +268,7 @@ function Reports() {
                             <button
                               className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                               onClick={() => {
-                                setSelectedReport(report);
-                                setIsTechnicianListOpen(true);
+                                handleAssign(report.IdReporte);
                               }}
                             >
                               Asignar
@@ -265,8 +280,7 @@ function Reports() {
                             <button
                               className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                               onClick={() => {
-                                setSelectedReport(report);
-                                setIsTechnicianListOpen(true);
+                                handleAssign(report.IdReporte);
                               }}
                             >
                               Reasignar
@@ -278,15 +292,14 @@ function Reports() {
                             <button
                               className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                               onClick={() => {
-                                setSelectedReport(report);
-                                setIsTechnicianListOpen(true);
+                                handleAssign(report.IdReporte);
                               }}
                             >
                               Reasignar
                             </button>
                             <button
                               className="w-full px-4 py-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
-                              onClick={() => handleComplete(report.id)}
+                              onClick={() => handleComplete(report.IdReporte)}
                             >
                               Completar
                             </button>
@@ -310,22 +323,22 @@ function Reports() {
 
             {isTechnicianListOpen && (
               <TechnicianModal
-                handleAssign={handleAssign}
-                handleReassign={handleReassign}
-                closeModal={() => setIsTechnicianListOpen(false)}
+                reportToEdit={reportToEdit}
+                setReports={setReports}
+                closeModal={closeModal}
               />
             )}
             {isAddReportModalOpen && (
               <AddReportModal
                 reports={reports}
                 setReports={setReports}
-                closeModal={() => setIsAddReportModalOpen(false)}
+                closeModal={closeModal}
               />
             )}
             {isReportDetailModalOpen && selectedReport && (
-              <ReportDetailModal
+              <ServiceDetailModal
                 report={selectedReport}
-                closeModal={() => setIsReportDetailModalOpen(false)}
+                closeModal={closeModal}
               />
             )}
           </main>

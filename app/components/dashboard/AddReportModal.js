@@ -1,35 +1,126 @@
 "use client";
-import { useState } from "react";
-import { TECHNICIANS } from "../../data/constants";
+import { useEffect, useState } from "react";
+import ProtectedRoute, { token } from "../../components/protectedRoute";
 
-function AddReportModal({ services, setServices, closeModal }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [department, setDepartment] = useState("");
-  const [equipment, setEquipment] = useState("");
-  const [reportedBy, setReportedBy] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
+function AddReportModal({ reports, setReports, closeModal }) {
+  const [TituloReporte, setTituloReporte] = useState("");
+  const [FolioReporte, setFolioReporte] = useState("");
+  const [estado, setEstado] = useState("");
+  const [comentarios, setComentarios] = useState("");
+  const [creadorReporte, setCreadorReporte] = useState("");
+  const [tecnicoAsignado, setTecnicoAsignado] = useState("");
+  const [idEquipos, setIdEquipos] = useState("");
 
   const currentDate = new Date();
   const date = currentDate.toLocaleDateString();
   const time = currentDate.toLocaleTimeString();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newService = {
-      id: services.length + 1,
-      title,
-      description,
-      department,
-      equipment,
-      reportedBy,
-      date,
-      time,
-      status: "pendiente",
-      assignedTo,
+  const [equipos, setEquipos] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [tecnicos, setTecnicos] = useState([]);
+
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const fetchEquipos = async () => {
+    try {
+      const response = await fetch(
+        "https://backend-integradora.vercel.app/api/equipos",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setEquipos(data);
+    } catch (error) {
+      console.error("Error fetching Equipos:", error);
+    }
+  };
+
+  const fetchClientes = async () => {
+    try {
+      const response = await fetch(
+        "https://backend-integradora.vercel.app/api/clientes",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setClientes(data);
+    } catch (error) {
+      console.error("Error fetching Clientes:", error);
+    }
+  };
+
+  const fetchTecnicos = async () => {
+    try {
+      const response = await fetch(
+        "https://backend-integradora.vercel.app/api/tecnicos",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setTecnicos(data);
+    } catch (error) {
+      console.error("Error fetching Tecnicos:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchEquipos();
+    fetchClientes();
+    fetchTecnicos();
+  }, []);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    // Datos del producto a enviar
+    const reportData = {
+      TituloReporte,
+      FolioReporte,
+      fechaCreacion: currentDate,
+      fechaHoraActualizacion: currentDate,
+      estado: "pendiente",
+      comentarios,
+      creadorReporte,
+      tecnicoAsignado,
+      idEquipos,
     };
-    setServices((prevServices) => [...prevServices, newService]);
-    closeModal();
+
+    try {
+      let response;
+
+      // Agregar nuevo reporte
+      response = await fetch(
+        "https://backend-integradora.vercel.app/api/reportes",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(reportData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error al guardar el reporte");
+      }
+
+      // Cerrar el modal y limpiar los campos si es necesario
+      closeModal();
+    } catch (error) {
+      setError(error.message || "Algo salió mal");
+      closeModal();
+    }
   };
 
   return (
@@ -46,8 +137,8 @@ function AddReportModal({ services, setServices, closeModal }) {
             </label>
             <input
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={TituloReporte}
+              onChange={(e) => setTituloReporte(e.target.value)}
               className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
               placeholder="Escribe el título"
               required
@@ -60,8 +151,8 @@ function AddReportModal({ services, setServices, closeModal }) {
               Descripción
             </label>
             <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={comentarios}
+              onChange={(e) => setComentarios(e.target.value)}
               className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
               placeholder="Escribe la descripción"
               required
@@ -71,12 +162,12 @@ function AddReportModal({ services, setServices, closeModal }) {
           {/* Campo Departamento */}
           <div>
             <label className="block text-gray-600 mb-1 text-sm font-medium">
-              Departamento
+              Folio
             </label>
             <input
               type="text"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
+              value={FolioReporte}
+              onChange={(e) => setFolioReporte(e.target.value)}
               className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
               placeholder="Escribe el departamento"
               required
@@ -88,14 +179,18 @@ function AddReportModal({ services, setServices, closeModal }) {
             <label className="block text-gray-600 mb-1 text-sm font-medium">
               Equipo
             </label>
-            <input
-              type="text"
-              value={equipment}
-              onChange={(e) => setEquipment(e.target.value)}
+            <select
+              value={idEquipos}
+              onChange={(e) => setIdEquipos(e.target.value)}
               className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-              placeholder="Escribe el equipo"
-              required
-            />
+            >
+              <option value="">Seleccione un equipo</option>
+              {equipos.map((equipo) => (
+                <option key={equipo.idEquipos} value={equipo.idEquipos}>
+                  {equipo.NumeroEquipo}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Campo Reportado por */}
@@ -103,14 +198,18 @@ function AddReportModal({ services, setServices, closeModal }) {
             <label className="block text-gray-600 mb-1 text-sm font-medium">
               Reportado por
             </label>
-            <input
-              type="text"
-              value={reportedBy}
-              onChange={(e) => setReportedBy(e.target.value)}
+            <select
+              value={creadorReporte}
+              onChange={(e) => setCreadorReporte(e.target.value)}
               className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-              placeholder="Nombre del reportante"
-              required
-            />
+            >
+              <option value="">Nombre del reportante</option>
+              {clientes.map((cliente) => (
+                <option key={cliente.idClientes} value={cliente.idClientes}>
+                  {cliente.Nombre} {cliente.ApellidoPa}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Campo Asignar a Técnico */}
@@ -119,14 +218,14 @@ function AddReportModal({ services, setServices, closeModal }) {
               Asignar a Técnico
             </label>
             <select
-              value={assignedTo}
-              onChange={(e) => setAssignedTo(e.target.value)}
+              value={tecnicoAsignado}
+              onChange={(e) => setTecnicoAsignado(e.target.value)}
               className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
             >
               <option value="">Seleccione un técnico</option>
-              {TECHNICIANS.map((technician) => (
-                <option key={technician.id} value={technician.name}>
-                  {technician.name}
+              {tecnicos.map((tecnico) => (
+                <option key={tecnico.idTecnicos} value={tecnico.idTecnicos}>
+                  {tecnico.Nombre} {tecnico.ApellidoPa}
                 </option>
               ))}
             </select>

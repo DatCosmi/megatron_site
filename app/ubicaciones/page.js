@@ -118,7 +118,7 @@ const Ubicaciones = () => {
   return (
     <RoleProvider>
       <ProtectedRoute>
-        <div className="flex h-screen bg-[#eff1f6] ml-60">
+        <div className="flex h-screen bg-[#eff1f6] ml-60 z-40">
           <Sidebar />
           <main className="flex-1 p-6 overflow-y-auto bg-[#eff1f6]">
             <div className="dashboard space-y-6">

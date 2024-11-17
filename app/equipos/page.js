@@ -98,6 +98,9 @@ const Equipos = () => {
         `https://backend-integradora.vercel.app/api/equipos/${equipoId}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 

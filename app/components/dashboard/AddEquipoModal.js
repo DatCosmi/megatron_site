@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { token } from "../../components/protectedRoute";
 
 function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
   const [Estatus, setEstatus] = useState("");
@@ -18,7 +19,12 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
   const fetchUbicaciones = async () => {
     try {
       const response = await fetch(
-        "https://backend-integradora.vercel.app/api/ubicacion"
+        "https://backend-integradora.vercel.app/api/ubicacion",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       const data = await response.json();
       setUbicaciones(data);
@@ -30,7 +36,12 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
   const fetchProductos = async () => {
     try {
       const response = await fetch(
-        "https://backend-integradora.vercel.app/api/productos"
+        "https://backend-integradora.vercel.app/api/productos",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       const data = await response.json();
       setProducts(data);
@@ -83,6 +94,7 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(equipoData),
           }

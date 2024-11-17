@@ -78,7 +78,7 @@ function TechnicianSidebar({
     return reports.filter(
       (report) =>
         normalizeString(report.TecnicoAsignado) === technicianFullName &&
-        report.estadoReporte !== "completada"
+        report.estadoReporte !== "concluido"
     );
   };
 

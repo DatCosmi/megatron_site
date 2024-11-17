@@ -110,7 +110,10 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
           `https://backend-integradora.vercel.app/api/auth/update-password/${usersId}`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ password }),
           }
         );
@@ -145,7 +148,10 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
           `https://backend-integradora.vercel.app/api/auth/registrar`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(userData),
           }
         );

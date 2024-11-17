@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { token } from "../../components/protectedRoute";
 
 function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
   const [modelo, setModelo] = useState("");
@@ -51,6 +52,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(productData),
           }
@@ -63,6 +65,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(productData),
           }

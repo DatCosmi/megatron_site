@@ -1,27 +1,52 @@
 "use client";
-import React, { useState } from "react";
-import { SERVICES } from "../data/constants";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../components/dashboard/sidebar";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import ProtectedRoute from "../components/protectedRoute";
+import ProtectedRoute, { token } from "../components/protectedRoute";
 import { RoleProvider } from "../components/context/RoleContext";
+import axios from "axios";
 
 const Dashboard = () => {
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchReports = async () => {
+    try {
+      const response = await axios.get(
+        "https://backend-integradora.vercel.app/api/reportesCreados",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setReports(response.data);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
   // Estado para el ordenamiento
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
   });
 
-  const totalReports = SERVICES.length;
-  const pendingReports = SERVICES.filter(
-    (service) => service.status === "pendiente"
+  const totalReports = reports.length;
+  const pendingReports = reports.filter(
+    (report) => report.estadoReporte === "pendiente"
   ).length;
-  const inProgressReports = SERVICES.filter(
-    (service) => service.status === "en-curso"
+  const inProgressReports = reports.filter(
+    (report) => report.estadoReporte === "ejecucion"
   ).length;
-  const completedReports = SERVICES.filter(
-    (service) => service.status === "completada"
+  const completedReports = reports.filter(
+    (report) => report.estadoReporte === "concluido"
   ).length;
 
   const getStatusBadge = (status) => {
@@ -29,9 +54,9 @@ const Dashboard = () => {
     switch (status) {
       case "pendiente":
         return `${baseClasses} bg-pink-50 text-[#ff006e] border border-pink-200`;
-      case "en-curso":
+      case "ejecucion":
         return `${baseClasses} bg-amber-50 text-[#ffbe0b] border border-amber-200`;
-      case "completada":
+      case "concluido":
         return `${baseClasses} bg-emerald-50 text-[#06d6a0] border border-emerald-200`;
       default:
         return `${baseClasses} bg-gray-50 text-gray-800 border border-gray-200`;
@@ -42,10 +67,10 @@ const Dashboard = () => {
     switch (status) {
       case "pendiente":
         return "Pendiente";
-      case "en-curso":
+      case "ejecucion":
         return "En curso";
-      case "completada":
-        return "Completada";
+      case "concluido":
+        return "Completado";
       default:
         return status;
     }
@@ -61,11 +86,11 @@ const Dashboard = () => {
   };
 
   // Función para obtener los datos ordenados
-  const getSortedServices = () => {
-    const servicesCopy = [...SERVICES];
-    if (!sortConfig.key) return servicesCopy.slice(-5);
+  const getSortedReports = () => {
+    const reportsCopy = [...reports];
+    if (!sortConfig.key) return reportsCopy.slice(-5);
 
-    return servicesCopy
+    return reportsCopy
       .sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
           return sortConfig.direction === "asc" ? -1 : 1;
@@ -88,6 +113,18 @@ const Dashboard = () => {
     ) : (
       <ChevronDown className="h-4 w-4 text-gray-600" />
     );
+  };
+
+  //Formatear fecha y hora
+  const formatFechaHora = (fecha) => {
+    const fechaObj = new Date(fecha);
+    const opcionesFecha = { day: "2-digit", month: "2-digit", year: "numeric" };
+    const opcionesHora = { hour: "2-digit", minute: "2-digit", hour12: true };
+
+    const fechaFormateada = fechaObj.toLocaleDateString("es-ES", opcionesFecha);
+    const horaFormateada = fechaObj.toLocaleTimeString("es-ES", opcionesHora);
+
+    return `${fechaFormateada}`;
   };
 
   return (
@@ -133,73 +170,75 @@ const Dashboard = () => {
                         <th
                           scope="col"
                           className="pl-6 pr-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                          onClick={() => handleSort("id")}
+                          onClick={() => handleSort("folioReporte")}
                         >
                           <div className="flex items-center gap-2">
                             Folio
-                            {getSortIcon("id")}
+                            {getSortIcon("folio")}
                           </div>
                         </th>
                         <th
                           scope="col"
                           className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                          onClick={() => handleSort("title")}
+                          onClick={() => handleSort("tituloReporte")}
                         >
                           <div className="flex items-center gap-2">
                             Reporte
-                            {getSortIcon("title")}
+                            {getSortIcon("reporte")}
                           </div>
                         </th>
                         <th
                           scope="col"
                           className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                          onClick={() => handleSort("date")}
+                          onClick={() => handleSort("fechaCreacion")}
                         >
                           <div className="flex items-center gap-2">
                             Fecha
-                            {getSortIcon("date")}
+                            {getSortIcon("fecha")}
                           </div>
                         </th>
                         <th
                           scope="col"
                           className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                          onClick={() => handleSort("reportedBy")}
+                          onClick={() => handleSort("Cliente")}
                         >
                           <div className="flex items-center gap-2">
                             Reportado por
-                            {getSortIcon("reportedBy")}
+                            {getSortIcon("reportado por")}
                           </div>
                         </th>
                         <th
                           scope="col"
                           className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                          onClick={() => handleSort("status")}
+                          onClick={() => handleSort("estadoReporte")}
                         >
                           <div className="flex items-center gap-2">
                             Estado
-                            {getSortIcon("status")}
+                            {getSortIcon("estado")}
                           </div>
                         </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {getSortedServices().map((service) => (
-                        <tr key={service.id} className="hover:bg-gray-50">
+                      {getSortedReports().map((report) => (
+                        <tr key={report.IdReporte} className="hover:bg-gray-50">
                           <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">
-                            #{service.id}
+                            {report.folioReporte}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {service.title}
+                            {report.tituloReporte}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {service.date}
+                            {formatFechaHora(report.fechaCreacion)}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {service.reportedBy}
+                            {report.Cliente}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap">
-                            <span className={getStatusBadge(service.status)}>
-                              {getStatusLabel(service.status)}
+                            <span
+                              className={getStatusBadge(report.estadoReporte)}
+                            >
+                              {getStatusLabel(report.estadoReporte)}
                             </span>
                           </td>
                         </tr>

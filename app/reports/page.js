@@ -145,10 +145,28 @@ function Reports() {
     setIsTechnicianListOpen(true);
   };
 
-  const handleDelete = (reportId) => {
-    setReports((prevReports) =>
-      prevReports.filter((s) => s.IdReporte !== reportId)
-    );
+  const handleDelete = async (reportId) => {
+    try {
+      // Call the backend API to delete the product
+      const response = await fetch(
+        `https://backend-integradora.vercel.app/api/reportes/${reportId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        fetchReports();
+        console.log("si se pudo");
+      } else {
+        console.error("Failed to delete product");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
   };
 
   const getStatusIcon = (status) => {
@@ -349,7 +367,7 @@ function Reports() {
                         {report.estadoReporte === "concluido" && (
                           <button
                             className="w-full px-4 py-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
-                            onClick={() => handleDelete(report.id)}
+                            onClick={() => handleDelete(report.IdReporte)}
                           >
                             Eliminar
                           </button>

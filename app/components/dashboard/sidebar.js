@@ -21,9 +21,6 @@ const Sidebar = () => {
   const pathname = usePathname();
   const { role, clearRole } = useRole(); // Accedemos al rol desde el contexto
 
-  if (role === null) {
-    return <div></div>; // Puedes mostrar un loading mientras se carga el rol
-  }
   const menuItems = [
     { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
     { name: "Reportes", icon: DocumentChartBarIcon, href: "/reports" },
@@ -42,7 +39,6 @@ const Sidebar = () => {
   const isActiveRoute = (href) => pathname === href;
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
     clearRole();
     router.push("/");
   };

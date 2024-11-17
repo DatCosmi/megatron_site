@@ -1,7 +1,6 @@
 // context/RoleContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
-import { token } from "../protectedRoute";
 
 // Crear el contexto
 const RoleContext = createContext();
@@ -14,19 +13,20 @@ export const RoleProvider = ({ children }) => {
   const clearRole = () => {
     setRole(null);
     localStorage.removeItem("role");
-    localStorage.removeItem("id"); // Limpiar también localStorage
+    localStorage.removeItem("id");
+    localStorage.removeItem("token");
   };
+
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const fetchPerfil = async () => {
-    await delay(2);
+  const fetchPerfil = async (storedToken) => {
 
     try {
       const response = await axios.get(
         "https://backend-integradora.vercel.app/api/auth/perfil",
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${storedToken}`,
           },
         }
       );
@@ -36,6 +36,7 @@ export const RoleProvider = ({ children }) => {
       localStorage.setItem("id", data.usuario.id); // Guardar el rol en localStorage
     } catch (error) {
       console.error("Error fetching perfil:", error);
+
       setRole(null); // Si hay error, aseguramos que el rol sea null
     } finally {
       setIsLoading(false); // Cuando termine la carga
@@ -44,19 +45,19 @@ export const RoleProvider = ({ children }) => {
 
   useEffect(() => {
     // Verificar si el rol ya está en el localStorage
-    const storedRole = localStorage.getItem("role");
-    if (storedRole) {
-      setRole(storedRole);
-      setIsLoading(false); // Si el rol ya está, no necesitamos hacer la solicitud
-    } else {
-      fetchPerfil(); // Si no hay rol, hacemos la solicitud a la API
-    }
+    const storedToken = localStorage.getItem("token");
 
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+    setIsLoading(false); // Si el rol ya está, no necesitamos hacer la solicitud
+    fetchPerfil(storedToken); // Si no hay rol, hacemos la solicitud a la API
   }, []);
 
   // Si está cargando, podemos retornar un loading o null para evitar mostrar nada.
   if (isLoading) {
-    return null; // O un componente de carga si lo prefieres
+    <div className="flex items-center justify-center h-screen">
+      <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>;
   }
 
   return (

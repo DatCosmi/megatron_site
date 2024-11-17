@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -30,8 +30,6 @@ const LoginPage = () => {
       const data = await response.json();
       if (data.token) {
         localStorage.setItem("token", data.token);
-     
-
         router.push("/dashboard");
       } else {
         setError(
@@ -44,6 +42,12 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("id");
+    }
+  }, []);
 
   const handleGoHome = () => {
     router.push("/"); // Navega a la página principal

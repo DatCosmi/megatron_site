@@ -48,11 +48,11 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-60 min-h-screen bg-white border-r border-gray-200 flex flex-col h-screen fixed top-0 left-0 overflow-y-auto">
+    <aside className="w-64 min-h-screen bg-white flex flex-col h-screen fixed top-0 left-0 overflow-y-auto shadow-lg">
       {/* Logo section */}
-      <div className="p-6 flex justify-center items-center">
+      <div className="p-2 flex justify-center items-center gap-2 border-b border-gray-[#898f9f]">
         <Link href="/dashboard" className="flex justify-center">
-          <Image src="/logo.png" alt="Logo" width={100} height={100} />
+          <Image src="/logo.png" alt="Logo" width={110} height={110} />
         </Link>
       </div>
 
@@ -65,8 +65,8 @@ const Sidebar = () => {
             className={`flex items-center px-3 py-2 mt-2 rounded-lg transition-colors duration-200
               ${
                 isActiveRoute(item.href)
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-[#757e96] hover:bg-blue-50 hover:text-blue-600"
+                  ? "bg-[#ecf1ff] text-blue-600"
+                  : "text-[#898f9f] hover:bg-[#ecf1ff] hover:text-blue-600"
               }`}
           >
             <item.icon className="w-5 h-5 mr-3" />
@@ -76,13 +76,13 @@ const Sidebar = () => {
       </nav>
 
       {/* Logout section */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-[#898f9f]">
         <button
-          className="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+          className="flex items-center px-3 py-2 text-[#898f9f] rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
           onClick={() => handleLogout()}
         >
           <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3" />
-          <span className="text-sm font-medium">Cerrar sesión</span>
+          <span className="text-sm font-semibold">Cerrar sesión</span>
         </button>
       </div>
     </aside>

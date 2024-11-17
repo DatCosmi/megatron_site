@@ -75,7 +75,6 @@ function SettingsPage() {
             },
           }
         );
-  
       }
 
       if (!response) {
@@ -85,11 +84,10 @@ function SettingsPage() {
       if (!response.ok) {
         throw new Error(`Error en la solicitud: ${response.statusText}`);
       }
-      
+
       const result = await response.json();
 
       setUserData(result);
-
 
       if (role !== "admin") {
         setNombre(result.nombre);
@@ -230,7 +228,7 @@ function SettingsPage() {
   return (
     <RoleProvider>
       <ProtectedRoute>
-        <div className="flex h-screen bg-gray-100">
+        <div className="flex h-screen bg-[#eaeef6]">
           <Sidebar />
           <div className="p-8 w-full flex justify-center items-center">
             <div className="max-w-md bg-white shadow-xl rounded-lg overflow-hidden">

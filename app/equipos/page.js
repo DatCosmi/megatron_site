@@ -202,9 +202,9 @@ const Equipos = () => {
   return (
     <RoleProvider>
       <ProtectedRoute>
-        <div className="flex h-screen bg-[#eff1f6] ml-60">
+        <div className="flex h-screen bg-[#eaeef6] ml-64">
           <Sidebar />
-          <main className="flex-1 p-6 overflow-y-auto bg-[#eff1f6]">
+          <main className="flex-1 p-6 overflow-y-auto bg-[#eaeef6]">
             <div className="dashboard space-y-6">
               {/* Header */}
               <h1 className="text-2xl font-semibold text-gray-800">

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/dashboard/sidebar";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, FileText } from "lucide-react";
 import ProtectedRoute, { token } from "../components/protectedRoute";
 import { RoleProvider } from "../components/context/RoleContext";
 import axios from "axios";
@@ -9,6 +9,15 @@ import axios from "axios";
 const Dashboard = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [averageTime, setAverageTime] = useState(null);
+  const [locationStats, setLocationStats] = useState({
+    fastest: [],
+    slowest: [],
+  });
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc",
+  });
 
   const fetchReports = async () => {
     try {
@@ -32,22 +41,111 @@ const Dashboard = () => {
     fetchReports();
   }, []);
 
-  // Estado para el ordenamiento
-  const [sortConfig, setSortConfig] = useState({
-    key: null,
-    direction: "asc",
-  });
+  useEffect(() => {
+    calculateAverageTime();
+    calculateLocationStats();
+  }, [reports]);
 
-  const totalReports = reports.length;
-  const pendingReports = reports.filter(
-    (report) => report.estadoReporte === "pendiente"
-  ).length;
-  const inProgressReports = reports.filter(
-    (report) => report.estadoReporte === "ejecucion"
-  ).length;
-  const completedReports = reports.filter(
-    (report) => report.estadoReporte === "concluido"
-  ).length;
+  const calculateAverageTime = () => {
+    const validReports = reports.filter(
+      (report) => report.fechaCreacion && report.FechaModificacion
+    );
+
+    if (validReports.length === 0) {
+      setAverageTime(null);
+      return;
+    }
+
+    const totalTime = validReports.reduce((acc, report) => {
+      const creationDate = new Date(report.fechaCreacion);
+      const modificationDate = new Date(report.FechaModificacion);
+      return acc + (modificationDate - creationDate);
+    }, 0);
+
+    const average = totalTime / validReports.length;
+
+    const days = Math.floor(average / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(
+      (average % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+    );
+    const minutes = Math.floor((average % (1000 * 60 * 60)) / (1000 * 60));
+
+    setAverageTime({ days, hours, minutes });
+  };
+
+  const calculateLocationStats = () => {
+    // Group reports by location
+    const locationGroups = reports.reduce((acc, report) => {
+      if (
+        !report.nombreUbicacion ||
+        !report.fechaCreacion ||
+        !report.FechaModificacion
+      ) {
+        return acc;
+      }
+
+      if (!acc[report.nombreUbicacion]) {
+        acc[report.nombreUbicacion] = [];
+      }
+
+      const creationDate = new Date(report.fechaCreacion);
+      const modificationDate = new Date(report.FechaModificacion);
+      const responseTime = modificationDate - creationDate;
+
+      acc[report.nombreUbicacion].push(responseTime);
+      return acc;
+    }, {});
+
+    // Calculate average time for each location
+    const locationAverages = Object.entries(locationGroups).map(
+      ([location, times]) => {
+        const average = times.reduce((a, b) => a + b, 0) / times.length;
+        return {
+          location,
+          averageTime: average,
+          reportCount: times.length,
+        };
+      }
+    );
+
+    // Sort locations by average time
+    const sortedLocations = locationAverages.sort(
+      (a, b) => a.averageTime - b.averageTime
+    );
+
+    setLocationStats({
+      fastest: sortedLocations.slice(0, 5),
+      slowest: sortedLocations.slice(-5).reverse(),
+    });
+  };
+
+  const getSortedReports = () => {
+    const reportsCopy = [...reports];
+    if (!sortConfig.key) return reportsCopy.slice(-5);
+
+    return reportsCopy
+      .sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      })
+      .slice(-5);
+  };
+
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return <ChevronDown className="h-4 w-4 text-gray-400" />;
+    }
+    return sortConfig.direction === "asc" ? (
+      <ChevronUp className="h-4 w-4 text-gray-600" />
+    ) : (
+      <ChevronDown className="h-4 w-4 text-gray-600" />
+    );
+  };
 
   const getStatusBadge = (status) => {
     const baseClasses = "px-2.5 py-0.5 rounded-full text-xs font-medium";
@@ -76,46 +174,13 @@ const Dashboard = () => {
     }
   };
 
-  // Función para manejar el ordenamiento
-  const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
+  const formatDuration = (ms) => {
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    return `${days}d ${hours}h ${minutes}m`;
   };
 
-  // Función para obtener los datos ordenados
-  const getSortedReports = () => {
-    const reportsCopy = [...reports];
-    if (!sortConfig.key) return reportsCopy.slice(-5);
-
-    return reportsCopy
-      .sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === "asc" ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === "asc" ? 1 : -1;
-        }
-        return 0;
-      })
-      .slice(-5);
-  };
-
-  // Función para renderizar el ícono de ordenamiento
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) {
-      return <ChevronDown className="h-4 w-4 text-gray-400" />;
-    }
-    return sortConfig.direction === "asc" ? (
-      <ChevronUp className="h-4 w-4 text-gray-600" />
-    ) : (
-      <ChevronDown className="h-4 w-4 text-gray-600" />
-    );
-  };
-
-  //Formatear fecha y hora
   const formatFechaHora = (fecha) => {
     const fechaObj = new Date(fecha);
     const opcionesFecha = { day: "2-digit", month: "2-digit", year: "numeric" };
@@ -130,33 +195,71 @@ const Dashboard = () => {
   return (
     <RoleProvider>
       <ProtectedRoute>
-        <div className="flex h-screen bg-[#eff1f6] ml-60 container-dashboard">
+        <div className="flex h-screen bg-[#eaeef6] ml-64 container-dashboard">
           <Sidebar />
-          <main className="flex-1 p-6 overflow-y-auto">
-            <div className="dashboard">
-              <h1 className="title font-semibold text-gray-800">
+          <div className="flex-1 p-6 flex gap-6">
+            {/* Main Content Column */}
+            <div className="flex-1">
+              <h1 className="text-2xl font-semibold text-gray-800 mb-6">
                 Dashboard de Servicios
               </h1>
-              <div className="stats">
-                <div className="stat-card stat-card-total">
-                  <h2>Reportes totales</h2>
-                  <p>{totalReports}</p>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-r from-blue-600 to-blue-800">
+                  <h2 className="text-sm font-medium text-gray-600 mb-2 text-white">
+                    Reportes totales
+                  </h2>
+                  <p className="text-4xl font-bold text-white">
+                    {reports.length}
+                  </p>
                 </div>
-                <div className="stat-card stat-card-pending">
-                  <h2>Pendientes</h2>
-                  <p>{pendingReports}</p>
+                <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-r from-[#ff006e] to-[#d2095f]">
+                  <h2 className="text-sm font-medium text-gray-600 mb-2 text-white">
+                    Pendientes
+                  </h2>
+                  <p className="text-4xl font-bold text-white">
+                    {
+                      reports.filter((r) => r.estadoReporte === "pendiente")
+                        .length
+                    }
+                  </p>
                 </div>
-                <div className="stat-card stat-card-in-progress">
-                  <h2>En curso</h2>
-                  <p>{inProgressReports}</p>
+                <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-r from-[#ffbe0b] to-[#bc8d0a]">
+                  <h2 className="text-sm font-medium text-gray-600 mb-2 text-white">
+                    En curso
+                  </h2>
+                  <p className="text-4xl font-bold text-white">
+                    {
+                      reports.filter((r) => r.estadoReporte === "ejecucion")
+                        .length
+                    }
+                  </p>
                 </div>
-                <div className="stat-card stat-card-completed">
-                  <h2>Completados</h2>
-                  <p>{completedReports}</p>
+                <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-r from-[#06d6a0] to-[#08a37b]">
+                  <h2 className="text-sm font-medium text-gray-600 mb-2 text-white">
+                    Completados
+                  </h2>
+                  <p className="text-4xl font-bold text-white">
+                    {
+                      reports.filter((r) => r.estadoReporte === "concluido")
+                        .length
+                    }
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow col-span-2 bg-gradient-to-r from-indigo-600 to-indigo-800">
+                  <h2 className="text-sm font-medium text-gray-600 mb-2 text-white">
+                    Tiempo promedio en atender reportes
+                  </h2>
+                  <p className="text-4xl font-bold text-white">
+                    {averageTime
+                      ? `${averageTime.days}d ${averageTime.hours}h ${averageTime.minutes}m`
+                      : "No disponible"}
+                  </p>
                 </div>
               </div>
 
-              {/* Table Section */}
+              {/* Recent Reports Table */}
               <div className="bg-white rounded-lg shadow">
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h2 className="text-lg font-medium text-gray-900">
@@ -210,7 +313,7 @@ const Dashboard = () => {
                         <th
                           scope="col"
                           className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                          onClick={() => handleSort("estadoReporte")}
+                          onClick={() => handleSort("EstadoReporte")}
                         >
                           <div className="flex items-center gap-2">
                             Estado
@@ -221,8 +324,8 @@ const Dashboard = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {getSortedReports().map((report) => (
-                        <tr key={report.IdReporte} className="hover:bg-gray-50">
-                          <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">
+                        <tr key={report.folioReporte}>
+                          <td className="pl-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {report.folioReporte}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -234,7 +337,7 @@ const Dashboard = () => {
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                             {report.Cliente}
                           </td>
-                          <td className="px-3 py-4 whitespace-nowrap">
+                          <td className="px-3 py-4 whitespace-nowrap text-sm">
                             <span
                               className={getStatusBadge(report.estadoReporte)}
                             >
@@ -248,7 +351,76 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          </main>
+
+            {/* Right Column for Location Stats */}
+            <div className="w-80 space-y-6 flex justify-center items-center flex-col">
+              {/* Fastest Locations */}
+              <div className="bg-white rounded-lg shadow p-4 min-w-80">
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  Lugares de atención más rápida
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr>
+                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
+                          Ubicación
+                        </th>
+                        <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
+                          Tiempo
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {locationStats.fastest.map((stat, index) => (
+                        <tr key={index} className="border-t">
+                          <td className="py-2 text-sm text-gray-900">
+                            {stat.location}
+                          </td>
+                          <td className="py-2 text-sm text-gray-500 text-right">
+                            {formatDuration(stat.averageTime)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Slowest Locations */}
+              <div className="bg-white rounded-lg shadow p-4 min-w-80">
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  Lugares de atención más lenta
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr>
+                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
+                          Ubicación
+                        </th>
+                        <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
+                          Tiempo
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {locationStats.slowest.map((stat, index) => (
+                        <tr key={index} className="border-t">
+                          <td className="py-2 text-sm text-gray-900">
+                            {stat.location}
+                          </td>
+                          <td className="py-2 text-sm text-gray-500 text-right">
+                            {formatDuration(stat.averageTime)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </ProtectedRoute>
     </RoleProvider>

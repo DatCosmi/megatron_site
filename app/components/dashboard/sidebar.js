@@ -22,7 +22,6 @@ const Sidebar = () => {
   const { role, clearRole } = useRole(); // Accedemos al rol desde el contexto
 
   if (role === null) {
-    clearRole();
     return <div></div>; // Puedes mostrar un loading mientras se carga el rol
   }
   const menuItems = [

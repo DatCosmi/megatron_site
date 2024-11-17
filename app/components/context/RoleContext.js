@@ -13,12 +13,12 @@ export const RoleProvider = ({ children }) => {
 
   const clearRole = () => {
     setRole(null);
-    localStorage.removeItem("role"); // Limpiar también localStorage
+    localStorage.removeItem("role");
+    localStorage.removeItem("id"); // Limpiar también localStorage
   };
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const fetchPerfil = async () => {
-    
     await delay(2);
 
     try {
@@ -32,7 +32,8 @@ export const RoleProvider = ({ children }) => {
       );
       const data = response.data;
       setRole(data.usuario.rol); // Actualizamos el rol en el estado
-      localStorage.setItem("role", data.usuario.rol); // Guardar el rol en localStorage
+      localStorage.setItem("role", data.usuario.rol);
+      localStorage.setItem("id", data.usuario.id); // Guardar el rol en localStorage
     } catch (error) {
       console.error("Error fetching perfil:", error);
       setRole(null); // Si hay error, aseguramos que el rol sea null
@@ -50,6 +51,7 @@ export const RoleProvider = ({ children }) => {
     } else {
       fetchPerfil(); // Si no hay rol, hacemos la solicitud a la API
     }
+
   }, []);
 
   // Si está cargando, podemos retornar un loading o null para evitar mostrar nada.

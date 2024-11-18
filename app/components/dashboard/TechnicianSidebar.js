@@ -5,13 +5,7 @@ import { Clock, CheckCircle, AlertCircle, FileText } from "lucide-react";
 import ProtectedRoute, { token } from "../../components/protectedRoute";
 import axios from "axios";
 
-function TechnicianSidebar({
-  services,
-  setSelectedService,
-  setIsTechnicianListOpen,
-}) {
-  const [technicians, setTechnicians] = useState([]);
-  const [reports, setReports] = useState([]);
+function TechnicianSidebar({ reports, technicians, setIsTechnicianListOpen }) {
   const [selectedTechnician, setSelectedTechnician] = useState(null);
   const [localSelectedService, setLocalSelectedService] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,27 +29,8 @@ function TechnicianSidebar({
     }
   };
 
-  const fetchReports = async () => {
-    try {
-      const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/reportesCreados",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setReports(response.data);
-    } catch (error) {
-      console.error("Error fetching reports:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchTechnicians();
-    fetchReports();
   }, []);
 
   const handleTechnicianClick = (technician) => {

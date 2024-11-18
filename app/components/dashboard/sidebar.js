@@ -25,10 +25,11 @@ const Sidebar = () => {
     { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
     { name: "Reportes", icon: DocumentChartBarIcon, href: "/reports" },
     { name: "Equipos", icon: PrinterIcon, href: "/equipos" },
-    { name: "Productos", icon: ArchiveBoxIcon, href: "/products" },
-    { name: "Ubicaciones", icon: MapPinIcon, href: "/ubicaciones" },
+
     ...(role === "admin" && role !== "cliente" && role !== "tecnico"
       ? [
+          { name: "Productos", icon: ArchiveBoxIcon, href: "/products" },
+          { name: "Ubicaciones", icon: MapPinIcon, href: "/ubicaciones" },
           { name: "Clientes", icon: UserIcon, href: "/clientes" },
           { name: "Técnicos", icon: WrenchScrewdriverIcon, href: "/tecnicos" },
         ]

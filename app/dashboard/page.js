@@ -3,10 +3,11 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../components/dashboard/sidebar";
 import { ChevronDown, ChevronUp, FileText } from "lucide-react";
 import ProtectedRoute, { token } from "../components/protectedRoute";
-import { RoleProvider } from "../components/context/RoleContext";
+import { RoleProvider, useRole } from "../components/context/RoleContext";
 import axios from "axios";
 
 const Dashboard = () => {
+  const role = useRole();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [averageTime, setAverageTime] = useState(null);
@@ -21,8 +22,24 @@ const Dashboard = () => {
 
   const fetchReports = async () => {
     try {
+      const storedId = localStorage.getItem("id");
+      if (!storedId) {
+        console.error("No ID found in localStorage");
+        return;
+      }
+
+      let endpoint;
+
+      if (role === "admin") {
+        endpoint = `/api/reportesCreados`;
+      } else if (role === "cliente") {
+        endpoint = `/api/reportesclientes/${storedId}`;
+      } else if (role === "tecnico") {
+        endpoint = `/api/guest-data/${storedId}`;
+      }
+
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/reportesCreados",
+        `https://backend-integradora.vercel.app/api/${endpoint}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

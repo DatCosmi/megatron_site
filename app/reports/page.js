@@ -13,6 +13,7 @@ import {
   Plus,
   Users,
   Calendar,
+  FileText,
 } from "lucide-react";
 import ProtectedRoute, { token } from "../components/protectedRoute";
 import axios from "axios";
@@ -309,6 +310,10 @@ function Reports() {
 
                         <div className="space-y-4 mb-6">
                           <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <FileText className="w-4 h-4" />
+                            <span>{report.folioReporte}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Users className="w-4 h-4" />
                             <span>
                               {report.TecnicoAsignado || "Sin asignar"}
@@ -428,7 +433,7 @@ function Reports() {
 
           <TechnicianSidebar
             reports={reports}
-            setSelectedReport={setSelectedReport}
+            technicians={technicians}
             setIsTechnicianListOpen={setIsTechnicianListOpen}
           />
         </div>

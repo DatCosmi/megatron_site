@@ -1,57 +1,83 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Sidebar from "../components/dashboard/sidebar";
+import Sidebar from "../../components/dashboard/sidebar";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  ChevronUp,
   Plus,
   Search,
   Trash2,
   SquarePen,
 } from "lucide-react";
-import AddUbicModal from "../components/dashboard/AddUbicModal";
-import ProtectedRoute, { token } from "../components/protectedRoute";
-import { RoleProvider } from "../components/context/RoleContext";
-
-const Ubicaciones = () => {
-  const [ubicaciones, setUbicaciones] = useState([]);
+import AddEquipoModal from "../../components/dashboard/AddEquipoModal";
+import ProtectedRoute, { token } from "../../components/protectedRoute";
+import { RoleProvider } from "../../components/context/RoleContext";
+import { useParams, useRouter } from "next/navigation";
+const Equipos = () => {
+  const [equipos, setEquipos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [ubicacionToEdit, setUbicacionToEdit] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isAddUbicModalOpen, setIsAddUbicModalOpen] = useState(false);
+  const [equipoToEdit, setEquipoToEdit] = useState(null);
 
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc",
+  });
+
+  const [statusFilter, setStatusFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAddEquipoModalOpen, setIsAddEquipoModalOpen] = useState(false);
+  const params = useParams();
+  const router = useRouter();
+
+  // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(ubicaciones.length / itemsPerPage);
+  const totalPages = Math.ceil(equipos.length / itemsPerPage);
 
-  const fetchUbicaciones = async () => {
+  const handleEditClick = (equipos) => {
+    setEquipoToEdit(equipos); // Set the product to edit
+    setIsAddEquipoModalOpen(true); // Open the modal
+  };
+
+  const closeModal = () => {
+    setIsAddEquipoModalOpen(false);
+    fetchEquipos(params.id);
+    setEquipoToEdit(null);
+  };
+
+  const fetchEquipos = async (Id) => {
     try {
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/ubicacion",
+        `https://backend-integradora.vercel.app/api/equiposenubicacion/${Id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      setUbicaciones(response.data);
+      setEquipos(response.data);
     } catch (error) {
-      console.error("Error fetching ubicaciones:", error);
+      console.error("Error fetching equipos:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch products from the backend
   useEffect(() => {
-    fetchUbicaciones();
-  }, []);
+    const Id = params.id;
+    fetchEquipos(Id);
+  }, [params.id]);
 
-  const handleDelete = async (ubicacionID) => {
+  // Function to handle delete action
+  const handleDelete = async (equipoId) => {
     try {
+      // Call the backend API to delete the product
       const response = await fetch(
-        `https://backend-integradora.vercel.app/api/ubicacion/${ubicacionID}`,
+        `https://backend-integradora.vercel.app/api/equipos/${equipoId}`,
         {
           method: "DELETE",
           headers: {
@@ -61,24 +87,68 @@ const Ubicaciones = () => {
       );
 
       if (response.ok) {
-        fetchUbicaciones();
+        fetchEquipos(params.id);
+        console.log("si se pudo");
       } else {
-        console.error("Failed to delete ubicacion");
+        console.error("Failed to delete product");
       }
     } catch (error) {
-      console.error("Error deleting ubicacion:", error);
+      console.error("Error deleting product:", error);
     }
   };
 
-  const handleEditClick = (ubicacion) => {
-    setUbicacionToEdit(ubicacion);
-    setIsAddUbicModalOpen(true);
+  const getTypeBadge = (type) => {
+    const baseClasses = "px-2.5 py-0.5 rounded-full text-xs font-medium";
+    switch (type) {
+      case "inventariado":
+        return `${baseClasses} bg-blue-50 text-[#007bff] border border-blue-200`;
+      case "activo":
+        return `${baseClasses} bg-green-50 text-[#28a745] border border-green-200`;
+      case "reparacion":
+        return `${baseClasses} bg-yellow-50 text-[#ffc107] border border-yellow-200`;
+      default:
+        return `${baseClasses} bg-gray-50 text-gray-800 border border-gray-200`;
+    }
   };
 
-  const closeModal = () => {
-    setIsAddUbicModalOpen(false);
-    fetchUbicaciones();
-    setUbicacionToEdit(null);
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return <ChevronDown className="h-4 w-4 text-gray-400" />;
+    }
+    return sortConfig.direction === "asc" ? (
+      <ChevronUp className="h-4 w-4 text-gray-600" />
+    ) : (
+      <ChevronDown className="h-4 w-4 text-gray-600" />
+    );
+  };
+
+  const getSortedEquipos = () => {
+    const filteredEquipos = equipos.filter(
+      (equipo) =>
+        (statusFilter === "" || equipo.Tipo === statusFilter) &&
+        (equipo.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          equipo.idEquipos.toString().includes(searchQuery.toLowerCase()))
+    );
+
+    if (!sortConfig.key) return filteredEquipos;
+
+    return filteredEquipos.sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === "asc" ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
   };
 
   const handlePageChange = (page) => {
@@ -87,15 +157,10 @@ const Ubicaciones = () => {
     }
   };
 
-  const getFilteredUbicaciones = () => {
-    return ubicaciones.filter((ubicacion) =>
-      ubicacion.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  };
-
+  // Cálculo de los elementos de paginación
   const paginationRange = () => {
     const range = [];
-    const delta = 2;
+    const delta = 2; // Número de páginas cercanas a mostrar
     const start = Math.max(2, currentPage - delta);
     const end = Math.min(totalPages - 1, currentPage + delta);
 
@@ -108,9 +173,9 @@ const Ubicaciones = () => {
     return [1, ...range, totalPages];
   };
 
-  const filteredUbicaciones = getFilteredUbicaciones();
+  const sortedEquipos = getSortedEquipos();
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = filteredUbicaciones.slice(
+  const currentItems = sortedEquipos.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -118,18 +183,19 @@ const Ubicaciones = () => {
   return (
     <RoleProvider>
       <ProtectedRoute>
-        <div className="flex h-screen bg-[#eaeef6] ml-64 z-40">
+        <div className="flex h-screen bg-[#eaeef6] ml-64">
           <Sidebar />
           <main className="flex-1 p-6 overflow-y-auto bg-[#eaeef6]">
             <div className="dashboard space-y-6">
               {/* Header */}
               <h1 className="text-2xl font-semibold text-gray-800">
-                Dashboard de Ubicaciones
+                Dashboard de Equipos
               </h1>
 
               {/* Filtros y búsqueda */}
               <div className="flex flex-col w-full bg-white rounded-lg p-4">
                 <div className="flex gap-3 w-[1190px]">
+                  {/* Search Input with Label */}
                   <div className="relative flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       ¿Qué estás buscando?
@@ -138,17 +204,36 @@ const Ubicaciones = () => {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                       <input
                         type="text"
-                        placeholder="Buscar por nombre de ubicación"
+                        placeholder="Buscar por modelo o ID"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                   </div>
+                  {/* Status Dropdown */}
+                  <div className="relative min-w-[140px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tipo
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="w-full appearance-none px-4 py-2 pr-10 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Todos</option>
+                        <option value="Impresora">Impresora</option>
+                        <option value="Suministro">Suministro</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                    </div>
+                  </div>
 
+                  {/* Add Product Button */}
                   <div className="relative min-w-[100px] flex items-end">
                     <button
-                      onClick={() => setIsAddUbicModalOpen(true)}
+                      onClick={() => setIsAddEquipoModalOpen(true)}
                       className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors flex items-center"
                     >
                       <Plus className="w-5 h-5" />
@@ -161,7 +246,7 @@ const Ubicaciones = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4">
                   <span className="text-lg font-semibold text-gray-700">
-                    Ubicaciones
+                    Equipos
                   </span>
                 </div>
 
@@ -203,7 +288,7 @@ const Ubicaciones = () => {
                 </div>
               </div>
 
-              {/* Ubicaciones Table */}
+              {/* Products Table */}
               <div className="bg-white rounded-lg shadow overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200 recent-orders">
                   <thead>
@@ -211,25 +296,43 @@ const Ubicaciones = () => {
                       <th
                         scope="col"
                         className="pl-6 pr-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        onClick={() => handleSort("numeroEquipo")}
                       >
-                        #
+                        No. Equipo
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Nombre
+                      <th
+                        scope="col"
+                        className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        onClick={() => handleSort("modelo")}
+                      >
+                        Modelo
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Ciudad
+                      <th
+                        scope="col"
+                        className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        onClick={() => handleSort("numeroSerie")}
+                      >
+                        No. Serie
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        onClick={() => handleSort("marca")}
+                      >
+                        Marca
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        onClick={() => handleSort("estatusEquipo")}
+                      >
                         Estado
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Código Postal
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Dirección
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+
+                      <th
+                        scope="col"
+                        className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
                         Acciones
                       </th>
                     </tr>
@@ -241,42 +344,41 @@ const Ubicaciones = () => {
                           colSpan="100%"
                           className="text-center py-4 text-gray-500"
                         >
-                          Cargando ubicaciones...
+                          Cargando equipos...
                         </td>
                       </tr>
                     ) : currentItems.length > 0 ? (
-                      currentItems.map((ubicacion) => (
-                        <tr key={ubicacion.idUbicaciones}>
+                      currentItems.map((equipo) => (
+                        <tr key={equipo.idEquipos} className="hover:bg-gray-50">
                           <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {ubicacion.idUbicaciones}
+                            {equipo.numeroEquipo}
                           </td>
-                          <td className="px-3 py-3 text-sm text-gray-500">
-                            {ubicacion.Nombre}
+                          <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {equipo.modelo}
                           </td>
-                          <td className="px-3 py-3 text-sm text-gray-500">
-                            {ubicacion.Ciudad}
+                          <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {equipo.numeroSerie}
                           </td>
-                          <td className="px-3 py-3 text-sm text-gray-500">
-                            {ubicacion.Estado}
+                          <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {equipo.marca}
                           </td>
-                          <td className="px-3 py-3 text-sm text-gray-500">
-                            {ubicacion.CodigoPostal}
-                          </td>
-                          <td className="px-3 py-3 text-sm text-gray-500">
-                            {ubicacion.Direccion}
+                          <td className="px-3 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={getTypeBadge(equipo.estatusEquipo)}
+                            >
+                              {equipo.estatus}
+                            </span>
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-xs flex">
                             <button
-                              onClick={() =>
-                                handleDelete(ubicacion.idUbicaciones)
-                              }
+                              onClick={() => handleDelete(equipo.IdEquipos)}
                               className="text-[#ff006e] flex"
                             >
                               <Trash2 />
                             </button>
                             <button
-                              onClick={() => handleEditClick(ubicacion)}
                               className="text-[#007bff] flex"
+                              onClick={() => handleEditClick(equipo)}
                             >
                               <SquarePen />
                             </button>
@@ -289,23 +391,23 @@ const Ubicaciones = () => {
                           colSpan="100%"
                           className="text-center py-4 text-gray-500"
                         >
-                          No hay ubicaciones disponibles.
+                          No hay equipos.
                         </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
-
-              {/* Modal Add/Edit Ubicación */}
-              {isAddUbicModalOpen && (
-                <AddUbicModal
-                  ubicacionToEdit={ubicacionToEdit}
-                  closeModal={closeModal}
-                  setUbicaciones={setUbicaciones}
-                />
-              )}
             </div>
+
+            {/* Modal for adding products */}
+            {isAddEquipoModalOpen && (
+              <AddEquipoModal
+                equipoToEdit={equipoToEdit}
+                setEquipos={setEquipos}
+                closeModal={closeModal}
+              />
+            )}
           </main>
         </div>
       </ProtectedRoute>
@@ -313,4 +415,4 @@ const Ubicaciones = () => {
   );
 };
 
-export default Ubicaciones;
+export default Equipos;

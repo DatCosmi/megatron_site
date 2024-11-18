@@ -10,11 +10,12 @@ import {
   Search,
   Trash2,
   SquarePen,
+  Eye,
 } from "lucide-react";
 import AddUbicModal from "../components/dashboard/AddUbicModal";
 import ProtectedRoute, { token } from "../components/protectedRoute";
 import { RoleProvider } from "../components/context/RoleContext";
-
+import { useRouter } from "next/navigation";
 const Ubicaciones = () => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +27,7 @@ const Ubicaciones = () => {
   const itemsPerPage = 10;
   const totalPages = Math.ceil(ubicaciones.length / itemsPerPage);
 
+  const router = useRouter();
   const fetchUbicaciones = async () => {
     try {
       const response = await axios.get(
@@ -79,6 +81,9 @@ const Ubicaciones = () => {
     setIsAddUbicModalOpen(false);
     fetchUbicaciones();
     setUbicacionToEdit(null);
+  };
+  const handleViewDetails = (ubicacionId) => {
+    router.push(`/ubicaciones/${ubicacionId}`);
   };
 
   const handlePageChange = (page) => {
@@ -279,6 +284,15 @@ const Ubicaciones = () => {
                               className="text-[#007bff] flex"
                             >
                               <SquarePen />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleViewDetails(ubicacion.idUbicaciones)
+                              }
+                              className="text-[#28a745] flex"
+                            >
+                              <Eye />
+                              {/* Reemplaza Eye con el ícono que desees */}
                             </button>
                           </td>
                         </tr>

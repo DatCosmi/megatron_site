@@ -77,6 +77,9 @@ const Products = () => {
         `https://backend-integradora.vercel.app/api/productos/${productId}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 

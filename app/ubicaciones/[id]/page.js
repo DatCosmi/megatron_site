@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Sidebar from "../components/dashboard/sidebar";
+import Sidebar from "../../components/dashboard/sidebar";
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,10 +12,10 @@ import {
   Trash2,
   SquarePen,
 } from "lucide-react";
-import AddEquipoModal from "../components/dashboard/AddEquipoModal";
-import ProtectedRoute, { token } from "../components/protectedRoute";
-import { RoleProvider } from "../components/context/RoleContext";
-
+import AddEquipoModal from "../../components/dashboard/AddEquipoModal";
+import ProtectedRoute, { token } from "../../components/protectedRoute";
+import { RoleProvider } from "../../components/context/RoleContext";
+import { useParams, useRouter } from "next/navigation";
 const Equipos = () => {
   const [equipos, setEquipos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,12 +26,11 @@ const Equipos = () => {
     direction: "asc",
   });
 
-  const [ubicacionFilter, setUbicacionFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddEquipoModalOpen, setIsAddEquipoModalOpen] = useState(false);
-
-  const [ubicaciones, setUbicaciones] = useState([]);
+  const params = useParams();
+  const router = useRouter();
 
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,14 +44,14 @@ const Equipos = () => {
 
   const closeModal = () => {
     setIsAddEquipoModalOpen(false);
-    fetchEquipos();
+    fetchEquipos(params.id);
     setEquipoToEdit(null);
   };
 
-  const fetchEquipos = async () => {
+  const fetchEquipos = async (Id) => {
     try {
       const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/equipoubicacion",
+        `https://backend-integradora.vercel.app/api/equiposenubicacion/${Id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -67,28 +66,11 @@ const Equipos = () => {
     }
   };
 
-  const fetchUbicaciones = async () => {
-    try {
-      const response = await fetch(
-        "https://backend-integradora.vercel.app/api/ubicacion",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await response.json();
-      setUbicaciones(data);
-    } catch (error) {
-      console.error("Error fetching Ubicaciones:", error);
-    }
-  };
-
   // Fetch products from the backend
   useEffect(() => {
-    fetchEquipos();
-    fetchUbicaciones();
-  }, []);
+    const Id = params.id;
+    fetchEquipos(Id);
+  }, [params.id]);
 
   // Function to handle delete action
   const handleDelete = async (equipoId) => {
@@ -105,7 +87,7 @@ const Equipos = () => {
       );
 
       if (response.ok) {
-        fetchEquipos();
+        fetchEquipos(params.id);
         console.log("si se pudo");
       } else {
         console.error("Failed to delete product");
@@ -151,7 +133,6 @@ const Equipos = () => {
   const getSortedEquipos = () => {
     const filteredEquipos = equipos.filter(
       (equipo) =>
-        (ubicacionFilter === "" || equipo.nombre === ubicacionFilter) &&
         (statusFilter === "" || equipo.Tipo === statusFilter) &&
         (equipo.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||
           equipo.idEquipos.toString().includes(searchQuery.toLowerCase()))
@@ -230,33 +211,6 @@ const Equipos = () => {
                       />
                     </div>
                   </div>
-
-                  {/* Category Dropdown */}
-                  <div className="relative min-w-[140px]">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ubicación
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={ubicacionFilter}
-                        onChange={(e) => setUbicacionFilter(e.target.value)}
-                        className="w-full appearance-none px-4 py-2 pr-10 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">Todas</option>
-                        {Array.isArray(ubicaciones) &&
-                          ubicaciones.map((ubicacion) => (
-                            <option
-                              key={ubicacion.Nombre}
-                              value={ubicacion.Nombre}
-                            >
-                              {ubicacion.Nombre}
-                            </option>
-                          ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                    </div>
-                  </div>
-
                   {/* Status Dropdown */}
                   <div className="relative min-w-[140px]">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -370,17 +324,11 @@ const Equipos = () => {
                       <th
                         scope="col"
                         className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleSort("estatus")}
+                        onClick={() => handleSort("estatusEquipo")}
                       >
                         Estado
                       </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleSort("ubicacion")}
-                      >
-                        Ubicacion
-                      </th>
+
                       <th
                         scope="col"
                         className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -415,12 +363,11 @@ const Equipos = () => {
                             {equipo.marca}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm">
-                            <span className={getTypeBadge(equipo.estatus)}>
+                            <span
+                              className={getTypeBadge(equipo.estatusEquipo)}
+                            >
                               {equipo.estatus}
                             </span>
-                          </td>
-                          <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {equipo.nombre}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-xs flex">
                             <button

@@ -107,6 +107,7 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(equipoData),
           }
@@ -209,11 +210,13 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
                     <option
                       key={ubicacion.idUbicaciones}
                       value={ubicacion.idUbicaciones}
+                      selected={ubicacion.idUbicaciones}
                     >
                       {ubicacion.Nombre}
                     </option>
                   ))}
                 </select>
+
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
               </div>
             </div>
@@ -234,11 +237,13 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
                     <option
                       key={product.idProductos}
                       value={product.idProductos}
+                      selected={product.idProductos}
                     >
                       {product.modelo} ({product.Existencia})
                     </option>
                   ))}
                 </select>
+
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
               </div>
             </div>
@@ -254,10 +259,23 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
                   className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
                 >
                   <option value="">Selecciona el estatus</option>
-                  <option value="activo">Activo</option>
-                  <option value="inventariado">Inventariado</option>
-                  <option value="reparacion">En reparación</option>
+                  <option value="activo" selected={Estatus === "activo"}>
+                    Activo
+                  </option>
+                  <option
+                    value="inventariado"
+                    selected={Estatus === "inventariado"}
+                  >
+                    Inventariado
+                  </option>
+                  <option
+                    value="reparacion"
+                    selected={Estatus === "reparacion"}
+                  >
+                    En reparación
+                  </option>
                 </select>
+
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
               </div>
             </div>

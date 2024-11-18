@@ -12,40 +12,68 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent form from refreshing
     setLoading(true);
     setError("");
+
     try {
+      // Inicia sesión y obtiene el token
       const response = await fetch(
         "https://backend-integradora.vercel.app/api/auth/iniciar-sesion",
         {
-          // Replace with your actual API route
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ user, password }), // Pass user and password as JSON
         }
       );
       const data = await response.json();
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        router.push("/dashboard");
-      } else {
+
+      if (!data.token) {
         setError(
           data.message || "Ocurrió un error. Por favor, intenta de nuevo."
         );
+        return;
       }
+
+      // Guarda el token en localStorage
+      localStorage.setItem("token", data.token);
+
+      // Obtiene los datos del perfil del usuario
+      const perfilResponse = await fetch(
+        "https://backend-integradora.vercel.app/api/auth/perfil",
+        {
+          headers: { Authorization: `Bearer ${data.token}` },
+        }
+      );
+      const perfilData = await perfilResponse.json();
+
+      if (!perfilData.usuario) {
+        setError("Error al cargar el perfil. Intenta de nuevo.");
+        return;
+      }
+
+      // Guarda los datos en localStorage
+      localStorage.setItem("role", perfilData.usuario.rol);
+      localStorage.setItem("id", perfilData.usuario.id);
+      localStorage.setItem("exp", perfilData.usuario.exp);
+
+      // Redirige al dashboard
+      router.push("/dashboard");
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      console.error("Error al iniciar sesión:", err);
+      setError("Ocurrió un error inesperado. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     if (localStorage.getItem("token")) {
       localStorage.removeItem("token");
       localStorage.removeItem("id");
+      localStorage.removeItem("role");
+      localStorage.removeItem("exp");
     }
   }, []);
 

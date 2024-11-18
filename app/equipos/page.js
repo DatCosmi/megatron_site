@@ -243,14 +243,15 @@ const Equipos = () => {
                         className="w-full appearance-none px-4 py-2 pr-10 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">Todas</option>
-                        {ubicaciones.map((ubicacion) => (
-                          <option
-                            key={ubicacion.Nombre}
-                            value={ubicacion.Nombre}
-                          >
-                            {ubicacion.Nombre}
-                          </option>
-                        ))}
+                        {Array.isArray(ubicaciones) &&
+                          ubicaciones.map((ubicacion) => (
+                            <option
+                              key={ubicacion.Nombre}
+                              value={ubicacion.Nombre}
+                            >
+                              {ubicacion.Nombre}
+                            </option>
+                          ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                     </div>

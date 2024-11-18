@@ -7,10 +7,13 @@ import { RoleProvider, useRole } from "../components/context/RoleContext";
 import axios from "axios";
 
 const Dashboard = () => {
-  const role = useRole();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [averageTime, setAverageTime] = useState(null);
+
+  const [role, setRole] = useState(null);
+  const [id, setId] = useState(null);
+
   const [locationStats, setLocationStats] = useState({
     fastest: [],
     slowest: [],
@@ -19,6 +22,49 @@ const Dashboard = () => {
     key: null,
     direction: "asc",
   });
+
+  const fetchUser = async (role, idUser) => {
+    try {
+      const endpointMap = {
+        cliente: `https://backend-integradora.vercel.app/api/clienteById/${idUser}`,
+        tecnico: `https://backend-integradora.vercel.app/api/tecnicoById/${idUser}`,
+        admin: `https://backend-integradora.vercel.app/api/auth/getUser/${idUser}`,
+      };
+      const response = await fetch(endpointMap[role], {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+      const result = await response.json();
+      console.log(result);
+      if (role !== "admin") {
+        if (role === "cliente") {
+          localStorage.setItem("IdCliente", result.idClientes);
+          const IdCliente = result.idClientes;
+          console.log("IdCliente: " + IdCliente);
+        } else if (role === "tecnico") {
+          localStorage.setItem("IdTecnico", result.idTecnicos);
+          const IdTecnico = result.idTecnicos;
+          console.log("IdTecnico: " + IdTecnico);
+        }
+
+        // setFormData({
+        //   nombre: result.nombre,
+        //   apellidoPa: result.ApellidoPa,
+        //   apellidoMa: result.ApellidoMa,
+        //   telefono: result.Telefono,
+        //   correoElectronico: result.CorreoElectronico,
+        // });
+      }
+    } catch (err) {
+      console.log("Error: " + err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchReports = async () => {
     try {
@@ -55,10 +101,19 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchReports();
-  }, []);
+    const roleFromStorage = localStorage.getItem("role");
+    const idFromStorage = localStorage.getItem("id");
+    setRole(roleFromStorage);
+    setId(idFromStorage);
+    if (roleFromStorage && idFromStorage)
+      fetchUser(roleFromStorage, idFromStorage);
+    else {
+      setError("Role o ID del usuario no encontrados en localStorage.");
+      setLoading(false);
+    }
 
-  useEffect(() => {
+    fetchReports();
+
     calculateAverageTime();
     calculateLocationStats();
   }, [reports]);

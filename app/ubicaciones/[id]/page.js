@@ -30,7 +30,6 @@ const Equipos = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddEquipoModalOpen, setIsAddEquipoModalOpen] = useState(false);
   const params = useParams();
-  const router = useRouter();
 
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -366,7 +365,7 @@ const Equipos = () => {
                             <span
                               className={getTypeBadge(equipo.estatusEquipo)}
                             >
-                              {equipo.estatus}
+                              {equipo.estatusEquipo}
                             </span>
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-xs flex">

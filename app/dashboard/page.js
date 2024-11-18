@@ -3,11 +3,10 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../components/dashboard/sidebar";
 import { ChevronDown, ChevronUp, FileText } from "lucide-react";
 import ProtectedRoute, { token } from "../components/protectedRoute";
-import { RoleProvider, useRole } from "../components/context/RoleContext";
+import { RoleProvider } from "../components/context/RoleContext";
 import axios from "axios";
 
 const Dashboard = () => {
-  const role = useRole();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [averageTime, setAverageTime] = useState(null);
@@ -28,24 +27,27 @@ const Dashboard = () => {
         return;
       }
 
-      let endpoint;
-
-      if (role === "admin") {
-        endpoint = `/api/reportesCreados`;
-      } else if (role === "cliente") {
-        endpoint = `/api/reportesclientes/${storedId}`;
-      } else if (role === "tecnico") {
-        endpoint = `/api/guest-data/${storedId}`;
+      const storedRole = localStorage.getItem("role");
+      if (!storedId) {
+        console.error("No role found in localStorage");
+        return;
       }
 
-      const response = await axios.get(
-        `https://backend-integradora.vercel.app/api/${endpoint}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let endpoint;
+
+      if (storedRole === "admin") {
+        endpoint = `https://backend-integradora.vercel.app/api/reportesCreados`;
+      } else if (storedRole === "cliente") {
+        endpoint = `https://backend-integradora.vercel.app/api/reportesclientes/${storedId}`;
+      } else if (storedRole === "tecnico") {
+        endpoint = `https://backend-integradora.vercel.app/api/reportestecnicos/${storedId}`;
+      }
+
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setReports(response.data);
     } catch (error) {
       console.error("Error fetching reports:", error);

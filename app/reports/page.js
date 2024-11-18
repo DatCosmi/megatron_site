@@ -281,7 +281,7 @@ function Reports() {
                 ) : filteredReports.length > 0 ? (
                   filteredReports.map((report) => (
                     <div
-                      key={report.IdReporte}
+                      key={report.folioReporte}
                       className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex"
                     >
                       <div

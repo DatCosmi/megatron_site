@@ -342,12 +342,6 @@ function Reports() {
                                 >
                                   Asignar
                                 </button>
-                                <button
-                                  className="w-full px-4 py-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
-                                  onClick={() => handleDelete(report.IdReporte)}
-                                >
-                                  Eliminar
-                                </button>
                               </>
                             )}
 
@@ -368,12 +362,6 @@ function Reports() {
                                 >
                                   Comenzar
                                 </button>
-                                <button
-                                  className="w-full px-4 py-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
-                                  onClick={() => handleDelete(report.IdReporte)}
-                                >
-                                  Eliminar
-                                </button>
                               </>
                             )}
 
@@ -393,23 +381,15 @@ function Reports() {
                               >
                                 Completar
                               </button>
-                              <button
-                                className="w-full px-4 py-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
-                                onClick={() => handleDelete(report.IdReporte)}
-                              >
-                                Eliminar
-                              </button>
                             </>
                           )}
 
-                          {report.estadoReporte === "concluido" && (
-                            <button
-                              className="w-full px-4 py-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
-                              onClick={() => handleDelete(report.IdReporte)}
-                            >
-                              Eliminar
-                            </button>
-                          )}
+                          <button
+                            className="w-full px-4 py-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
+                            onClick={() => handleDelete(report.IdReporte)}
+                          >
+                            Eliminar
+                          </button>
                         </div>
                       </div>
                     </div>

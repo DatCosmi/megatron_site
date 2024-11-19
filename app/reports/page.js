@@ -31,6 +31,7 @@ function Reports() {
   const [isAddReportModalOpen, setIsAddReportModalOpen] = useState(false);
   const [isReportDetailModalOpen, setIsReportDetailModalOpen] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const fetchReports = async () => {
     try {
@@ -70,10 +71,6 @@ function Reports() {
 
   const handleComplete = async (IdReporte) => {
     const currentDate = new Date();
-    const date = currentDate.toLocaleDateString();
-    const time = currentDate.toLocaleTimeString();
-
-    // Preparar los datos para enviar
     const reportData = {
       estado: "concluido",
       fechaHoraActualizacion: currentDate,
@@ -106,7 +103,6 @@ function Reports() {
   };
 
   const handleStart = async (IdReporte) => {
-    // Preparar los datos para enviar
     const reportData = {
       estado: "ejecucion",
     };
@@ -137,18 +133,43 @@ function Reports() {
     fetchReports();
   };
 
-  // Fetch reports from the backend
+  // Función para filtrar reportes por fecha y estado
+  const getFilteredReports = (reportsData, filter) => {
+    return reportsData.filter((report) => {
+      const fechaActual = new Date();
+      const fechaUltimaSemana = new Date(
+        fechaActual.getTime() - 7 * 24 * 60 * 60 * 1000
+      );
+      const fechaReporte = new Date(report.fechaCreacion);
+
+      // Primero filtrar por fecha
+      const esReporteDentroDeUltimaSemana =
+        fechaReporte >= fechaUltimaSemana && fechaReporte <= fechaActual;
+
+      // Luego aplicar el filtro de estado
+      const cumpleFiltroEstado =
+        filter === "todos" ? true : report.estado === filter;
+
+      return esReporteDentroDeUltimaSemana && cumpleFiltroEstado;
+    });
+  };
+
+  // Estado para mantener los reportes filtrados por búsqueda
+  const [searchFilteredReports, setSearchFilteredReports] = useState([]);
+
+  // Actualizar los filtros cuando cambien los reportes o el filtro activo
+  useEffect(() => {
+    if (reports.length > 0) {
+      const filteredByDateAndStatus = getFilteredReports(reports, activeFilter);
+      setSearchFilteredReports(filteredByDateAndStatus);
+    }
+  }, [reports, activeFilter]);
+
+  // Fetch initial data
   useEffect(() => {
     fetchReports();
     fetchTechnicians();
   }, []);
-
-  const filteredReports = reports.filter((report) =>
-    activeFilter === "todos" ? true : report.estado === activeFilter
-  );
-
-  const [searchFilteredReports, setSearchFilteredReports] =
-    useState(filteredReports);
 
   const handleAssign = (reportId) => {
     setReportToEdit(reportId);
@@ -157,7 +178,6 @@ function Reports() {
 
   const handleDelete = async (reportId) => {
     try {
-      // Call the backend API to delete the product
       const response = await fetch(
         `https://backend-integradora.vercel.app/api/reportes/${reportId}`,
         {
@@ -213,7 +233,6 @@ function Reports() {
     setReportToEdit(null);
   };
 
-  //Formatear fecha y hora
   const formatFechaHora = (fecha) => {
     const fechaObj = new Date(fecha);
     const opcionesFecha = { day: "2-digit", month: "2-digit", year: "numeric" };
@@ -285,7 +304,7 @@ function Reports() {
                       Cargando reportes...
                     </p>
                   </div>
-                ) : filteredReports.length > 0 ? (
+                ) : getFilteredReports.length > 0 ? (
                   searchFilteredReports.map((report) => (
                     <div
                       key={report.folioReporte}

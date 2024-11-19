@@ -6,39 +6,31 @@ const SearchBar = ({ reports, setFilteredReports, activeFilter }) => {
 
   const handleSearch = (value) => {
     setSearchTerm(value);
+
+    // Si la búsqueda está vacía, mantener solo los filtros de fecha y estado
     if (!value.trim()) {
-      // Si la búsqueda está vacía, mostrar todos los reportes que coincidan con el filtro activo
-      setFilteredReports(
-        reports.filter((report) =>
-          activeFilter === "todos" ? true : report.estado === activeFilter
-        )
-      );
+      setFilteredReports(reports);
       return;
     }
 
     const filtered = reports.filter((report) => {
-      // First apply the active filter
-      const matchesStatus =
-        activeFilter === "todos" ? true : report.estado === activeFilter;
-
-      // Then apply the search term
+      // La búsqueda se aplica sobre los reportes que ya están filtrados por fecha
       const searchLower = value.toLowerCase();
       const folioString = report.folioReporte?.toString() || "";
 
-      const matchesSearch =
+      return (
         folioString.includes(searchLower) ||
         report.tituloReporte?.toLowerCase().includes(searchLower) ||
         report.nombreUbicacion?.toLowerCase().includes(searchLower) ||
         report.numeroEquipo?.toLowerCase().includes(searchLower) ||
-        report.Cliente?.toLowerCase().includes(searchLower);
-
-      return matchesStatus && matchesSearch;
+        report.Cliente?.toLowerCase().includes(searchLower)
+      );
     });
 
     setFilteredReports(filtered);
   };
 
-  // Actualizar los reportes filtrados cuando cambian los reportes o el filtro activo
+  // Actualizar la búsqueda cuando cambian los reportes base o el filtro
   useEffect(() => {
     handleSearch(searchTerm);
   }, [reports, activeFilter]);

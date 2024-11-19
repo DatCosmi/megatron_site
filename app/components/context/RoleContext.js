@@ -14,6 +14,8 @@ export const RoleProvider = ({ children }) => {
     localStorage.removeItem("id");
     localStorage.removeItem("token");
     localStorage.removeItem("exp");
+    localStorage.removeItem("IdCliente");
+    localStorage.removeItem("IdTecnico");
   };
 
   useEffect(() => {

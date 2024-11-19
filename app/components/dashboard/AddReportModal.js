@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import ProtectedRoute, { token } from "../../components/protectedRoute";
+import { token } from "../../components/protectedRoute";
+import { ChevronDown } from "lucide-react";
 
 function AddReportModal({ reports, setReports, closeModal }) {
   const [TituloReporte, setTituloReporte] = useState("");
@@ -8,6 +9,12 @@ function AddReportModal({ reports, setReports, closeModal }) {
   const [estado, setEstado] = useState("");
   const [comentarios, setComentarios] = useState("");
   const [creadorReporte, setCreadorReporte] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const [equipoSearchText, setEquipoSearchText] = useState(""); // Nuevo estado para búsqueda de equipo
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showEquipoSuggestions, setShowEquipoSuggestions] = useState(false); // Nuevo estado para sugerencias de equipo
+  const [filteredClientes, setFilteredClientes] = useState([]);
+  const [filteredEquipos, setFilteredEquipos] = useState([]); // Nuevo estado para equipos filtrados
   const [tecnicoAsignado, setTecnicoAsignado] = useState("");
   const [idEquipos, setIdEquipos] = useState("");
 
@@ -22,14 +29,13 @@ function AddReportModal({ reports, setReports, closeModal }) {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  // Mantener los fetchs igual...
   const fetchEquipos = async () => {
     try {
       const response = await fetch(
         "https://backend-integradora.vercel.app/api/equipos",
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       const data = await response.json();
@@ -44,9 +50,7 @@ function AddReportModal({ reports, setReports, closeModal }) {
       const response = await fetch(
         "https://backend-integradora.vercel.app/api/clientes",
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       const data = await response.json();
@@ -61,9 +65,7 @@ function AddReportModal({ reports, setReports, closeModal }) {
       const response = await fetch(
         "https://backend-integradora.vercel.app/api/tecnicos",
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       const data = await response.json();
@@ -79,10 +81,65 @@ function AddReportModal({ reports, setReports, closeModal }) {
     fetchTecnicos();
   }, []);
 
+  // Cliente search handlers
+  const handleSearchChange = (e) => {
+    const searchValue = e.target.value;
+    setSearchText(searchValue);
+    setCreadorReporte("");
+
+    if (searchValue.trim() === "") {
+      setShowSuggestions(false);
+      setFilteredClientes([]);
+      return;
+    }
+
+    const filtered = clientes.filter((cliente) =>
+      `${cliente.Nombre} ${cliente.ApellidoPa}`
+        .toLowerCase()
+        .includes(searchValue.toLowerCase())
+    );
+
+    setFilteredClientes(filtered);
+    setShowSuggestions(true);
+  };
+
+  const handleClienteSelect = (cliente) => {
+    setSearchText(`${cliente.Nombre} ${cliente.ApellidoPa}`);
+    setCreadorReporte(cliente.idClientes);
+    setShowSuggestions(false);
+  };
+
+  // Nuevo: Equipo search handlers
+  const handleEquipoSearchChange = (e) => {
+    const searchValue = e.target.value;
+    setEquipoSearchText(searchValue);
+    setIdEquipos("");
+
+    if (searchValue.trim() === "") {
+      setShowEquipoSuggestions(false);
+      setFilteredEquipos([]);
+      return;
+    }
+
+    const filtered = equipos.filter((equipo) =>
+      equipo.NumeroEquipo.toString()
+        .toLowerCase()
+        .includes(searchValue.toLowerCase())
+    );
+
+    setFilteredEquipos(filtered);
+    setShowEquipoSuggestions(true);
+  };
+
+  const handleEquipoSelect = (equipo) => {
+    setEquipoSearchText(equipo.NumeroEquipo);
+    setIdEquipos(equipo.idEquipos);
+    setShowEquipoSuggestions(false);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Datos del producto a enviar
     const reportData = {
       TituloReporte,
       FolioReporte,
@@ -96,10 +153,7 @@ function AddReportModal({ reports, setReports, closeModal }) {
     };
 
     try {
-      let response;
-
-      // Agregar nuevo reporte
-      response = await fetch(
+      const response = await fetch(
         "https://backend-integradora.vercel.app/api/reportes",
         {
           method: "POST",
@@ -115,7 +169,6 @@ function AddReportModal({ reports, setReports, closeModal }) {
         throw new Error("Error al guardar el reporte");
       }
 
-      // Cerrar el modal y limpiar los campos si es necesario
       closeModal();
     } catch (error) {
       setError(error.message || "Algo salió mal");
@@ -131,18 +184,18 @@ function AddReportModal({ reports, setReports, closeModal }) {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Primera fila: Título y Folio */}
+          {/* Primera fila igual... */}
           <div className="grid grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-600 mb-2 text-sm font-medium">
-                Título
+                Problema
               </label>
               <input
                 type="text"
                 value={TituloReporte}
                 onChange={(e) => setTituloReporte(e.target.value)}
                 className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-                placeholder="Escribe el título"
+                placeholder="Escribe una breve descripción del problema"
                 required
               />
             </div>
@@ -162,7 +215,7 @@ function AddReportModal({ reports, setReports, closeModal }) {
             </div>
           </div>
 
-          {/* Segunda fila: Descripción (ancho completo) */}
+          {/* Campo de descripción igual... */}
           <div>
             <label className="block text-gray-600 mb-2 text-sm font-medium">
               Descripción del problema
@@ -176,64 +229,85 @@ function AddReportModal({ reports, setReports, closeModal }) {
             />
           </div>
 
-          {/* Tercera fila: Selects */}
+          {/* Tercera fila con ambos autocompletados */}
           <div className="grid grid-cols-3 gap-6">
-            <div>
+            <div className="relative">
               <label className="block text-gray-600 mb-2 text-sm font-medium">
                 Equipo
               </label>
-              <select
-                value={idEquipos}
-                onChange={(e) => setIdEquipos(e.target.value)}
+              <input
+                type="text"
+                value={equipoSearchText}
+                onChange={handleEquipoSearchChange}
                 className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-              >
-                <option value="">Seleccione un equipo</option>
-                {equipos.map((equipo) => (
-                  <option key={equipo.idEquipos} value={equipo.idEquipos}>
-                    {equipo.NumeroEquipo}
-                  </option>
-                ))}
-              </select>
+                placeholder="Buscar equipo..."
+                required
+              />
+              {showEquipoSuggestions && filteredEquipos.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                  {filteredEquipos.map((equipo) => (
+                    <div
+                      key={equipo.idEquipos}
+                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleEquipoSelect(equipo)}
+                    >
+                      {equipo.NumeroEquipo}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div>
+            <div className="relative">
               <label className="block text-gray-600 mb-2 text-sm font-medium">
                 Reportado por
               </label>
-              <select
-                value={creadorReporte}
-                onChange={(e) => setCreadorReporte(e.target.value)}
+              <input
+                type="text"
+                value={searchText}
+                onChange={handleSearchChange}
                 className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-              >
-                <option value="">Nombre del reportante</option>
-                {clientes.map((cliente) => (
-                  <option key={cliente.idClientes} value={cliente.idClientes}>
-                    {cliente.Nombre} {cliente.ApellidoPa}
-                  </option>
-                ))}
-              </select>
+                placeholder="Buscar cliente..."
+                required
+              />
+              {showSuggestions && filteredClientes.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                  {filteredClientes.map((cliente) => (
+                    <div
+                      key={cliente.idClientes}
+                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleClienteSelect(cliente)}
+                    >
+                      {cliente.Nombre} {cliente.ApellidoPa}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>
               <label className="block text-gray-600 mb-2 text-sm font-medium">
                 Asignar a Técnico
               </label>
-              <select
-                value={tecnicoAsignado}
-                onChange={(e) => setTecnicoAsignado(e.target.value)}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-              >
-                <option value="">Seleccione un técnico</option>
-                {tecnicos.map((tecnico) => (
-                  <option key={tecnico.idTecnicos} value={tecnico.idTecnicos}>
-                    {tecnico.Nombre} {tecnico.ApellidoPa}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={tecnicoAsignado}
+                  onChange={(e) => setTecnicoAsignado(e.target.value)}
+                  className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
+                >
+                  <option value="">Seleccione un técnico</option>
+                  {tecnicos.map((tecnico) => (
+                    <option key={tecnico.idTecnicos} value={tecnico.idTecnicos}>
+                      {tecnico.Nombre} {tecnico.ApellidoPa}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
             </div>
           </div>
 
-          {/* Botones */}
+          {/* Botones igual... */}
           <div className="flex items-center justify-end space-x-4 mt-8 pt-4 border-t border-gray-200">
             <button
               type="button"

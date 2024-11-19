@@ -23,7 +23,10 @@ const SearchBar = ({ reports, setFilteredReports, activeFilter }) => {
 
       // Then apply the search term
       const searchLower = value.toLowerCase();
+      const folioString = report.folioReporte?.toString() || "";
+
       const matchesSearch =
+        folioString.includes(searchLower) ||
         report.tituloReporte?.toLowerCase().includes(searchLower) ||
         report.nombreUbicacion?.toLowerCase().includes(searchLower) ||
         report.numeroEquipo?.toLowerCase().includes(searchLower) ||

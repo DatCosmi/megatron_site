@@ -9,11 +9,10 @@ import axios from "axios";
 const Dashboard = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [averageTime, setAverageTime] = useState(null);
-
   const [role, setRole] = useState(null);
   const [id, setId] = useState(null);
-
   const [locationStats, setLocationStats] = useState({
     fastest: [],
     slowest: [],
@@ -23,13 +22,33 @@ const Dashboard = () => {
     direction: "asc",
   });
 
+  const getUserId = (role) => {
+    if (role === "cliente") return localStorage.getItem("IdCliente");
+    if (role === "tecnico") return localStorage.getItem("IdTecnico");
+    return localStorage.getItem("id");
+  };
+
+  const getEndpoint = (role, userId) => {
+    if (!role || !userId) return null;
+    if (role === "admin")
+      return `https://backend-integradora.vercel.app/api/reportesCreados`;
+    if (role === "cliente")
+      return `https://backend-integradora.vercel.app/api/reportesclientes/${userId}`;
+    if (role === "tecnico")
+      return `https://backend-integradora.vercel.app/api/tecnicosreportes/${userId}`;
+    return null;
+  };
+
   const fetchUser = async (role, idUser) => {
+    if (!role || !idUser) return null;
+
     try {
       const endpointMap = {
         cliente: `https://backend-integradora.vercel.app/api/clienteById/${idUser}`,
         tecnico: `https://backend-integradora.vercel.app/api/tecnicoById/${idUser}`,
         admin: `https://backend-integradora.vercel.app/api/auth/getUser/${idUser}`,
       };
+
       const response = await fetch(endpointMap[role], {
         method: "GET",
         headers: {
@@ -37,89 +56,100 @@ const Dashboard = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
       const result = await response.json();
-      console.log(result);
-      if (role !== "admin") {
-        if (role === "cliente") {
-          localStorage.setItem("IdCliente", result.idClientes);
-          const IdCliente = result.idClientes;
-          console.log("IdCliente: " + IdCliente);
-        } else if (role === "tecnico") {
-          localStorage.setItem("IdTecnico", result.idTecnicos);
-          const IdTecnico = result.idTecnicos;
-          console.log("IdTecnico: " + IdTecnico);
-        }
 
-        // setFormData({
-        //   nombre: result.nombre,
-        //   apellidoPa: result.ApellidoPa,
-        //   apellidoMa: result.ApellidoMa,
-        //   telefono: result.Telefono,
-        //   correoElectronico: result.CorreoElectronico,
-        // });
+      if (role === "cliente") {
+        localStorage.setItem("IdCliente", result.idClientes);
+      } else if (role === "tecnico") {
+        localStorage.setItem("IdTecnico", result.idTecnicos);
       }
+
+      return result;
     } catch (err) {
-      console.log("Error: " + err);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching user:", err);
+      setError(err.message);
+      return null;
     }
   };
 
-  const fetchReports = async () => {
+  const fetchReports = async (role, userId) => {
+    if (!role || !userId) return [];
+
     try {
-      const storedId = localStorage.getItem("id");
-      if (!storedId) {
-        console.error("No ID found in localStorage");
-        return;
-      }
-
-      const storedRole = localStorage.getItem("role");
-      if (!storedId) {
-        console.error("No role found in localStorage");
-        return;
-      }
-
-      let endpoint;
-
-      if (storedRole === "admin") {
-        endpoint = `https://backend-integradora.vercel.app/api/reportesCreados`;
-      } else if (storedRole === "cliente") {
-        endpoint = `https://backend-integradora.vercel.app/api/reportesclientes/${storedId}`;
-      } else if (storedRole === "tecnico") {
-        endpoint = `https://backend-integradora.vercel.app/api/reportestecnicos/${storedId}`;
-      }
+      const endpoint = getEndpoint(role, userId);
+      if (!endpoint) throw new Error("Invalid role or userId");
 
       const response = await axios.get(endpoint, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setReports(response.data);
+
+      // Asegurarse de que la respuesta sea un array
+      const data = response.data;
+      if (!Array.isArray(data)) {
+        console.error("La respuesta no es un array:", data);
+        return [];
+      }
+
+      return data;
     } catch (error) {
       console.error("Error fetching reports:", error);
-    } finally {
-      setLoading(false);
+      setError(error.message);
+      return [];
     }
   };
 
   useEffect(() => {
-    const roleFromStorage = localStorage.getItem("role");
-    const idFromStorage = localStorage.getItem("id");
-    setRole(roleFromStorage);
-    setId(idFromStorage);
-    if (roleFromStorage && idFromStorage)
-      fetchUser(roleFromStorage, idFromStorage);
-    else {
-      setError("Role o ID del usuario no encontrados en localStorage.");
-      setLoading(false);
+    const initializeDashboard = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const roleFromStorage = localStorage.getItem("role");
+        const idFromStorage = localStorage.getItem("id");
+
+        if (!roleFromStorage || !idFromStorage) {
+          throw new Error("No se encontró rol o ID en localStorage");
+        }
+
+        setRole(roleFromStorage);
+        setId(idFromStorage);
+
+        await fetchUser(roleFromStorage, idFromStorage);
+        const userId = getUserId(roleFromStorage);
+
+        if (!userId) {
+          throw new Error("No se pudo obtener el ID del usuario");
+        }
+
+        const reportData = await fetchReports(roleFromStorage, userId);
+        setReports(Array.isArray(reportData) ? reportData : []);
+      } catch (err) {
+        console.error("Error initializing dashboard:", err);
+        setError(err.message);
+        setReports([]); // Asegurarse de que reports sea un array vacío en caso de error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeDashboard();
+  }, []);
+
+  useEffect(() => {
+    if (Array.isArray(reports) && reports.length > 0) {
+      calculateAverageTime();
+      calculateLocationStats();
     }
-
-    fetchReports();
-
-    calculateAverageTime();
-    calculateLocationStats();
   }, [reports]);
+
+  const getReportCount = (status) => {
+    if (!Array.isArray(reports)) return 0;
+    return reports.filter((r) => r.estado === status).length;
+  };
 
   const calculateAverageTime = () => {
     const validReports = reports.filter(
@@ -303,10 +333,7 @@ const Dashboard = () => {
                     Pendientes
                   </h2>
                   <p className="text-4xl font-bold text-white">
-                    {
-                      reports.filter((r) => r.estadoReporte === "pendiente")
-                        .length
-                    }
+                    {getReportCount("pendiente")}
                   </p>
                 </div>
                 <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-r from-[#ffbe0b] to-[#bc8d0a]">
@@ -314,10 +341,7 @@ const Dashboard = () => {
                     En curso
                   </h2>
                   <p className="text-4xl font-bold text-white">
-                    {
-                      reports.filter((r) => r.estadoReporte === "ejecucion")
-                        .length
-                    }
+                    {getReportCount("ejecucion")}
                   </p>
                 </div>
                 <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-r from-[#06d6a0] to-[#08a37b]">
@@ -325,10 +349,7 @@ const Dashboard = () => {
                     Completados
                   </h2>
                   <p className="text-4xl font-bold text-white">
-                    {
-                      reports.filter((r) => r.estadoReporte === "concluido")
-                        .length
-                    }
+                    {getReportCount("concluido")}
                   </p>
                 </div>
                 <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow col-span-2 bg-gradient-to-r from-indigo-600 to-indigo-800">
@@ -397,7 +418,7 @@ const Dashboard = () => {
                         <th
                           scope="col"
                           className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                          onClick={() => handleSort("EstadoReporte")}
+                          onClick={() => handleSort("estado")}
                         >
                           <div className="flex items-center gap-2">
                             Estado
@@ -422,10 +443,8 @@ const Dashboard = () => {
                             {report.Cliente}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm">
-                            <span
-                              className={getStatusBadge(report.estadoReporte)}
-                            >
-                              {getStatusLabel(report.estadoReporte)}
+                            <span className={getStatusBadge(report.estado)}>
+                              {getStatusLabel(report.estado)}
                             </span>
                           </td>
                         </tr>

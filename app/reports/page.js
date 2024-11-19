@@ -18,6 +18,7 @@ import {
 import ProtectedRoute, { token } from "../components/protectedRoute";
 import axios from "axios";
 import { RoleProvider } from "../components/context/RoleContext";
+import SearchBar from "../components/dashboard/SearchBar";
 
 function Reports() {
   const [reports, setReports] = useState([]);
@@ -143,8 +144,11 @@ function Reports() {
   }, []);
 
   const filteredReports = reports.filter((report) =>
-    activeFilter === "todos" ? true : report.estadoReporte === activeFilter
+    activeFilter === "todos" ? true : report.estado === activeFilter
   );
+
+  const [searchFilteredReports, setSearchFilteredReports] =
+    useState(filteredReports);
 
   const handleAssign = (reportId) => {
     setReportToEdit(reportId);
@@ -238,6 +242,11 @@ function Reports() {
                     Reportes realizados en el último mes
                   </p>
                 </div>
+                <SearchBar
+                  reports={reports}
+                  setFilteredReports={setSearchFilteredReports}
+                  activeFilter={activeFilter}
+                />
                 <button
                   onClick={() => setIsAddReportModalOpen(true)}
                   className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors"
@@ -261,9 +270,7 @@ function Reports() {
                     <span className="ml-2 text-xs">
                       {
                         reports.filter((s) =>
-                          filter.id === "todos"
-                            ? true
-                            : s.estadoReporte === filter.id
+                          filter.id === "todos" ? true : s.estado === filter.id
                         ).length
                       }
                     </span>
@@ -279,15 +286,13 @@ function Reports() {
                     </p>
                   </div>
                 ) : filteredReports.length > 0 ? (
-                  filteredReports.map((report) => (
+                  searchFilteredReports.map((report) => (
                     <div
                       key={report.folioReporte}
                       className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex"
                     >
                       <div
-                        className={`w-1 ${getStatusColor(
-                          report.estadoReporte
-                        )}`}
+                        className={`w-1 ${getStatusColor(report.estado)}`}
                       ></div>
                       <div className="flex-1 p-6">
                         <div className="flex items-center gap-4 mb-4">
@@ -296,7 +301,7 @@ function Reports() {
                               report.estado
                             )} bg-opacity-10`}
                           >
-                            {getStatusIcon(report.estadoReporte)}
+                            {getStatusIcon(report.estado)}
                           </div>
                           <div>
                             <h2 className="font-semibold text-gray-800">
@@ -336,7 +341,7 @@ function Reports() {
                             Ver Detalles
                           </button>
 
-                          {report.estadoReporte === "pendiente" &&
+                          {report.estado === "pendiente" &&
                             !report.TecnicoAsignado && (
                               <>
                                 <button
@@ -350,7 +355,7 @@ function Reports() {
                               </>
                             )}
 
-                          {report.estadoReporte === "pendiente" &&
+                          {report.estado === "pendiente" &&
                             report.TecnicoAsignado && (
                               <>
                                 <button
@@ -370,7 +375,7 @@ function Reports() {
                               </>
                             )}
 
-                          {report.estadoReporte === "ejecucion" && (
+                          {report.estado === "ejecucion" && (
                             <>
                               <button
                                 className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"

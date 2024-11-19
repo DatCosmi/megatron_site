@@ -53,7 +53,7 @@ function TechnicianSidebar({ reports, technicians, setIsTechnicianListOpen }) {
     return reports.filter(
       (report) =>
         normalizeString(report.TecnicoAsignado) === technicianFullName &&
-        report.estadoReporte !== "concluido"
+        report.estado !== "concluido"
     );
   };
 
@@ -67,12 +67,10 @@ function TechnicianSidebar({ reports, technicians, setIsTechnicianListOpen }) {
     switch (status) {
       case "pendiente":
         return "border-pink-500";
-      case "en_curso":
-        return "border-emerald-500";
-      case "sin_asignar":
-        return "border-blue-500";
-      default:
+      case "ejecucion":
         return "border-yellow-500";
+      default:
+        return "border-gray-500";
     }
   };
 
@@ -80,10 +78,10 @@ function TechnicianSidebar({ reports, technicians, setIsTechnicianListOpen }) {
     switch (status) {
       case "pendiente":
         return <AlertCircle className="w-5 h-5 text-pink-500" />;
-      case "en_curso":
-        return <CheckCircle className="w-5 h-5 text-emerald-500" />;
-      default:
+      case "ejecucion":
         return <Clock className="w-5 h-5 text-yellow-500" />;
+      default:
+        return <CheckCircle className="w-5 h-5 text-emerald-500" />;
     }
   };
 
@@ -123,7 +121,7 @@ function TechnicianSidebar({ reports, technicians, setIsTechnicianListOpen }) {
           </div>
         </div>
         {/* Panel de Técnicos */}
-        <div className="w-72 min-h-[70vh] bg-white rounded-lg shadow-lg overflow-y-auto">
+        <div className="w-72 h-[100%] bg-white rounded-lg shadow-lg overflow-y-auto">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-800">Técnicos</h2>
           </div>
@@ -165,7 +163,7 @@ function TechnicianSidebar({ reports, technicians, setIsTechnicianListOpen }) {
                               key={report.IdReporte}
                               onClick={() => openServiceModal(report)}
                               className={`cursor-pointer bg-white rounded-lg p-4 border-l-4 shadow-sm hover:shadow-md transition duration-200 ${getStatusColor(
-                                report.estadoReporte
+                                report.estado
                               )}`}
                             >
                               <div className="flex items-center justify-between">
@@ -181,7 +179,7 @@ function TechnicianSidebar({ reports, technicians, setIsTechnicianListOpen }) {
                                   </p>
                                 </div>
                                 <div className="ml-4">
-                                  {getStatusIcon(report.estadoReporte)}
+                                  {getStatusIcon(report.estado)}
                                 </div>
                               </div>
                               <div className="mt-4">

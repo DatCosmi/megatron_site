@@ -121,7 +121,7 @@ const Products = () => {
         (categoryFilter === "" || product.Categoria === categoryFilter) &&
         (statusFilter === "" || product.Tipo === statusFilter) &&
         (product.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.idProductos.toString().includes(searchQuery.toLowerCase()))
+          product.Marca.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     if (!sortConfig.key) return filteredProducts;
@@ -190,7 +190,7 @@ const Products = () => {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                       <input
                         type="text"
-                        placeholder="Buscar por modelo o ID"
+                        placeholder="Buscar por marca o modelo"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { token } from "../protectedRoute";
+import { ChevronDown } from "lucide-react";
 function AddUbicModal({
   ubicaciones,
   setUbicaciones,
@@ -12,12 +13,14 @@ function AddUbicModal({
   const [estado, setEstado] = useState("");
   const [codigoPostal, setCodigoPostal] = useState("");
   const [direccion, setDireccion] = useState("");
-
+  const [clientes, setClientes] = useState([]);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [clientes_idClientes, setClientes_idClientes] = useState("");
 
   // Populate form fields if editing
   useEffect(() => {
+    fetchClientes();
     if (ubicacionToEdit && Object.keys(ubicacionToEdit).length > 0) {
       setNombre(ubicacionToEdit.nombre || ubicacionToEdit.Nombre || "");
       setCiudad(ubicacionToEdit.ciudad || ubicacionToEdit.Ciudad || "");
@@ -28,8 +31,27 @@ function AddUbicModal({
       setDireccion(
         ubicacionToEdit.direccion || ubicacionToEdit.Direccion || ""
       );
+      setClientes_idClientes(ubicacionToEdit.clientes_idClientes || "");
     }
   }, [ubicacionToEdit]);
+
+  const fetchClientes = async () => {
+    try {
+      const response = await fetch(
+        "https://backend-integradora.vercel.app/api/clientes",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      setClientes(data);
+    } catch (error) {
+      console.error("Error fetching Ubicaciones:", error);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -41,6 +63,7 @@ function AddUbicModal({
       estado,
       codigoPostal,
       direccion,
+      clientes_idClientes,
     };
 
     try {
@@ -142,8 +165,28 @@ function AddUbicModal({
                 required
               />
             </div>
+            <div>
+              <label className="block text-gray-600 mb-1 text-sm font-medium">
+                Clientes
+              </label>
+              <div className="relative">
+                <select
+                  value={clientes_idClientes}
+                  onChange={(e) => setClientes_idClientes(e.target.value)}
+                  className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
+                >
+                  <option value="">Selecciona el cliente</option>
+                  {clientes.map((cliente) => (
+                    <option key={cliente.idClientes} value={cliente.idClientes}>
+                      {cliente.Nombre} {cliente.ApellidoPa} {cliente.ApellidoMa}
+                    </option>
+                  ))}
+                </select>
 
-            {/* Ciudad */}
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
+            </div>
+
             <div>
               <label className="block text-gray-600 mb-1 text-sm font-medium">
                 Ciudad

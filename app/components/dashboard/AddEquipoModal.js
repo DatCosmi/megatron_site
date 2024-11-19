@@ -54,6 +54,9 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
   useEffect(() => {
     fetchUbicaciones();
     fetchProductos();
+    console.log("Equipo a editar:", equipoToEdit); // Verifica el objeto
+    console.log("Producto seleccionado:", IdProductos); // Verifica el estado de IdProductos
+
     if (equipoToEdit && Object.keys(equipoToEdit).length > 0) {
       setEstatus(equipoToEdit.estatus || equipoToEdit.Estatus || "");
       setNumeroEquipo(
@@ -69,8 +72,9 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
         equipoToEdit.idUbicaciones || equipoToEdit.IdUbicaciones || ""
       );
     }
-  }, [equipoToEdit]);
+  }, [IdProductos, equipoToEdit]);
 
+  console.log("a", IdProductos);
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -210,7 +214,6 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
                     <option
                       key={ubicacion.idUbicaciones}
                       value={ubicacion.idUbicaciones}
-                      selected={ubicacion.idUbicaciones}
                     >
                       {ubicacion.Nombre}
                     </option>
@@ -237,7 +240,6 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
                     <option
                       key={product.idProductos}
                       value={product.idProductos}
-                      selected={product.idProductos}
                     >
                       {product.modelo} ({product.Existencia})
                     </option>

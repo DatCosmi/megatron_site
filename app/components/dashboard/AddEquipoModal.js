@@ -54,8 +54,6 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
   useEffect(() => {
     fetchUbicaciones();
     fetchProductos();
-    console.log("Equipo a editar:", equipoToEdit); // Verifica el objeto
-    console.log("Producto seleccionado:", IdProductos); // Verifica el estado de IdProductos
 
     if (equipoToEdit && Object.keys(equipoToEdit).length > 0) {
       setEstatus(equipoToEdit.estatus || equipoToEdit.Estatus || "");

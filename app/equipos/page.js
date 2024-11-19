@@ -106,7 +106,6 @@ const Equipos = () => {
 
       if (response.ok) {
         fetchEquipos();
-        console.log("si se pudo");
       } else {
         console.error("Failed to delete product");
       }

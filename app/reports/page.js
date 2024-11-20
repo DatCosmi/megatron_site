@@ -32,22 +32,50 @@ function Reports() {
   const [isReportDetailModalOpen, setIsReportDetailModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [role, setRole] = useState(null);
 
-  const fetchReports = async () => {
+  const getUserId = (role) => {
+    if (role === "cliente") return localStorage.getItem("IdCliente");
+    if (role === "tecnico") return localStorage.getItem("IdTecnico");
+    return localStorage.getItem("id");
+  };
+
+  const getEndpoint = (role, userId) => {
+    if (!role || !userId) return null;
+    if (role === "admin")
+      return `https://backend-integradora.vercel.app/api/reportesCreados`;
+    if (role === "cliente")
+      return `https://backend-integradora.vercel.app/api/reportesclientes/${userId}`;
+    if (role === "tecnico")
+      return `https://backend-integradora.vercel.app/api/tecnicosreportes/${userId}`;
+    return null;
+  };
+
+  const fetchReports = async (role, userId) => {
+    if (!role || !userId) return [];
+
     try {
-      const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/reportesCreados",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setReports(response.data);
+      const endpoint = getEndpoint(role, userId);
+      if (!endpoint) throw new Error("Invalid role or userId");
+
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Asegurarse de que la respuesta sea un array
+      const data = response.data;
+      if (!Array.isArray(data)) {
+        console.error("La respuesta no es un array:", data);
+        return [];
+      }
+
+      return data;
     } catch (error) {
       console.error("Error fetching reports:", error);
-    } finally {
-      setLoading(false);
+      setError(error.message);
+      return [];
     }
   };
 
@@ -165,11 +193,45 @@ function Reports() {
     }
   }, [reports, activeFilter]);
 
+  useEffect(() => {
+    const initializeDashboard = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const roleFromStorage = localStorage.getItem("role");
+
+        if (!roleFromStorage) {
+          throw new Error("No se encontró rol o ID en localStorage");
+        }
+
+        setRole(roleFromStorage);
+
+        const userId = getUserId(roleFromStorage);
+
+        if (!userId) {
+          throw new Error("No se pudo obtener el ID del usuario");
+        }
+
+        const reportData = await fetchReports(roleFromStorage, userId);
+        setReports(Array.isArray(reportData) ? reportData : []);
+      } catch (err) {
+        console.error("Error initializing dashboard:", err);
+        setError(err.message);
+        setReports([]); // Asegurarse de que reports sea un array vacío en caso de error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeDashboard();
+  }, []);
+
   // Fetch initial data
   useEffect(() => {
     fetchReports();
     fetchTechnicians();
-  }, []);
+  }, [reports]);
 
   const handleAssign = (reportId) => {
     setReportToEdit(reportId);
@@ -247,10 +309,10 @@ function Reports() {
   return (
     <RoleProvider>
       <ProtectedRoute>
-        <div className="flex min-h-screen bg-[#eaeef6]  ml-64">
+        <div className="flex flex-col md:flex-row gap-2 min-h-screen bg-[#eaeef6]">
           <Sidebar />
 
-          <main className="flex-1 p-8 mr-72">
+          <main className="p-6 pr-2 flex-1">
             <div className="max-w-7xl mx-auto">
               <header className="flex justify-between items-center mb-8">
                 <div>
@@ -258,7 +320,7 @@ function Reports() {
                     Lista de Reportes
                   </h1>
                   <p className="text-sm text-gray-500">
-                    Reportes realizados en el último mes
+                    Reportes realizados en la última semana
                   </p>
                 </div>
                 <SearchBar
@@ -351,7 +413,7 @@ function Reports() {
 
                         <div className="space-y-2">
                           <button
-                            className="w-full px-4 py-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors text-sm font-medium"
+                            className="w-full p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors text-sm font-medium"
                             onClick={() => {
                               setSelectedReport(report);
                               setIsReportDetailModalOpen(true);
@@ -361,10 +423,11 @@ function Reports() {
                           </button>
 
                           {report.estado === "pendiente" &&
+                            role === "admin" &&
                             !report.TecnicoAsignado && (
                               <>
                                 <button
-                                  className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                                  className="w-full p-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                                   onClick={() => {
                                     handleAssign(report.IdReporte);
                                   }}
@@ -375,10 +438,11 @@ function Reports() {
                             )}
 
                           {report.estado === "pendiente" &&
+                            role === "admin" &&
                             report.TecnicoAsignado && (
                               <>
                                 <button
-                                  className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                                  className="w-full p-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                                   onClick={() => {
                                     handleAssign(report.IdReporte);
                                   }}
@@ -386,7 +450,7 @@ function Reports() {
                                   Reasignar
                                 </button>
                                 <button
-                                  className="w-full px-4 py-2 bg-[#ffbe0b] text-white rounded-lg hover:bg-[#edb20e] transition-colors text-sm font-medium"
+                                  className="w-full p-2 bg-[#ffbe0b] text-white rounded-lg hover:bg-[#edb20e] transition-colors text-sm font-medium"
                                   onClick={() => handleStart(report.IdReporte)}
                                 >
                                   Comenzar
@@ -394,27 +458,30 @@ function Reports() {
                               </>
                             )}
 
-                          {report.estado === "ejecucion" && (
-                            <>
-                              <button
-                                className="w-full px-4 py-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                                onClick={() => {
-                                  handleAssign(report.IdReporte);
-                                }}
-                              >
-                                Reasignar
-                              </button>
-                              <button
-                                className="w-full px-4 py-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
-                                onClick={() => handleComplete(report.IdReporte)}
-                              >
-                                Completar
-                              </button>
-                            </>
-                          )}
+                          {report.estado === "ejecucion" &&
+                            role === "admin" && (
+                              <>
+                                <button
+                                  className="w-full p-2 bg-white border border-[#2d57d1] text-[#2d57d1] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                                  onClick={() => {
+                                    handleAssign(report.IdReporte);
+                                  }}
+                                >
+                                  Reasignar
+                                </button>
+                                <button
+                                  className="w-full p-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
+                                  onClick={() =>
+                                    handleComplete(report.IdReporte)
+                                  }
+                                >
+                                  Completar
+                                </button>
+                              </>
+                            )}
 
                           <button
-                            className="w-full px-4 py-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
+                            className="w-full p-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
                             onClick={() => handleDelete(report.IdReporte)}
                           >
                             Eliminar
@@ -443,6 +510,7 @@ function Reports() {
             {isAddReportModalOpen && (
               <AddReportModal
                 reports={reports}
+                role={role}
                 setReports={setReports}
                 closeModal={closeModal}
               />
@@ -455,11 +523,13 @@ function Reports() {
             )}
           </main>
 
-          <TechnicianSidebar
-            reports={reports}
-            technicians={technicians}
-            setIsTechnicianListOpen={setIsTechnicianListOpen}
-          />
+          {role === "admin" && (
+            <TechnicianSidebar
+              reports={reports}
+              technicians={technicians}
+              setIsTechnicianListOpen={setIsTechnicianListOpen}
+            />
+          )}
         </div>
       </ProtectedRoute>
     </RoleProvider>

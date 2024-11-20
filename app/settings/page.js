@@ -135,49 +135,51 @@ function SettingsPage() {
   return (
     <RoleProvider>
       <ProtectedRoute>
-        <div className="flex h-screen bg-[#eaeef6]">
+        <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6]">
           <Sidebar />
-          <div className="p-8 w-full flex justify-center items-center">
-            <div className="max-w-md bg-white shadow-xl rounded-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6 text-center">
-                <FaUser className="text-white text-4xl mb-2 mx-auto" />
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  {role === "admin" ? userData.user : userData.nombre}
-                </h2>
-                <p className="text-gray-200 text-sm">
-                  {role !== "admin" && userData?.CorreoElectronico}
-                </p>
-              </div>
-              <div className="p-6">
-                {role !== "admin" && (
-                  <>
-                    <p className="text-gray-700 mb-4">
-                      {" "}
-                      <strong>Apellidos:</strong> {userData.ApellidoPa}{" "}
-                      {userData.ApellidoMa}
-                    </p>
-                    <p className="text-gray-700 mb-4">
-                      {" "}
-                      <strong>Teléfono:</strong> {userData.Telefono}
-                    </p>
-                  </>
-                )}
-
-                <div className="flex space-x-4">
-                  <button
-                    className="w-full py-3 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-300"
-                    onClick={() => setIsModalOpen(true)}
-                  >
-                    Cambiar Contraseña
-                  </button>
+          <div className="flex-1">
+            <div className="p-8 w-full h-screen flex justify-center items-center">
+              <div className="max-w-md bg-white shadow-xl rounded-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6 text-center">
+                  <FaUser className="text-white text-4xl mb-2 mx-auto" />
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    {role === "admin" ? userData.user : userData.nombre}
+                  </h2>
+                  <p className="text-gray-200 text-sm">
+                    {role !== "admin" && userData?.CorreoElectronico}
+                  </p>
+                </div>
+                <div className="p-6">
                   {role !== "admin" && (
-                    <button
-                      className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300"
-                      onClick={() => setIsEditModalOpen(true)}
-                    >
-                      Editar Datos
-                    </button>
+                    <>
+                      <p className="text-gray-700 mb-4">
+                        {" "}
+                        <strong>Apellidos:</strong> {userData.ApellidoPa}{" "}
+                        {userData.ApellidoMa}
+                      </p>
+                      <p className="text-gray-700 mb-4">
+                        {" "}
+                        <strong>Teléfono:</strong> {userData.Telefono}
+                      </p>
+                    </>
                   )}
+
+                  <div className="flex space-x-4">
+                    <button
+                      className="w-full py-3 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-300"
+                      onClick={() => setIsModalOpen(true)}
+                    >
+                      Cambiar Contraseña
+                    </button>
+                    {role !== "admin" && (
+                      <button
+                        className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300"
+                        onClick={() => setIsEditModalOpen(true)}
+                      >
+                        Editar Datos
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { token } from "../../components/protectedRoute";
 import { ChevronDown } from "lucide-react";
 
-function AddReportModal({ reports, setReports, closeModal }) {
+function AddReportModal({ role, reports, setReports, closeModal }) {
   const [TituloReporte, setTituloReporte] = useState("");
   const [FolioReporte, setFolioReporte] = useState("");
   const [estado, setEstado] = useState("");
@@ -176,6 +176,28 @@ function AddReportModal({ reports, setReports, closeModal }) {
     }
   };
 
+  const getGridCols = (role) => {
+    switch (role) {
+      case "admin":
+        return "2";
+      case "cliente":
+        return "1";
+      default:
+        return;
+    }
+  };
+
+  const getGridCols2 = (role) => {
+    switch (role) {
+      case "admin":
+        return "3";
+      case "cliente":
+        return "1";
+      default:
+        return;
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-xl w-full max-w-4xl shadow-lg">
@@ -185,7 +207,7 @@ function AddReportModal({ reports, setReports, closeModal }) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Primera fila igual... */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className={`grid grid-cols-${getGridCols(role)} gap-6`}>
             <div>
               <label className="block text-gray-600 mb-2 text-sm font-medium">
                 Problema
@@ -200,19 +222,21 @@ function AddReportModal({ reports, setReports, closeModal }) {
               />
             </div>
 
-            <div>
-              <label className="block text-gray-600 mb-2 text-sm font-medium">
-                Folio
-              </label>
-              <input
-                type="text"
-                value={FolioReporte}
-                onChange={(e) => setFolioReporte(e.target.value)}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-                placeholder="Escribe el folio"
-                required
-              />
-            </div>
+            {role === "admin" && (
+              <div>
+                <label className="block text-gray-600 mb-2 text-sm font-medium">
+                  Folio
+                </label>
+                <input
+                  type="text"
+                  value={FolioReporte}
+                  onChange={(e) => setFolioReporte(e.target.value)}
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
+                  placeholder="Escribe el folio"
+                  required
+                />
+              </div>
+            )}
           </div>
 
           {/* Campo de descripción igual... */}
@@ -230,7 +254,7 @@ function AddReportModal({ reports, setReports, closeModal }) {
           </div>
 
           {/* Tercera fila con ambos autocompletados */}
-          <div className="grid grid-cols-3 gap-6">
+          <div className={`grid grid-cols-${getGridCols(role)} gap-6`}>
             <div className="relative">
               <label className="block text-gray-600 mb-2 text-sm font-medium">
                 Equipo
@@ -258,53 +282,60 @@ function AddReportModal({ reports, setReports, closeModal }) {
               )}
             </div>
 
-            <div className="relative">
-              <label className="block text-gray-600 mb-2 text-sm font-medium">
-                Reportado por
-              </label>
-              <input
-                type="text"
-                value={searchText}
-                onChange={handleSearchChange}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
-                placeholder="Buscar cliente..."
-                required
-              />
-              {showSuggestions && filteredClientes.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                  {filteredClientes.map((cliente) => (
-                    <div
-                      key={cliente.idClientes}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleClienteSelect(cliente)}
-                    >
-                      {cliente.Nombre} {cliente.ApellidoPa}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-gray-600 mb-2 text-sm font-medium">
-                Asignar a Técnico
-              </label>
+            {role === "admin" && (
               <div className="relative">
-                <select
-                  value={tecnicoAsignado}
-                  onChange={(e) => setTecnicoAsignado(e.target.value)}
-                  className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
-                >
-                  <option value="">Seleccione un técnico</option>
-                  {tecnicos.map((tecnico) => (
-                    <option key={tecnico.idTecnicos} value={tecnico.idTecnicos}>
-                      {tecnico.Nombre} {tecnico.ApellidoPa}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                <label className="block text-gray-600 mb-2 text-sm font-medium">
+                  Reportado por
+                </label>
+                <input
+                  type="text"
+                  value={searchText}
+                  onChange={handleSearchChange}
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2d57d1]"
+                  placeholder="Buscar cliente..."
+                  required
+                />
+                {showSuggestions && filteredClientes.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {filteredClientes.map((cliente) => (
+                      <div
+                        key={cliente.idClientes}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => handleClienteSelect(cliente)}
+                      >
+                        {cliente.Nombre} {cliente.ApellidoPa}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
+            )}
+
+            {role === "admin" && (
+              <div>
+                <label className="block text-gray-600 mb-2 text-sm font-medium">
+                  Asignar a Técnico
+                </label>
+                <div className="relative">
+                  <select
+                    value={tecnicoAsignado}
+                    onChange={(e) => setTecnicoAsignado(e.target.value)}
+                    className="w-full appearance-none p-3 text-sm border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent text-gray-600"
+                  >
+                    <option value="">Seleccione un técnico</option>
+                    {tecnicos.map((tecnico) => (
+                      <option
+                        key={tecnico.idTecnicos}
+                        value={tecnico.idTecnicos}
+                      >
+                        {tecnico.Nombre} {tecnico.ApellidoPa}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Botones igual... */}

@@ -28,16 +28,29 @@ function ServiceDetailModal({ report, closeModal }) {
     }
   };
 
+  const getStatusTextColor = (status) => {
+    switch (status) {
+      case "pendiente":
+        return "text-[#ff006e] border border-pink-300";
+      case "ejecucion":
+        return "text-[#ffbe0b] border border-amber-300";
+      case "concluido":
+        return "text-[#06d6a0] border border-emerald-300";
+      default:
+        return "text-gray-500 border border-gray-200";
+    }
+  };
+
   const getStatusText = (status) => {
     switch (status) {
       case "pendiente":
-        return "text-[#ff006e]";
+        return "Pendiente";
       case "ejecucion":
-        return "text-[#ffbe0b]";
+        return "En curso";
       case "concluido":
-        return "text-[#06d6a0]";
+        return "Concluido";
       default:
-        return "text-gray-500";
+        return "No disponible";
     }
   };
 
@@ -62,7 +75,7 @@ function ServiceDetailModal({ report, closeModal }) {
           <div
             className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${getStatusColor(
               report.estado
-            )} bg-opacity-20`}
+            )} bg-opacity-15 shadow-sm`}
           >
             {getStatusIcon(report.estado)}
           </div>
@@ -77,33 +90,45 @@ function ServiceDetailModal({ report, closeModal }) {
           <div className="space-y-3">
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Folio:</span>
-              <span className="text-gray-600">{report.folioReporte}</span>
+              <span className="text-gray-600">
+                {report.folioReporte || "No disponible"}
+              </span>
             </div>
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Descripción:</span>
               <span className="text-gray-600 max-w-[10vw]">
-                {report.comentarios}
+                {report.comentarios || "No disponible"}
               </span>
             </div>
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Ubicación:</span>
-              <span className="text-gray-600">{report.nombreUbicacion}</span>
+              <span className="text-gray-600">
+                {report.nombreUbicacion || "No disponible"}
+              </span>
             </div>
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Equipo:</span>
-              <span className="text-gray-600">{report.numeroEquipo}</span>
+              <span className="text-gray-600">
+                {report.numeroEquipo || "No disponible"}
+              </span>
             </div>
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">No. de Serie:</span>
-              <span className="text-gray-600">{report.numeroSerie}</span>
+              <span className="text-gray-600">
+                {report.numeroSerie || "No disponible"}
+              </span>
             </div>
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Reportado por:</span>
-              <span className="text-gray-600">{report.Cliente}</span>
+              <span className="text-gray-600">
+                {report.Cliente || "No disponible"}
+              </span>
             </div>
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Tel. Cliente:</span>
-              <span className="text-gray-600">{report.telefonoCliente}</span>
+              <span className="text-gray-600">
+                {report.telefonoCliente || "No disponible"}
+              </span>
             </div>
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Técnico:</span>
@@ -114,7 +139,7 @@ function ServiceDetailModal({ report, closeModal }) {
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Fecha y Hora:</span>
               <span className="text-gray-600">
-                {formatFechaHora(report.fechaCreacion)}
+                {formatFechaHora(report.fechaCreacion) || "No disponible"}
               </span>
             </div>
             <div className="flex items-center text-gray-700">
@@ -122,9 +147,9 @@ function ServiceDetailModal({ report, closeModal }) {
               <span
                 className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
                   report.estado
-                )} bg-opacity-10 ${getStatusText(report.estado)}`}
+                )} bg-opacity-10 ${getStatusTextColor(report.estado)}`}
               >
-                {report.estado}
+                {getStatusText(report.estado) || "No disponible"}
               </span>
             </div>
           </div>

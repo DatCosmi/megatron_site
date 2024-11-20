@@ -144,6 +144,7 @@ const Dashboard = () => {
       calculateAverageTime();
       calculateLocationStats();
     }
+    fetchReports();
   }, [reports]);
 
   const getReportCount = (status) => {
@@ -288,6 +289,19 @@ const Dashboard = () => {
     }
   };
 
+  const getGridCols = (role) => {
+    switch (role) {
+      case "admin":
+        return "lg:col-span-1";
+      case "cliente":
+        return "lg:col-span-3";
+      case "tecnico":
+        return "lg:col-span-1";
+      default:
+        return;
+    }
+  };
+
   const formatDuration = (ms) => {
     const days = Math.floor(ms / (1000 * 60 * 60 * 24));
     const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -309,7 +323,7 @@ const Dashboard = () => {
   return (
     <RoleProvider>
       <ProtectedRoute>
-        <div className="flex h-screen bg-[#eaeef6] ml-64 container-dashboard">
+        <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6] container-dashboard">
           <Sidebar />
           <div className="flex-1 p-6 flex gap-6">
             {/* Main Content Column */}
@@ -344,7 +358,11 @@ const Dashboard = () => {
                     {getReportCount("ejecucion")}
                   </p>
                 </div>
-                <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-r from-[#06d6a0] to-[#08a37b]">
+                <div
+                  className={`${getGridCols(
+                    role
+                  )} bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-r from-[#06d6a0] to-[#08a37b]`}
+                >
                   <h2 className="text-sm font-medium text-gray-600 mb-2 text-white">
                     Completados
                   </h2>
@@ -352,16 +370,18 @@ const Dashboard = () => {
                     {getReportCount("concluido")}
                   </p>
                 </div>
-                <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow col-span-2 bg-gradient-to-r from-indigo-600 to-indigo-800">
-                  <h2 className="text-sm font-medium text-gray-600 mb-2 text-white">
-                    Tiempo promedio en atender reportes
-                  </h2>
-                  <p className="text-4xl font-bold text-white">
-                    {averageTime
-                      ? `${averageTime.days}d ${averageTime.hours}h ${averageTime.minutes}m`
-                      : "No disponible"}
-                  </p>
-                </div>
+                {role === "admin" && (
+                  <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow col-span-2 bg-gradient-to-r from-indigo-600 to-indigo-800">
+                    <h2 className="text-sm font-medium text-gray-600 mb-2 text-white">
+                      Tiempo promedio en atender reportes
+                    </h2>
+                    <p className="text-4xl font-bold text-white">
+                      {averageTime
+                        ? `${averageTime.days}d ${averageTime.hours}h ${averageTime.minutes}m`
+                        : "No disponible"}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Recent Reports Table */}
@@ -382,7 +402,7 @@ const Dashboard = () => {
                         >
                           <div className="flex items-center gap-2">
                             Folio
-                            {getSortIcon("folio")}
+                            {getSortIcon("folioReporte")}
                           </div>
                         </th>
                         <th
@@ -392,7 +412,7 @@ const Dashboard = () => {
                         >
                           <div className="flex items-center gap-2">
                             Reporte
-                            {getSortIcon("reporte")}
+                            {getSortIcon("tituloReporte")}
                           </div>
                         </th>
                         <th
@@ -402,19 +422,36 @@ const Dashboard = () => {
                         >
                           <div className="flex items-center gap-2">
                             Fecha
-                            {getSortIcon("fecha")}
+                            {getSortIcon("fechaCreacion")}
                           </div>
                         </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                          onClick={() => handleSort("Cliente")}
-                        >
-                          <div className="flex items-center gap-2">
-                            Reportado por
-                            {getSortIcon("reportado por")}
-                          </div>
-                        </th>
+
+                        {role === "admin" && (
+                          <th
+                            scope="col"
+                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            onClick={() => handleSort("Cliente")}
+                          >
+                            <div className="flex items-center gap-2">
+                              Reportado por
+                              {getSortIcon("Cliente")}
+                            </div>
+                          </th>
+                        )}
+
+                        {role === "cliente" && (
+                          <th
+                            scope="col"
+                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            onClick={() => handleSort("tecnicoAsignado")}
+                          >
+                            <div className="flex items-center gap-2">
+                              Técnico asignado
+                              {getSortIcon("tecnicoAsignado")}
+                            </div>
+                          </th>
+                        )}
+
                         <th
                           scope="col"
                           className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
@@ -439,9 +476,16 @@ const Dashboard = () => {
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                             {formatFechaHora(report.fechaCreacion)}
                           </td>
-                          <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {report.Cliente}
-                          </td>
+                          {role === "admin" && (
+                            <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {report.Cliente}
+                            </td>
+                          )}
+                          {role === "cliente" && (
+                            <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {report.tecnicoAsignado}
+                            </td>
+                          )}
                           <td className="px-3 py-4 whitespace-nowrap text-sm">
                             <span className={getStatusBadge(report.estado)}>
                               {getStatusLabel(report.estado)}
@@ -456,73 +500,75 @@ const Dashboard = () => {
             </div>
 
             {/* Right Column for Location Stats */}
-            <div className="w-80 space-y-6 flex justify-center items-center flex-col">
-              {/* Fastest Locations */}
-              <div className="bg-white rounded-lg shadow p-4 min-w-80">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">
-                  Lugares mas rápidos de atender
-                </h2>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full">
-                    <thead>
-                      <tr>
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
-                          Ubicación
-                        </th>
-                        <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
-                          Tiempo
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {locationStats.fastest.map((stat, index) => (
-                        <tr key={index} className="border-t">
-                          <td className="py-2 text-sm text-gray-900">
-                            {stat.location}
-                          </td>
-                          <td className="py-2 text-sm text-gray-500 text-right">
-                            {formatDuration(stat.averageTime)}
-                          </td>
+            {role === "admin" && (
+              <div className="w-80 space-y-6 flex justify-center items-center flex-col">
+                {/* Fastest Locations */}
+                <div className="bg-white rounded-lg shadow p-4 min-w-80">
+                  <h2 className="text-lg font-medium text-gray-900 mb-4">
+                    Lugares mas rápidos de atender
+                  </h2>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr>
+                          <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
+                            Ubicación
+                          </th>
+                          <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
+                            Tiempo
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {locationStats.fastest.map((stat, index) => (
+                          <tr key={index} className="border-t">
+                            <td className="py-2 text-sm text-gray-900">
+                              {stat.location}
+                            </td>
+                            <td className="py-2 text-sm text-gray-500 text-right">
+                              {formatDuration(stat.averageTime)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
 
-              {/* Slowest Locations */}
-              <div className="bg-white rounded-lg shadow p-4 min-w-80">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">
-                  Lugares más lentos de atender
-                </h2>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full">
-                    <thead>
-                      <tr>
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
-                          Ubicación
-                        </th>
-                        <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
-                          Tiempo
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {locationStats.slowest.map((stat, index) => (
-                        <tr key={index} className="border-t">
-                          <td className="py-2 text-sm text-gray-900">
-                            {stat.location}
-                          </td>
-                          <td className="py-2 text-sm text-gray-500 text-right">
-                            {formatDuration(stat.averageTime)}
-                          </td>
+                {/* Slowest Locations */}
+                <div className="bg-white rounded-lg shadow p-4 min-w-80">
+                  <h2 className="text-lg font-medium text-gray-900 mb-4">
+                    Lugares más lentos de atender
+                  </h2>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr>
+                          <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
+                            Ubicación
+                          </th>
+                          <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">
+                            Tiempo
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {locationStats.slowest.map((stat, index) => (
+                          <tr key={index} className="border-t">
+                            <td className="py-2 text-sm text-gray-900">
+                              {stat.location}
+                            </td>
+                            <td className="py-2 text-sm text-gray-500 text-right">
+                              {formatDuration(stat.averageTime)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </ProtectedRoute>

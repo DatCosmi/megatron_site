@@ -42,8 +42,8 @@ const SearchBar = ({ reports, setFilteredReports, activeFilter }) => {
       </div>
       <input
         type="text"
-        className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent bg-white placeholder-gray-400 text-sm"
-        placeholder="Buscar por nombre, ubicación, equipo o cliente..."
+        className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2d57d1] focus:border-transparent"
+        placeholder="Buscar por folio, nombre, ubicación, equipo o cliente..."
         value={searchTerm}
         onChange={(e) => handleSearch(e.target.value)}
       />

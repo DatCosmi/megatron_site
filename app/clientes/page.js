@@ -168,7 +168,7 @@ const ClientesPage = () => {
   return (
     <RoleProvider>
       <ProtectedRoute>
-        <div className="flex h-screen bg-[#eaeef6] ml-64">
+        <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6]">
           <Sidebar />
           <main className="flex-1 p-6 overflow-y-auto bg-[#eaeef6]">
             <div className="dashboard space-y-6">

@@ -15,7 +15,6 @@ import {
 import AddUbicModal from "../components/dashboard/AddUbicModal";
 import ProtectedRoute, { token } from "../components/protectedRoute";
 import { RoleProvider } from "../components/context/RoleContext";
-import { useRouter } from "next/navigation";
 const Ubicaciones = () => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +26,6 @@ const Ubicaciones = () => {
   const itemsPerPage = 10;
   const totalPages = Math.ceil(ubicaciones.length / itemsPerPage);
 
-  const router = useRouter();
   const fetchUbicaciones = async () => {
     try {
       const response = await axios.get(
@@ -82,9 +80,7 @@ const Ubicaciones = () => {
     fetchUbicaciones();
     setUbicacionToEdit(null);
   };
-  const handleViewDetails = (ubicacionId) => {
-    router.push(`/ubicaciones/${ubicacionId}`);
-  };
+ 
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -213,11 +209,8 @@ const Ubicaciones = () => {
                 <table className="min-w-full divide-y divide-gray-200 recent-orders">
                   <thead>
                     <tr className="bg-gray-50">
-                      <th
-                        scope="col"
-                        className="pl-6 pr-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      >
-                        #
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cliente
                       </th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Nombre
@@ -252,8 +245,8 @@ const Ubicaciones = () => {
                     ) : currentItems.length > 0 ? (
                       currentItems.map((ubicacion) => (
                         <tr key={ubicacion.idUbicaciones}>
-                          <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {ubicacion.idUbicaciones}
+                           <td className="px-3 py-3 text-sm text-gray-500">
+                            {ubicacion.Cliente}
                           </td>
                           <td className="px-3 py-3 text-sm text-gray-500">
                             {ubicacion.Nombre}
@@ -285,15 +278,7 @@ const Ubicaciones = () => {
                             >
                               <SquarePen />
                             </button>
-                            <button
-                              onClick={() =>
-                                handleViewDetails(ubicacion.idUbicaciones)
-                              }
-                              className="text-[#28a745] flex"
-                            >
-                              <Eye />
-                              {/* Reemplaza Eye con el ícono que desees */}
-                            </button>
+                           
                           </td>
                         </tr>
                       ))

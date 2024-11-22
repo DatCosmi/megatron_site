@@ -1,7 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import Sidebar from "../components/dashboard/sidebar";
+import Sidebar from "../components/navigation/sidebar";
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,8 +12,8 @@ import {
   SquarePen,
 } from "lucide-react";
 import AddProductModal from "../components/dashboard/AddProductModal";
-import ProtectedRoute, { token } from "../components/protectedRoute";
-import { RoleProvider } from "../components/context/RoleContext";
+import ProtectedRoute from "../components/protectedRoute";
+import { AuthContext } from "../context/UsuarioContext";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -21,6 +21,8 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [productToEdit, setProductToEdit] = useState(null);
 
+  const { authState } = useContext(AuthContext);
+  const { token } = authState;
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -167,8 +169,7 @@ const Products = () => {
   );
 
   return (
-    <RoleProvider>
-      <ProtectedRoute>
+   
         <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6]">
           <Sidebar />
           <main className="flex-1 p-6 overflow-y-auto bg-[#eaeef6]">
@@ -427,8 +428,7 @@ const Products = () => {
             )}
           </main>
         </div>
-      </ProtectedRoute>
-    </RoleProvider>
+  
   );
 };
 

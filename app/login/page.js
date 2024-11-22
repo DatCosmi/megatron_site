@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-
+import { AuthContext } from "../context/UsuarioContext";
 const LoginPage = () => {
   const router = useRouter();
+  const context = useContext(AuthContext);
 
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
@@ -29,37 +30,12 @@ const LoginPage = () => {
       );
       const data = await response.json();
 
-      if (!data.token) {
-        setError(
-          data.message || "Ocurrió un error. Por favor, intenta de nuevo."
-        );
-        return;
+      if (response.ok) {
+        context.signIn(user, data.token);
+        setUser("");
+        setPassword("");
+        router.push("/dashboard");
       }
-
-      // Guarda el token en localStorage
-      localStorage.setItem("token", data.token);
-
-      // Obtiene los datos del perfil del usuario
-      const perfilResponse = await fetch(
-        "https://backend-integradora.vercel.app/api/auth/perfil",
-        {
-          headers: { Authorization: `Bearer ${data.token}` },
-        }
-      );
-      const perfilData = await perfilResponse.json();
-
-      if (!perfilData.usuario) {
-        setError("Error al cargar el perfil. Intenta de nuevo.");
-        return;
-      }
-
-      // Guarda los datos en localStorage
-      localStorage.setItem("role", perfilData.usuario.rol);
-      localStorage.setItem("id", perfilData.usuario.id);
-      localStorage.setItem("exp", perfilData.usuario.exp);
-
-      // Redirige al dashboard
-      router.push("/dashboard");
     } catch (err) {
       console.error("Error al iniciar sesión:", err);
       setError("Ocurrió un error inesperado. Intenta de nuevo.");
@@ -67,15 +43,6 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (localStorage.getItem("token")) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("id");
-      localStorage.removeItem("role");
-      localStorage.removeItem("exp");
-    }
-  }, []);
 
   const handleGoHome = () => {
     router.push("/"); // Navega a la página principal

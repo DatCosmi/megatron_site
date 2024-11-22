@@ -15,7 +15,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Header from "./components/header";
 import Footer from "./components/footer";
-import { RoleProvider } from "./components/context/RoleContext";
 
 const Home = () => {
   const [isShrunk, setIsShrunk] = useState(false);
@@ -534,8 +533,8 @@ const Home = () => {
           </div>
         </section>
         <Footer />
-      </main>
-  );
+      </main>                           
+  );  
 };
 
 export default Home;

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -14,19 +14,21 @@ import {
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
-import { useRole } from "../context/RoleContext"; // Usamos el contexto
+import { AuthContext } from "../../context/UsuarioContext";
 
 const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { role, clearRole } = useRole(); // Accedemos al rol desde el contexto
 
+  const { authState } = useContext(AuthContext);
+  const { rol } = authState;
+  const { signOut } = useContext(AuthContext);
   const menuItems = [
     { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
     { name: "Reportes", icon: DocumentChartBarIcon, href: "/reports" },
     { name: "Equipos", icon: PrinterIcon, href: "/equipos" },
 
-    ...(role === "admin" && role !== "cliente" && role !== "tecnico"
+    ...(rol === "admin" && rol !== "cliente" && rol !== "tecnico"
       ? [
           { name: "Productos", icon: ArchiveBoxIcon, href: "/products" },
           { name: "Ubicaciones", icon: MapPinIcon, href: "/ubicaciones" },
@@ -40,7 +42,7 @@ const Sidebar = () => {
   const isActiveRoute = (href) => pathname === href;
 
   const handleLogout = () => {
-    clearRole();
+    signOut();
     router.push("/");
   };
 

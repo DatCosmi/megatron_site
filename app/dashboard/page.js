@@ -1,18 +1,21 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import Sidebar from "../components/dashboard/sidebar";
+import React, { useContext, useEffect, useState } from "react";
+import Sidebar from "../components/navigation/sidebar";
 import { ChevronDown, ChevronUp, FileText } from "lucide-react";
-import ProtectedRoute, { token } from "../components/protectedRoute";
-import { RoleProvider } from "../components/context/RoleContext";
+
 import axios from "axios";
+import { AuthContext } from "../context/UsuarioContext";
 
 const Dashboard = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [averageTime, setAverageTime] = useState(null);
-  const [role, setRole] = useState(null);
-  const [id, setId] = useState(null);
+  // const [role, setRole] = useState(null);
+  // const [id, setId] = useState(null);
+  const { authState, } = useContext(AuthContext); // Accede al estado global
+  const { rol, iduser, token } = authState;
+
   const [locationStats, setLocationStats] = useState({
     fastest: [],
     slowest: [],
@@ -22,25 +25,21 @@ const Dashboard = () => {
     direction: "asc",
   });
 
-  const getUserId = (role) => {
-    if (role === "cliente") return localStorage.getItem("IdCliente");
-    if (role === "tecnico") return localStorage.getItem("IdTecnico");
-    return localStorage.getItem("id");
-  };
 
-  const getEndpoint = (role, userId) => {
-    if (!role || !userId) return null;
-    if (role === "admin")
+
+  const getEndpoint = (rol, userId) => {
+    if (!rol || !userId) return null;
+    if (rol === "admin")
       return `https://backend-integradora.vercel.app/api/reportesCreados`;
-    if (role === "cliente")
+    if (rol === "cliente")
       return `https://backend-integradora.vercel.app/api/reportesclientes/${userId}`;
-    if (role === "tecnico")
+    if (rol === "tecnico")
       return `https://backend-integradora.vercel.app/api/tecnicosreportes/${userId}`;
     return null;
   };
 
-  const fetchUser = async (role, idUser) => {
-    if (!role || !idUser) return null;
+  const fetchUser = async (rol, idUser) => {
+    if (!rol || !idUser) return null;
 
     try {
       const endpointMap = {
@@ -49,7 +48,7 @@ const Dashboard = () => {
         admin: `https://backend-integradora.vercel.app/api/auth/getUser/${idUser}`,
       };
 
-      const response = await fetch(endpointMap[role], {
+      const response = await fetch(endpointMap[rol], {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -60,9 +59,9 @@ const Dashboard = () => {
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
       const result = await response.json();
 
-      if (role === "cliente") {
+      if (rol === "cliente") {
         localStorage.setItem("IdCliente", result.idClientes);
-      } else if (role === "tecnico") {
+      } else if (rol === "tecnico") {
         localStorage.setItem("IdTecnico", result.idTecnicos);
       }
 
@@ -74,11 +73,11 @@ const Dashboard = () => {
     }
   };
 
-  const fetchReports = async (role, userId) => {
-    if (!role || !userId) return [];
+  const fetchReports = async (rol, iduser) => {
+    if (!rol || !iduser) return [];
 
     try {
-      const endpoint = getEndpoint(role, userId);
+      const endpoint = getEndpoint(rol, iduser);
       if (!endpoint) throw new Error("Invalid role or userId");
 
       const response = await axios.get(endpoint, {
@@ -108,24 +107,22 @@ const Dashboard = () => {
       setError(null);
 
       try {
-        const roleFromStorage = localStorage.getItem("role");
-        const idFromStorage = localStorage.getItem("id");
+        // const roleFromStorage = localStorage.getItem("role");
+        // const idFromStorage = localStorage.getItem("id");
 
-        if (!roleFromStorage || !idFromStorage) {
+        if (!rol || !iduser) {
           throw new Error("No se encontró rol o ID en localStorage");
         }
 
-        setRole(roleFromStorage);
-        setId(idFromStorage);
+    
 
-        await fetchUser(roleFromStorage, idFromStorage);
-        const userId = getUserId(roleFromStorage);
+        await fetchUser(rol, iduser);
 
-        if (!userId) {
+        if (!iduser) {
           throw new Error("No se pudo obtener el ID del usuario");
         }
 
-        const reportData = await fetchReports(roleFromStorage, userId);
+        const reportData = await fetchReports(rol, iduser);
         setReports(Array.isArray(reportData) ? reportData : []);
       } catch (err) {
         console.error("Error initializing dashboard:", err);
@@ -289,8 +286,8 @@ const Dashboard = () => {
     }
   };
 
-  const getGridCols = (role) => {
-    switch (role) {
+  const getGridCols = (rol) => {
+    switch (rol) {
       case "admin":
         return "lg:col-span-1";
       case "cliente":
@@ -321,8 +318,7 @@ const Dashboard = () => {
   };
 
   return (
-    <RoleProvider>
-      <ProtectedRoute>
+  
         <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6] container-dashboard">
           <Sidebar />
           <div className="flex-1 p-6 flex gap-6">
@@ -360,7 +356,7 @@ const Dashboard = () => {
                 </div>
                 <div
                   className={`${getGridCols(
-                    role
+                    rol
                   )} bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-r from-[#06d6a0] to-[#08a37b]`}
                 >
                   <h2 className="text-sm font-medium text-gray-600 mb-2 text-white">
@@ -370,7 +366,7 @@ const Dashboard = () => {
                     {getReportCount("concluido")}
                   </p>
                 </div>
-                {role === "admin" && (
+                {rol === "admin" && (
                   <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow col-span-2 bg-gradient-to-r from-indigo-600 to-indigo-800">
                     <h2 className="text-sm font-medium text-gray-600 mb-2 text-white">
                       Tiempo promedio en atender reportes
@@ -426,7 +422,7 @@ const Dashboard = () => {
                           </div>
                         </th>
 
-                        {role === "admin" && (
+                        {rol === "admin" && (
                           <th
                             scope="col"
                             className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
@@ -439,7 +435,7 @@ const Dashboard = () => {
                           </th>
                         )}
 
-                        {role === "cliente" && (
+                        {rol === "cliente" && (
                           <th
                             scope="col"
                             className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
@@ -476,12 +472,12 @@ const Dashboard = () => {
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                             {formatFechaHora(report.fechaCreacion)}
                           </td>
-                          {role === "admin" && (
+                          {rol === "admin" && (
                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                               {report.Cliente}
                             </td>
                           )}
-                          {role === "cliente" && (
+                          {rol === "cliente" && (
                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                               {report.tecnicoAsignado}
                             </td>
@@ -500,7 +496,7 @@ const Dashboard = () => {
             </div>
 
             {/* Right Column for Location Stats */}
-            {role === "admin" && (
+            {rol === "admin" && (
               <div className="w-80 space-y-6 flex justify-center items-center flex-col">
                 {/* Fastest Locations */}
                 <div className="bg-white rounded-lg shadow p-4 min-w-80">
@@ -571,8 +567,6 @@ const Dashboard = () => {
             )}
           </div>
         </div>
-      </ProtectedRoute>
-    </RoleProvider>
   );
 };
 

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, use } from "react";
 import Sidebar from "../components/navigation/sidebar";
 import TechnicianSidebar from "../components/dashboard/TechnicianSidebar";
 import TechnicianModal from "../components/dashboard/TechnicianModal";
@@ -19,12 +19,10 @@ import axios from "axios";
 import SearchBar from "../components/dashboard/SearchBar";
 import { AuthContext } from "../context/UsuarioContext";
 function Reports() {
-  const { authState } = useContext(AuthContext);
-  const { rol, iduser, token } = authState; // Desestructurar los datos desde authState
-  console.log("autstate", authState);
-  console.log("rol", rol);
-  console.log("iduser", iduser);
-  console.log("token", token);
+  const { authState, loadUserDetails } = useContext(AuthContext);
+  const { rol, iduser, token, userDetails } = authState;
+ 
+
   const [reports, setReports] = useState([]);
   const [reportToEdit, setReportToEdit] = useState(null);
   const [technicians, setTechnicians] = useState([]);
@@ -36,45 +34,6 @@ function Reports() {
   const [isReportDetailModalOpen, setIsReportDetailModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
-  const getEndpoint = (rol, iduser) => {
-    if (!rol || !iduser) return null;
-    if (rol === "admin")
-      return `https://backend-integradora.vercel.app/api/reportesCreados`;
-    if (rol === "cliente")
-      return `https://backend-integradora.vercel.app/api/reportesclientes/${iduser}`;
-    if (rol === "tecnico")
-      return `https://backend-integradora.vercel.app/api/tecnicosreportes/${iduser}`;
-    return null;
-  };
-
-  const fetchReports = async (rol, iduser) => {
-    if (!rol || !iduser) return [];
-
-    try {
-      const endpoint = getEndpoint(rol, iduser);
-      if (!endpoint) throw new Error("Invalid rol or iduser");
-
-      const response = await axios.get(endpoint, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Asegurarse de que la respuesta sea un array
-      const data = response.data;
-      if (!Array.isArray(data)) {
-        console.error("La respuesta no es un array:", data);
-        return [];
-      }
-
-      return data;
-    } catch (error) {
-      console.error("Error fetching reports:", error);
-      setError(error.message);
-      return [];
-    }
-  };
 
   const fetchTechnicians = async () => {
     try {
@@ -124,7 +83,7 @@ function Reports() {
       setError(error.message || "Algo salió mal");
       console.error(error);
     }
-    fetchReports();
+    LoadReportsDetails();
   };
 
   const handleStart = async (IdReporte) => {
@@ -155,9 +114,8 @@ function Reports() {
       setError(error.message || "Algo salió mal");
       console.error(error);
     }
-    fetchReports();
+    await LoadReportsDetails();
   };
-
   // Función para filtrar reportes por fecha y estado
   const getFilteredReports = (reportsData, filter) => {
     return reportsData.filter((report) => {
@@ -182,6 +140,11 @@ function Reports() {
   // Estado para mantener los reportes filtrados por búsqueda
   const [searchFilteredReports, setSearchFilteredReports] = useState([]);
 
+  useEffect(() => {
+    if (rol && iduser) {
+      loadUserDetails(rol, iduser); // Solo depende de `rol` y `iduser`.
+    }
+  }, [iduser, rol]);
   // Actualizar los filtros cuando cambien los reportes o el filtro activo
   useEffect(() => {
     if (reports.length > 0) {
@@ -190,35 +153,71 @@ function Reports() {
     }
   }, [reports, activeFilter]);
 
+  const initializeDashboard = async () => {
+    setLoading(true);
+    setError(null);
+
+    let clienteId = null;
+    let tecnicoId = null;
+
+    if (rol === "cliente" && userDetails) {
+      clienteId = userDetails.idClientes;
+    } else if (rol === "tecnico" && userDetails) {
+      tecnicoId = userDetails.idTecnicos;
+    }
+
+    const reportData = await LoadReportsDetails(clienteId, tecnicoId);
+    setReports(Array.isArray(reportData) ? reportData : []);
+  };
   useEffect(() => {
-    const initializeDashboard = async () => {
-      setLoading(true);
-      setError(null);
 
-      try {
-        const reportData = await fetchReports(rol, iduser);
-        setReports(Array.isArray(reportData) ? reportData : []);
-      } catch (err) {
-        console.error("Error initializing dashboard:", err);
-        setError(err.message);
-        setReports([]); // Asegurarse de que reports sea un array vacío en caso de error
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeDashboard();
-  }, []);
+    if (userDetails) {
+      initializeDashboard();
+    }
+  }, [userDetails]);
 
   // Fetch initial data
   useEffect(() => {
-    fetchReports();
     fetchTechnicians();
   }, [reports]);
 
   const handleAssign = (reportId) => {
     setReportToEdit(reportId);
     setIsTechnicianListOpen(true);
+  };
+
+  const LoadReportsDetails = async (clienteId, tecnicoId) => {
+    try {
+      const endpointReportMap = {
+        admin: `https://backend-integradora.vercel.app/api/reportesCreados`,
+        cliente: `https://backend-integradora.vercel.app/api/reportesclientes/${clienteId}`,
+        tecnico: `https://backend-integradora.vercel.app/api/tecnicosreportes/${tecnicoId}`,
+      };
+
+      const endpointReport = endpointReportMap[rol];
+      const response = await fetch(endpointReport, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+      const result = await response.json();
+      if (result) {
+        console.log(
+          "LoadReportsDetails: Detalles del reporte obtenidos",
+          result
+        );
+        return result;
+      }
+    } catch (err) {
+      console.error(
+        "Reports: Error al obtener los detalles de los reportes:",
+        err.message
+      );
+    }
   };
 
   const handleDelete = async (reportId) => {
@@ -234,7 +233,7 @@ function Reports() {
       );
 
       if (response.ok) {
-        fetchReports();
+        LoadReportsDetails();
         console.log("si se pudo");
       } else {
         console.error("Failed to delete product");
@@ -270,11 +269,11 @@ function Reports() {
     }
   };
 
-  const closeModal = () => {
+  const closeModal = async () => {
     setIsAddReportModalOpen(false);
     setIsTechnicianListOpen(false);
     setIsReportDetailModalOpen(false);
-    fetchReports();
+    LoadReportsDetails();
     setReportToEdit(null);
   };
 

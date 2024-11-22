@@ -2,7 +2,8 @@ export const authInitialState = {
   user: "",
   token: "",
   rol: "", // Incluir rol en el estado inicial
-  iduser: "", // Incluir iduser en el estado inicial
+  iduser: "",
+  userDetails: "",
 };
 
 export const authReducer = (state, action) => {
@@ -26,6 +27,7 @@ export const authReducer = (state, action) => {
         ...state,
         userDetails, // Actualizar iduser
       };
+  
     default:
       return state;
   }

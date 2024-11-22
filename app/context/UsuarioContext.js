@@ -9,6 +9,7 @@ export const authInitialState = {
   token: "",
   iduser: "",
   rol: "",
+  userDetails: "",
 };
 
 export const AuthContext = createContext({});
@@ -195,6 +196,8 @@ export const AuthProvider = ({ children }) => {
       ); // Log si no hay datos
     }
   };
+
+
 
   useEffect(() => {
     console.log("useEffect: Iniciando carga de token al montar el componente"); // Log cuando se monta el componente

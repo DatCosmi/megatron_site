@@ -9,9 +9,9 @@ function TechnicianSidebar({ reports, technicians, setIsTechnicianListOpen }) {
   const [localSelectedService, setLocalSelectedService] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  const { token } = useContext(AuthContext);
-
+  const [technician, setTechnicians] = useState([]);
+  const { authState } = useContext(AuthContext);
+  const { token } = authState;
   const fetchTechnicians = async () => {
     try {
       const response = await axios.get(

@@ -14,9 +14,9 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent form from refreshing
+    e.preventDefault(); // Prevenir el refresh del formulario
     setLoading(true);
-    setError("");
+    setError(""); // Resetear el error
 
     try {
       // Inicia sesión y obtiene el token
@@ -25,22 +25,32 @@ const LoginPage = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user, password }), // Pass user and password as JSON
+          body: JSON.stringify({ user, password }), // Pasar usuario y contraseña
         }
       );
       const data = await response.json();
 
       if (response.ok) {
+        // Inicia sesión y guarda el token
         context.signIn(user, data.token);
-        setUser("");
+        localStorage.setItem("authToken", data.token);
+
+        setUser(""); // Limpiar el formulario
         setPassword("");
+
+        // Espera a que el contexto se haya actualizado antes de hacer la redirección
+        setLoading(false); // Detener la carga
+
+        // Redirigir a la página del dashboard solo después de que todo esté listo
         router.push("/dashboard");
+      } else {
+        setError("Usuario o contraseña incorrectos");
       }
     } catch (err) {
       console.error("Error al iniciar sesión:", err);
       setError("Ocurrió un error inesperado. Intenta de nuevo.");
     } finally {
-      setLoading(false);
+      setLoading(false); // Detener el estado de carga
     }
   };
 

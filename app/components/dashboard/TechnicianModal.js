@@ -1,13 +1,16 @@
 import { UserCircle2 } from "lucide-react";
-import ProtectedRoute, { token } from "../../components/protectedRoute";
+import { AuthContext } from "../../context/UsuarioContext";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 function TechnicianModal({ reports, setReports, closeModal, reportToEdit }) {
   const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  const { authState } = useContext(AuthContext);
+  const { token } = authState;
 
   const fetchTechnicians = async () => {
     try {
@@ -62,7 +65,6 @@ function TechnicianModal({ reports, setReports, closeModal, reportToEdit }) {
   };
 
   return (
-    <ProtectedRoute>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-xl shadow-lg max-w-2xl w-full overflow-hidden">
           {/* Header with blue accent */}
@@ -127,7 +129,6 @@ function TechnicianModal({ reports, setReports, closeModal, reportToEdit }) {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
   );
 }
 

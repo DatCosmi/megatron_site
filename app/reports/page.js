@@ -21,7 +21,6 @@ import { AuthContext } from "../context/UsuarioContext";
 function Reports() {
   const { authState, loadUserDetails } = useContext(AuthContext);
   const { rol, iduser, token, userDetails } = authState;
- 
 
   const [reports, setReports] = useState([]);
   const [reportToEdit, setReportToEdit] = useState(null);
@@ -153,24 +152,21 @@ function Reports() {
     }
   }, [reports, activeFilter]);
 
+  let clienteId = null;
+  let tecnicoId = null;
+  if (rol === "cliente" && userDetails) {
+    clienteId = userDetails.idClientes;
+  } else if (rol === "tecnico" && userDetails) {
+    tecnicoId = userDetails.idTecnicos;
+  }
   const initializeDashboard = async () => {
     setLoading(true);
     setError(null);
-
-    let clienteId = null;
-    let tecnicoId = null;
-
-    if (rol === "cliente" && userDetails) {
-      clienteId = userDetails.idClientes;
-    } else if (rol === "tecnico" && userDetails) {
-      tecnicoId = userDetails.idTecnicos;
-    }
 
     const reportData = await LoadReportsDetails(clienteId, tecnicoId);
     setReports(Array.isArray(reportData) ? reportData : []);
   };
   useEffect(() => {
-
     if (userDetails) {
       initializeDashboard();
     }
@@ -482,8 +478,9 @@ function Reports() {
         )}
         {isAddReportModalOpen && (
           <AddReportModal
+            id={clienteId}
             reports={reports}
-            rol={rol}
+            role={rol}
             setReports={setReports}
             closeModal={closeModal}
           />

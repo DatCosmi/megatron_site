@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
-import { token } from "../protectedRoute";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/UsuarioContext";
 import { ChevronDown } from "lucide-react";
 function AddUbicModal({
   ubicaciones,
@@ -17,6 +17,9 @@ function AddUbicModal({
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [clientes_idClientes, setClientes_idClientes] = useState("");
+
+  const { authState } = useContext(AuthContext);
+  const { token } = authState;
 
   // Populate form fields if editing
   useEffect(() => {

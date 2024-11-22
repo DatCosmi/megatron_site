@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { token } from "../../components/protectedRoute";
+import { AuthContext } from "../../context/UsuarioContext";
 
 function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
   const [modelo, setModelo] = useState("");
@@ -10,6 +10,9 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
   const [tipo, setTipo] = useState("");
   const [existencia, setExistencia] = useState("");
   const [caracteristicas, setCaracteristicas] = useState("");
+
+  const { authState } = useContext(AuthContext);
+  const { token } = authState;
 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");

@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
-import { token } from "../protectedRoute";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/UsuarioContext"
 function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
@@ -9,6 +9,9 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
   const [apellidoMa, setApellidoMa] = useState("");
   const [telefono, setTelefono] = useState("");
   const [correoElectronico, setCorreoElectronico] = useState("");
+  
+  const { authState } = useContext(AuthContext);
+  const { token } = authState
 
   const [usersId, setUsersId] = useState("");
   const [clienteId, setClienteId] = useState("");

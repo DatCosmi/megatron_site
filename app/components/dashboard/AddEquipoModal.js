@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { token } from "../../components/protectedRoute";
+import { AuthContext } from "../../context/UsuarioContext";
 
 function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
   const [Estatus, setEstatus] = useState("");
@@ -10,6 +10,8 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
   const [IdProductos, setIdProductos] = useState("");
   const [idUbicaciones, setIdUbicaciones] = useState("");
 
+  const { authState } = useContext(AuthContext);
+  const { token } = authState;
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 

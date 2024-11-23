@@ -13,7 +13,7 @@ import {
   SquarePen,
 } from "lucide-react";
 import AddEquipoModal from "../components/dashboard/AddEquipoModal";
-import ProtectedRoute from "../components/protectedRoute";
+import ProtectedRoute from "../context/protectedRoute";
 
 import { AuthContext } from "../context/UsuarioContext";
 

@@ -60,10 +60,7 @@ const Dashboard = () => {
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
       const result = await response.json();
       if (result) {
-        console.log(
-          "LoadReportsDetails: Detalles del reporte obtenidos",
-          result
-        );
+       
         return result;
       }
     } catch (err) {

@@ -227,7 +227,6 @@ function Reports() {
 
       if (response.ok) {
         LoadReportsDetails();
-        console.log("si se pudo");
       } else {
         console.error("Failed to delete product");
       }
@@ -375,7 +374,7 @@ function Reports() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Users className="w-4 h-4" />
-                          <span>{report.TecnicoAsignado || "Sin asignar"}</span>
+                          <span>{report.TecnicoAsignado || report.tecnicoAsignado || "Sin asignar"}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Calendar className="w-4 h-4" />

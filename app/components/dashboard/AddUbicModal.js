@@ -2,6 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/UsuarioContext";
 import { ChevronDown } from "lucide-react";
+import toast, { Toaster } from 'react-hot-toast';
 function AddUbicModal({
   ubicaciones,
   setUbicaciones,
@@ -101,6 +102,8 @@ function AddUbicModal({
       }
 
       if (!response.ok) {
+        
+        toast.error("Error al guardar la ubicacion");
         throw new Error("Error al guardar la ubicación");
       }
 
@@ -127,9 +130,11 @@ function AddUbicModal({
 
       // Close modal after successful operation
       closeModal();
+      
+      toast.success("Ubicacion agregada exitosamente");
     } catch (error) {
       setError(error.message || "Algo salió mal");
-      closeModal();
+      
       //error
     }
   };
@@ -270,6 +275,7 @@ function AddUbicModal({
           </div>
         </form>
       </div>
+      <Toaster />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { AuthContext } from "../../context/UsuarioContext";
+import toast, { Toaster } from 'react-hot-toast';
 
 function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
   const [modelo, setModelo] = useState("");
@@ -76,6 +77,8 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
       }
 
       if (!response.ok) {
+        
+        toast.error("Error al guardar el producto");
         throw new Error("Error al guardar el producto");
       }
 
@@ -89,16 +92,19 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
           prev.map((p) => (p.id === result.product.id ? result.product : p))
         );
       } else {
-        // Agregar el nuevo producto al estado
+        
+        // Agregar el nuo producto al estado
         setSuccessMessage(`Producto agregado con ID: ${result.product.id}`);
         setProducts((prev) => [...prev, result.product]);
       }
 
       // Cerrar el modal y limpiar los campos si es necesario
       closeModal();
+      
+      toast.success("producto agregado exitosamente");
     } catch (error) {
       setError(error.message || "Algo salió mal");
-      closeModal();
+      
     }
   };
 
@@ -242,6 +248,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
           </div>
         </form>
       </div>
+      <Toaster />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { AuthContext } from "../../context/UsuarioContext";
+import toast, { Toaster } from 'react-hot-toast';
 
 function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
   const [Estatus, setEstatus] = useState("");
@@ -119,9 +120,14 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
       }
 
       if (!response.ok) {
-        throw new Error("Error al guardar el producto");
+        
+        toast.error("Error al guardar el equipo");
+        throw new Error("Error al guardar el Equipo");
       }
-
+      if (response.ok) {
+        
+      toast.success("Equipo agregado exitosamente");
+      }
       // Obtener el resultado de la respuesta
       const result = await response.json();
 
@@ -132,6 +138,7 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
           prev.map((p) => (p.id === result.equipo.id ? result.equipo : p))
         );
       } else {
+        
         // Agregar el nuevo producto al estado
         setSuccessMessage(`Producto agregado con ID: ${result.equipo.id}`);
         setEquipos((prev) => [...prev, result.equipo]);
@@ -141,7 +148,7 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
       closeModal();
     } catch (error) {
       setError(error.message || "Algo salió mal");
-      closeModal();
+      
     }
   };
 
@@ -301,6 +308,7 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
           </div>
         </form>
       </div>
+      <Toaster />
     </div>
   );
 }

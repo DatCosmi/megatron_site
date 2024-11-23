@@ -2,6 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/UsuarioContext";
 import { ChevronDown } from "lucide-react";
+import toast, { Toaster } from 'react-hot-toast';
 
 function AddReportModal({ id, role, reports, setReports, closeModal }) {
   const [TituloReporte, setTituloReporte] = useState("");
@@ -169,13 +170,17 @@ function AddReportModal({ id, role, reports, setReports, closeModal }) {
       );
 
       if (!response.ok) {
+        
+        toast.error("Error al guardar el reporte");
         throw new Error("Error al guardar el reporte");
       }
 
       closeModal();
+      
+      toast.success("Reporte agregado exitosamente");
     } catch (error) {
       setError(error.message || "Algo salió mal");
-      closeModal();
+      
     }
   };
 
@@ -359,6 +364,7 @@ function AddReportModal({ id, role, reports, setReports, closeModal }) {
           </div>
         </form>
       </div>
+      <Toaster />
     </div>
   );
 }

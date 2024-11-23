@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp, FileText } from "lucide-react";
 
 import axios from "axios";
 import { AuthContext, AuthProvider } from "../context/UsuarioContext";
+import ProtectedRoute from "../context/protectedRoute";
 
 const Dashboard = () => {
   const [reports, setReports] = useState([]);
@@ -266,6 +267,7 @@ const Dashboard = () => {
   };
 
   return (
+    <ProtectedRoute>
       <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6] container-dashboard">
         <Sidebar />
         <div className="flex-1 p-6 flex gap-6">
@@ -514,6 +516,7 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+    </ProtectedRoute>
   );
 };
 

@@ -197,8 +197,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
-
   useEffect(() => {
     console.log("useEffect: Iniciando carga de token al montar el componente"); // Log cuando se monta el componente
     loadToken();
@@ -206,10 +204,7 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     console.log("signOut: Cerrando sesión"); // Log de entrada en signOut
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("authUser");
-    localStorage.removeItem("iduser");
-    localStorage.removeItem("rol");
+    localStorage.clear();
     dispatch({ type: "signOut" });
     router.push("/");
   };
@@ -220,15 +215,17 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        authState,
-        signIn,
-        signOut,
-        loadUserDetails,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <div>
+      <AuthContext.Provider
+        value={{
+          authState,
+          signIn,
+          signOut,
+          loadUserDetails,
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    </div>
   );
 };

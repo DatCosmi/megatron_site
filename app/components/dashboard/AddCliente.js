@@ -139,6 +139,7 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
 
         setSuccessMessage("Cliente actualizado exitosamente");
         closeModal();
+
       } else {
         // Create new user and client
         const userData = {
@@ -182,7 +183,6 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
         const result = await clienteResponse.json();
         setSuccessMessage("Cliente agregado exitosamente");
         setClientes((prev) => [...prev, result]);
-
         closeModal();
       }
     } catch (error) {

@@ -115,11 +115,13 @@ function AddUbicModal({
         setUbicaciones((prev) =>
           prev.map((u) => (u.id === result.ubicacion.id ? result.ubicacion : u))
         );
+        //aqui va una de que si se acutalizo bien
       } else {
         // Add new location to state
         setSuccessMessage(
           `Ubicación agregada con ID: ${result.ubicacion.idUbicaciones}`
         );
+        //aqui va una de que si se creo bien
         setUbicaciones((prev) => [...prev, result.ubicacion]);
       }
 
@@ -128,6 +130,7 @@ function AddUbicModal({
     } catch (error) {
       setError(error.message || "Algo salió mal");
       closeModal();
+      //error
     }
   };
 

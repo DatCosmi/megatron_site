@@ -75,7 +75,6 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
     }
   }, [IdProductos, equipoToEdit]);
 
-  console.log("a", IdProductos);
   const handleSubmit = async (event) => {
     event.preventDefault();
 

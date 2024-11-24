@@ -121,7 +121,7 @@ function Reports() {
     return reportsData.filter((report) => {
       const fechaActual = new Date();
       const fechaUltimaSemana = new Date(
-        fechaActual.getTime() - 7 * 24 * 60 * 60 * 1000
+        fechaActual.getTime() - 31 * 24 * 60 * 60 * 1000
       );
       const fechaReporte = new Date(report.fechaCreacion);
 
@@ -133,9 +133,13 @@ function Reports() {
       const cumpleFiltroEstado =
         filter === "todos" ? true : report.estado === filter;
 
+      // Filtro adicional para los reportes no asignados
+    
+
       return esReporteDentroDeUltimaSemana && cumpleFiltroEstado;
     });
   };
+
 
   // Estado para mantener los reportes filtrados por búsqueda
   const [searchFilteredReports, setSearchFilteredReports] = useState([]);
@@ -212,7 +216,6 @@ function Reports() {
       );
     }
   };
-
   const handleDelete = async (reportId) => {
     try {
       const response = await fetch(
@@ -342,7 +345,7 @@ function Reports() {
               ) : getFilteredReports.length > 0 ? (
                 searchFilteredReports.map((report) => (
                   <div
-                    key={report.folioReporte}
+                    key={report.IdReporte}
                     className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex"
                   >
                     <div
@@ -374,7 +377,11 @@ function Reports() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Users className="w-4 h-4" />
-                          <span>{report.TecnicoAsignado || report.tecnicoAsignado || "Sin asignar"}</span>
+                          <span>
+                            {report.TecnicoAsignado ||
+                              report.tecnicoAsignado ||
+                              "Sin asignar"}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Calendar className="w-4 h-4" />
@@ -447,13 +454,15 @@ function Reports() {
                             </button>
                           </>
                         )}
-
-                        <button
-                          className="w-full p-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
-                          onClick={() => handleDelete(report.IdReporte)}
-                        >
-                          Eliminar
-                        </button>
+                        {rol === "admin" ||
+                          (rol === "cliente" && (
+                            <button
+                              className="w-full p-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
+                              onClick={() => handleDelete(report.IdReporte)}
+                            >
+                              Eliminar
+                            </button>
+                          ))}
                       </div>
                     </div>
                   </div>

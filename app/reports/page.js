@@ -21,7 +21,6 @@ import { AuthContext } from "../context/UsuarioContext";
 function Reports() {
   const { authState, loadUserDetails } = useContext(AuthContext);
   const { rol, iduser, token, userDetails } = authState;
- 
 
   const [reports, setReports] = useState([]);
   const [reportToEdit, setReportToEdit] = useState(null);
@@ -170,7 +169,6 @@ function Reports() {
     setReports(Array.isArray(reportData) ? reportData : []);
   };
   useEffect(() => {
-
     if (userDetails) {
       initializeDashboard();
     }
@@ -292,7 +290,7 @@ function Reports() {
     <div className="flex flex-col md:flex-row gap-2 min-h-screen bg-[#eaeef6]">
       <Sidebar />
 
-      <main className="p-6 pr-2 flex-1">
+      <main className="p-6 pr-2 flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
           <header className="flex justify-between items-center mb-8">
             <div>

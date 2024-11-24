@@ -151,7 +151,7 @@ const Equipos = () => {
 
   const getSortedEquipos = () => {
     const filteredEquipos = equipos.filter(
-      (equipo) =>
+      (equipo) => equipo &&
         (ubicacionFilter === "" || equipo.nombre === ubicacionFilter) &&
         (statusFilter === "" || equipo.Tipo === statusFilter) &&
         (equipo.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||

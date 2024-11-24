@@ -87,14 +87,14 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
 
       if (productToEdit) {
         // Actualizar el producto editado en el estado
-        setSuccessMessage(`Producto actualizado con ID: ${result.product.id}`);
+        setSuccessMessage(`Producto actualizado con ID`);
         setProducts((prev) =>
           prev.map((p) => (p.id === result.product.id ? result.product : p))
         );
       } else {
         
         // Agregar el nuo producto al estado
-        setSuccessMessage(`Producto agregado con ID: ${result.product.id}`);
+        setSuccessMessage(`Producto agregado con ID`);
         setProducts((prev) => [...prev, result.product]);
       }
 

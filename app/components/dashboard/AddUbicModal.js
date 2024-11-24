@@ -2,7 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/UsuarioContext";
 import { ChevronDown } from "lucide-react";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 function AddUbicModal({
   ubicaciones,
   setUbicaciones,
@@ -50,7 +50,6 @@ function AddUbicModal({
         }
       );
       const data = await response.json();
-      console.log(data);
       setClientes(data);
     } catch (error) {
       console.error("Error fetching Ubicaciones:", error);
@@ -102,7 +101,6 @@ function AddUbicModal({
       }
 
       if (!response.ok) {
-        
         toast.error("Error al guardar la ubicacion");
         throw new Error("Error al guardar la ubicación");
       }
@@ -112,29 +110,25 @@ function AddUbicModal({
 
       if (ubicacionToEdit) {
         // Update the edited location in state
-        setSuccessMessage(
-          `Ubicación actualizada con ID: ${result.ubicacion.ididUbicaciones}`
-        );
+        setSuccessMessage(`Ubicación actualizada`);
         setUbicaciones((prev) =>
           prev.map((u) => (u.id === result.ubicacion.id ? result.ubicacion : u))
         );
         //aqui va una de que si se acutalizo bien
       } else {
         // Add new location to state
-        setSuccessMessage(
-          `Ubicación agregada con ID: ${result.ubicacion.idUbicaciones}`
-        );
+        setSuccessMessage(`Ubicación agregada con ID`);
         //aqui va una de que si se creo bien
         setUbicaciones((prev) => [...prev, result.ubicacion]);
       }
 
       // Close modal after successful operation
-      closeModal();
-      
+
       toast.success("Ubicacion agregada exitosamente");
+      closeModal();
     } catch (error) {
       setError(error.message || "Algo salió mal");
-      
+
       //error
     }
   };

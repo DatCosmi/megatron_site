@@ -92,8 +92,11 @@ const Ubicaciones = () => {
   };
 
   const getFilteredUbicaciones = () => {
-    return ubicaciones.filter((ubicacion) =>
-      ubicacion.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
+    return ubicaciones.filter(
+      (ubicacion) =>
+        ubicacion &&
+        ubicacion.Nombre &&
+        ubicacion.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
     );
   };
 

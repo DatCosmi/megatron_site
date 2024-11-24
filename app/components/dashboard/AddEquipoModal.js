@@ -133,14 +133,14 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
 
       if (equipoToEdit) {
         // Actualizar el producto editado en el estado
-        setSuccessMessage(`Producto actualizado con ID: ${result.equipo.id}`);
+        setSuccessMessage(`Producto actualizado con ID`);
         setEquipos((prev) =>
           prev.map((p) => (p.id === result.equipo.id ? result.equipo : p))
         );
       } else {
         
         // Agregar el nuevo producto al estado
-        setSuccessMessage(`Producto agregado con ID: ${result.equipo.id}`);
+        setSuccessMessage(`Producto agregado con ID}`);
         setEquipos((prev) => [...prev, result.equipo]);
       }
 

@@ -119,7 +119,7 @@ const Products = () => {
 
   const getSortedProducts = () => {
     const filteredProducts = products.filter(
-      (product) =>
+      (product) => product &&
         (categoryFilter === "" || product.Categoria === categoryFilter) &&
         (statusFilter === "" || product.Tipo === statusFilter) &&
         (product.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||

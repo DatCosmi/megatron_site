@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+
 import Sidebar from "../components/navigation/sidebar";
 import {
   ChevronLeft,
@@ -16,13 +18,15 @@ import ProtectedRoute from "../context/protectedRoute";
 import { AuthContext } from "../context/UsuarioContext";
 
 const Products = () => {
+  const router = useRouter();
+
   const [products, setProducts] = useState([]);
   const [productList, setProductList] = useState(products);
   const [loading, setLoading] = useState(true);
   const [productToEdit, setProductToEdit] = useState(null);
 
   const { authState } = useContext(AuthContext);
-  const { token } = authState;
+  const { token, rol } = authState;
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -68,7 +72,11 @@ const Products = () => {
 
   // Fetch products from the backend
   useEffect(() => {
-    fetchProducts();
+    if (rol !== "admin") {
+      router.push("/NotAuthorized ");
+    } else {
+      fetchProducts();
+    }
   }, []);
 
   // Function to handle delete action
@@ -119,7 +127,8 @@ const Products = () => {
 
   const getSortedProducts = () => {
     const filteredProducts = products.filter(
-      (product) => product &&
+      (product) =>
+        product &&
         (categoryFilter === "" || product.Categoria === categoryFilter) &&
         (statusFilter === "" || product.Tipo === statusFilter) &&
         (product.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||

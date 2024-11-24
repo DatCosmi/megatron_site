@@ -140,7 +140,6 @@ function Reports() {
     });
   };
 
-
   // Estado para mantener los reportes filtrados por búsqueda
   const [searchFilteredReports, setSearchFilteredReports] = useState([]);
 
@@ -379,7 +378,7 @@ function Reports() {
                           <Users className="w-4 h-4" />
                           <span>
                             {report.TecnicoAsignado ||
-                              report.tecnicoAsignado ||
+                              report.tecnicoAsignado || report.nombreTecnico ||
                               "Sin asignar"}
                           </span>
                         </div>

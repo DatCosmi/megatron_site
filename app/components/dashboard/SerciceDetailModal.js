@@ -161,6 +161,18 @@ function ServiceDetailModal({ report, closeModal, onSave }) {
                   </span>
                 </div>
                 <div className="flex items-center text-gray-700">
+                  <span className="font-medium w-32">Dirección:</span>
+                  <span className="text-gray-600">
+                    {report.Direccion || "No disponible"}
+                  </span>
+                </div>
+                <div className="flex items-center text-gray-700">
+                  <span className="font-medium w-32">Codigo Postal:</span>
+                  <span className="text-gray-600">
+                    {report.CodigoPostal || "No disponible"}
+                  </span>
+                </div>
+                <div className="flex items-center text-gray-700">
                   <span className="font-medium w-32">Equipo:</span>
                   <span className="text-gray-600">
                     {report.numeroEquipo || "No disponible"}
@@ -175,7 +187,10 @@ function ServiceDetailModal({ report, closeModal, onSave }) {
                 <div className="flex items-center text-gray-700">
                   <span className="font-medium w-32">Reportado por:</span>
                   <span className="text-gray-600">
-                    {report.Cliente || report.nombreCliente || report.creadorReporte || "No disponible"}
+                    {report.Cliente ||
+                      report.nombreCliente ||
+                      report.creadorReporte ||
+                      "No disponible"}
                   </span>
                 </div>
                 <div className="flex items-center text-gray-700">
@@ -188,7 +203,8 @@ function ServiceDetailModal({ report, closeModal, onSave }) {
                   <span className="font-medium w-32">Técnico:</span>
                   <span className="text-gray-600">
                     {report.TecnicoAsignado ||
-                      report.tecnicoAsignado || report.nombreTecnico ||
+                      report.tecnicoAsignado ||
+                      report.nombreTecnico ||
                       "No asignado"}
                   </span>
                 </div>

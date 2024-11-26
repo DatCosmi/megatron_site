@@ -22,24 +22,34 @@ const Ubicaciones = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddUbicModalOpen, setIsAddUbicModalOpen] = useState(false);
 
-  const { authState } = useContext(AuthContext);
+  const { authState, loadUserDetails } = useContext(AuthContext);
 
-  const { token } = authState;
+  const { rol, iduser, token, userDetails } = authState;
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const totalPages = Math.ceil(ubicaciones.length / itemsPerPage);
 
   const fetchUbicaciones = async () => {
+    let clienteId; // Definir clienteId fuera del bloque if
+
+    if (rol === "cliente" && userDetails) {
+      clienteId = userDetails.idClientes; // Asignar valor a clienteId
+    }
+
+    const endpointMap = {
+      admin: "https://backend-integradora.vercel.app/api/ubicacion",
+      tecnico: "https://backend-integradora.vercel.app/api/ubicacion",
+      cliente: `https://backend-integradora.vercel.app/api/ubicacionCliente/${clienteId}`,
+    };
+
     try {
-      const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/ubicacion",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const endpointReport = endpointMap[rol];
+      const response = await axios.get(endpointReport, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setUbicaciones(response.data);
     } catch (error) {
       console.error("Error fetching ubicaciones:", error);
@@ -49,8 +59,18 @@ const Ubicaciones = () => {
   };
 
   useEffect(() => {
-    fetchUbicaciones();
-  }, []);
+    // Cargar detalles del usuario
+    if (rol && iduser) {
+      loadUserDetails(rol, iduser);
+    }
+  }, [rol, iduser]); // Este efecto solo se ejecuta al cambiar `rol` o `iduser`
+
+  useEffect(() => {
+    // Cargar ubicaciones después de obtener userDetails
+    if (userDetails) {
+      fetchUbicaciones();
+    }
+  }, [userDetails]); // Este efecto solo se ejecuta cuando `userDetails` cambia
 
   const handleDelete = async (ubicacionID) => {
     try {
@@ -153,12 +173,14 @@ const Ubicaciones = () => {
                 </div>
 
                 <div className="relative min-w-[100px] flex items-end">
-                  <button
-                    onClick={() => setIsAddUbicModalOpen(true)}
-                    className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors flex items-center"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
+                  {rol === "admin" && (
+                    <button
+                      onClick={() => setIsAddUbicModalOpen(true)}
+                      className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors flex items-center"
+                    >
+                      <Plus className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -214,9 +236,11 @@ const Ubicaciones = () => {
               <table className="min-w-full divide-y divide-gray-200 recent-orders">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cliente
-                    </th>
+                    {rol !== "cliente" && (
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cliente
+                      </th>
+                    )}
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Nombre
                     </th>
@@ -232,9 +256,11 @@ const Ubicaciones = () => {
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Dirección
                     </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
+                    {rol === "admin" && (
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -250,9 +276,11 @@ const Ubicaciones = () => {
                   ) : currentItems.length > 0 ? (
                     currentItems.map((ubicacion) => (
                       <tr key={ubicacion.idUbicaciones}>
-                        <td className="px-3 py-3 text-sm text-gray-500">
-                          {ubicacion.Cliente}
-                        </td>
+                        {rol !== "cliente" && (
+                          <td className="px-3 py-3 text-sm text-gray-500">
+                            {ubicacion.Cliente}
+                          </td>
+                        )}
                         <td className="px-3 py-3 text-sm text-gray-500">
                           {ubicacion.Nombre}
                         </td>
@@ -268,22 +296,24 @@ const Ubicaciones = () => {
                         <td className="px-3 py-3 text-sm text-gray-500">
                           {ubicacion.Direccion}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-xs flex">
-                          <button
-                            onClick={() =>
-                              handleDelete(ubicacion.idUbicaciones)
-                            }
-                            className="text-[#ff006e] flex"
-                          >
-                            <Trash2 />
-                          </button>
-                          <button
-                            onClick={() => handleEditClick(ubicacion)}
-                            className="text-[#007bff] flex"
-                          >
-                            <SquarePen />
-                          </button>
-                        </td>
+                        {rol === "admin" && (
+                          <td className="px-3 py-4 whitespace-nowrap text-xs flex">
+                            <button
+                              onClick={() =>
+                                handleDelete(ubicacion.idUbicaciones)
+                              }
+                              className="text-[#ff006e] flex"
+                            >
+                              <Trash2 />
+                            </button>
+                            <button
+                              onClick={() => handleEditClick(ubicacion)}
+                              className="text-[#007bff] flex"
+                            >
+                              <SquarePen />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))
                   ) : (

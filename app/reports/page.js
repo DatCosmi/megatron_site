@@ -20,7 +20,7 @@ import SearchBar from "../components/dashboard/SearchBar";
 import { AuthContext } from "../context/UsuarioContext";
 import ProtectedRoute from "../context/protectedRoute";
 import toast from "react-hot-toast";
-
+//para re
 function Reports() {
   const { authState, loadUserDetails } = useContext(AuthContext);
   const { rol, iduser, token, userDetails } = authState;
@@ -498,6 +498,7 @@ function Reports() {
                               className="w-full p-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
                               onClick={() => handleComplete(report.IdReporte)}
                             >
+                            
                               Completar
                             </button>
                           </>

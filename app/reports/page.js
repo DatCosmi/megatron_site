@@ -19,7 +19,7 @@ import axios from "axios";
 import SearchBar from "../components/dashboard/SearchBar";
 import { AuthContext } from "../context/UsuarioContext";
 import ProtectedRoute from "../context/protectedRoute";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
 function Reports() {
   const { authState, loadUserDetails } = useContext(AuthContext);
@@ -136,7 +136,6 @@ function Reports() {
         filter === "todos" ? true : report.estado === filter;
 
       // Filtro adicional para los reportes no asignados
-    
 
       return esReporteDentroDeUltimaSemana && cumpleFiltroEstado;
     });
@@ -224,7 +223,7 @@ function Reports() {
       toast.custom((t) => (
         <div
           className={`${
-            t.visible ? 'animate-enter' : 'animate-leave'
+            t.visible ? "animate-enter" : "animate-leave"
           } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
         >
           <div className="flex-1 w-0 p-4">
@@ -234,7 +233,8 @@ function Reports() {
                   Confirmación de Eliminación
                 </p>
                 <p className="mt-1 text-sm text-gray-500">
-                  ¿Estás seguro de que deseas eliminar este reporte? Esta acción no se puede deshacer.
+                  ¿Estás seguro de que deseas eliminar este reporte? Esta acción
+                  no se puede deshacer.
                 </p>
               </div>
             </div>
@@ -248,23 +248,23 @@ function Reports() {
                   const response = await fetch(
                     `https://backend-integradora.vercel.app/api/reportes/${reportId}`,
                     {
-                      method: 'DELETE',
+                      method: "DELETE",
                       headers: {
                         Authorization: `Bearer ${token}`,
                       },
                     }
                   );
-  
+
                   if (response.ok) {
                     LoadReportsDetails(); // Actualiza la lista de reportes
-                    toast.success('Reporte eliminado exitosamente');
+                    toast.success("Reporte eliminado exitosamente");
                   } else {
-                    console.error('Falló la eliminación del reporte');
-                    toast.error('No se pudo eliminar el reporte');
+                    console.error("Falló la eliminación del reporte");
+                    toast.error("No se pudo eliminar el reporte");
                   }
                 } catch (error) {
-                  console.error('Error al eliminar el reporte:', error);
-                  toast.error('Error al procesar la solicitud');
+                  console.error("Error al eliminar el reporte:", error);
+                  toast.error("Error al procesar la solicitud");
                 }
               }}
               className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -281,10 +281,9 @@ function Reports() {
         </div>
       ));
     } catch (error) {
-      console.error('Error en la función handleDelete:', error);
+      console.error("Error en la función handleDelete:", error);
     }
   };
-  
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -427,7 +426,8 @@ function Reports() {
                           <Users className="w-4 h-4" />
                           <span>
                             {report.TecnicoAsignado ||
-                              report.tecnicoAsignado || report.nombreTecnico ||
+                              report.tecnicoAsignado ||
+                              report.nombreTecnico ||
                               "Sin asignar"}
                           </span>
                         </div>
@@ -502,15 +502,14 @@ function Reports() {
                             </button>
                           </>
                         )}
-                        {rol === "admin" ||
-                          (rol === "cliente" && (
-                            <button
-                              className="w-full p-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
-                              onClick={() => handleDelete(report.IdReporte)}
-                            >
-                              Eliminar
-                            </button>
-                          ))}
+                        {(rol === "admin" || rol === "cliente") && (
+                          <button
+                            className="w-full p-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
+                            onClick={() => handleDelete(report.IdReporte)}
+                          >
+                            Eliminar
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

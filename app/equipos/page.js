@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import AddEquipoModal from "../components/dashboard/AddEquipoModal";
 import ProtectedRoute from "../context/protectedRoute";
-
+import toast from "react-hot-toast";
 import { AuthContext } from "../context/UsuarioContext";
 
 const Equipos = () => {
@@ -97,28 +97,76 @@ const Equipos = () => {
   }, []);
 
   // Function to handle delete action
-  const handleDelete = async (equipoId) => {
-    try {
-      // Call the backend API to delete the product
-      const response = await fetch(
-        `https://backend-integradora.vercel.app/api/equipos/${equipoId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
 
-      if (response.ok) {
-        fetchEquipos();
-      } else {
-        console.error("Failed to delete product");
-      }
+
+  const handleDelete = async (equipoId) => {
+    console.log(equipoId )
+    try {
+      // Muestra la alerta de confirmación
+      toast.custom((t) => (
+        <div
+          className={`${
+            t.visible ? 'animate-enter' : 'animate-leave'
+          } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+        >
+          <div className="flex-1 w-0 p-4">
+            <div className="flex items-start">
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  Confirmación de Eliminación
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  ¿Estás seguro de que deseas eliminar este equipo? Esta acción no se puede deshacer.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex border-l border-gray-200">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id); // Cierra el toast
+                try {
+                  // Realiza la solicitud DELETE
+                  const response = await fetch(
+                    `https://backend-integradora.vercel.app/api/equipos/${equipoId}`,
+                    {
+                      method: 'DELETE',
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  );
+  
+                  if (response.ok) {
+                    fetchEquipos(); // Actualiza la lista de equipos
+                    toast.success('Equipo eliminado exitosamente');
+                  } else {
+                    console.error('Falló la eliminación del equipo');
+                    toast.error('No se pudo eliminar el equipo');
+                  }
+                } catch (error) {
+                  console.error('Error al eliminar el equipo:', error);
+                  toast.error('Error al procesar la solicitud');
+                }
+              }}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              Confirmar
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-red-600 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ));
     } catch (error) {
-      console.error("Error deleting product:", error);
+      console.error('Error en la función handleDelete:', error);
     }
   };
+  
 
   const getTypeBadge = (type) => {
     const baseClasses = "px-2.5 py-0.5 rounded-full text-xs font-medium";
@@ -217,7 +265,7 @@ const Equipos = () => {
     startIndex,
     startIndex + itemsPerPage
   );
-
+console.log(equipos)
   return (
     <ProtectedRoute>
       <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6]">
@@ -462,7 +510,7 @@ const Equipos = () => {
                         {rol !== "cliente" && (
                           <td className="px-3 py-4 whitespace-nowrap text-xs flex">
                             <button
-                              onClick={() => handleDelete(equipo.IdEquipos)}
+                              onClick={() => handleDelete(equipo.idEquipos)}
                               className="text-[#ff006e] flex"
                             >
                               <Trash2 />

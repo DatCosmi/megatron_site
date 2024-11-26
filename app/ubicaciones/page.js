@@ -15,6 +15,8 @@ import {
 import AddUbicModal from "../components/dashboard/AddUbicModal";
 import ProtectedRoute from "../context/protectedRoute";
 import { AuthContext } from "../context/UsuarioContext";
+import toast from "react-hot-toast";
+
 const Ubicaciones = () => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -74,23 +76,69 @@ const Ubicaciones = () => {
 
   const handleDelete = async (ubicacionID) => {
     try {
-      const response = await fetch(
-        `https://backend-integradora.vercel.app/api/ubicacion/${ubicacionID}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // Muestra la alerta de confirmación
+      toast.custom((t) => (
+        <div
+          className={`${
+            t.visible ? "animate-enter" : "animate-leave"
+          } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+        >
+          <div className="flex-1 w-0 p-4">
+            <div className="flex items-start">
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  Confirmación de Eliminación
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  ¿Estás seguro de que deseas eliminar esta ubicación? Esta
+                  acción no se puede deshacer.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex border-l border-gray-200">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id); // Cierra el toast
+                try {
+                  // Llama al backend para eliminar la ubicación
+                  const response = await fetch(
+                    `https://backend-integradora.vercel.app/api/ubicacion/${ubicacionID}`,
+                    {
+                      method: "DELETE",
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  );
 
-      if (response.ok) {
-        fetchUbicaciones();
-      } else {
-        console.error("Failed to delete ubicacion");
-      }
+                  if (response.ok) {
+                    fetchUbicaciones(); // Actualiza la lista de ubicaciones
+                    toast.success("Ubicación eliminada exitosamente");
+                  } else {
+                    console.error("Falló la eliminación de la ubicación");
+                    toast.error("No se pudo eliminar la ubicación");
+                  }
+                } catch (error) {
+                  console.error("Error al eliminar la ubicación:", error);
+                  toast.error("Error al procesar la solicitud");
+                }
+              }}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              Confirmar
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-red-600 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ));
     } catch (error) {
-      console.error("Error deleting ubicacion:", error);
+      console.error("Error en la función handleDelete:", error);
     }
   };
 

@@ -15,6 +15,8 @@ import AddTecnicoModal from "../components/dashboard/AddTecnico";
 import ProtectedRoute from "../context/protectedRoute";
 import { useRouter } from "next/navigation";
 import { AuthContext } from "../context/UsuarioContext";
+import toast from 'react-hot-toast';
+
 const TecnicosPage = () => {
   const router = useRouter();
 
@@ -82,36 +84,82 @@ const TecnicosPage = () => {
   }, [router]);
 
   // Function to handle delete action
+
   const handleDelete = async (technicianId, userId) => {
     try {
-      // Call the backend API to delete the technician
-      const response = await fetch(
-        `https://backend-integradora.vercel.app/api/tecnicos/${technicianId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (response.ok) {
-        await fetch(
-          `https://backend-integradora.vercel.app/api/auth/delete-user/${userId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        fetchTechnicians();
-      } else {
-        console.error("Failed to delete technician");
-      }
+      // Muestra la alerta de confirmación
+      toast.custom((t) => (
+        <div
+          className={`${
+            t.visible ? 'animate-enter' : 'animate-leave'
+          } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+        >
+          <div className="flex-1 w-0 p-4">
+            <div className="flex items-start">
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  Confirmación de Eliminación
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  ¿Estás seguro de que deseas eliminar este técnico? Esta acción no se puede deshacer.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex border-l border-gray-200">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id); // Cierra el toast
+                try {
+                  // Llama al backend para eliminar el técnico
+                  const response = await fetch(
+                    `https://backend-integradora.vercel.app/api/tecnicos/${technicianId}`,
+                    {
+                      method: 'DELETE',
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  );
+                  if (response.ok) {
+                    await fetch(
+                      `https://backend-integradora.vercel.app/api/auth/delete-user/${userId}`,
+                      {
+                        method: 'DELETE',
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                      }
+                    );
+                    fetchTechnicians(); // Actualiza la lista de técnicos
+                    toast.success('Técnico eliminado exitosamente');
+                  } else {
+                    console.error('Falló la eliminación del técnico');
+                    toast.error('No se pudo eliminar el técnico');
+                  }
+                } catch (error) {
+                  console.error('Error al eliminar el técnico:', error);
+                  toast.error('Error al procesar la solicitud');
+                }
+              }}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              Confirmar
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-red-600 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ));
     } catch (error) {
-      console.error("Error deleting technician:", error);
+      console.error('Error en la función handleDelete:', error);
     }
   };
+  
 
   const handleSort = (key) => {
     let direction = "asc";

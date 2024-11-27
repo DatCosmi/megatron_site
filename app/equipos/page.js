@@ -100,7 +100,6 @@ const Equipos = () => {
 
 
   const handleDelete = async (equipoId) => {
-    console.log(equipoId )
     try {
       // Muestra la alerta de confirmación
       toast.custom((t) => (
@@ -258,7 +257,6 @@ const Equipos = () => {
     startIndex,
     startIndex + itemsPerPage
   );
-console.log(equipos)
   return (
     <ProtectedRoute>
       <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6]">

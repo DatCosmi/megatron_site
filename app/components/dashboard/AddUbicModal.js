@@ -111,15 +111,12 @@ function AddUbicModal({
       if (ubicacionToEdit) {
         // Update the edited location in state
         setSuccessMessage(`Ubicación actualizada`);
-        setUbicaciones((prev) =>
-          prev.map((u) => (u.id === result.ubicacion.id ? result.ubicacion : u))
-        );
+
         //aqui va una de que si se acutalizo bien
       } else {
         // Add new location to state
         setSuccessMessage(`Ubicación agregada con ID`);
         //aqui va una de que si se creo bien
-        setUbicaciones((prev) => [...prev, result.ubicacion]);
       }
 
       // Close modal after successful operation

@@ -103,7 +103,7 @@ function ServiceDetailModal({ report, closeModal }) {
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Ubicación:</span>
               <span className="text-gray-600">
-                {report.nombreUbicacion || "No disponible"}
+                {report.nombreUbicacion || report.ubicacion || "No disponible"}
               </span>
             </div>
             <div className="flex items-center text-gray-700">
@@ -121,7 +121,7 @@ function ServiceDetailModal({ report, closeModal }) {
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Reportado por:</span>
               <span className="text-gray-600">
-                {report.Cliente || "No disponible"}
+                {report.Cliente || report.nombreCliente || "No disponible"}
               </span>
             </div>
             <div className="flex items-center text-gray-700">
@@ -133,7 +133,7 @@ function ServiceDetailModal({ report, closeModal }) {
             <div className="flex items-center text-gray-700">
               <span className="font-medium w-32">Técnico:</span>
               <span className="text-gray-600">
-                {report.TecnicoAsignado || "No asignado"}
+                {report.TecnicoAsignado || report.tecnicoAsignado|| "No asignado"}
               </span>
             </div>
             <div className="flex items-center text-gray-700">

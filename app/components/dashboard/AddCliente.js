@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
-import { token } from "../protectedRoute";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/UsuarioContext";
+import toast, { Toaster } from "react-hot-toast";
 function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
@@ -9,6 +10,9 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
   const [apellidoMa, setApellidoMa] = useState("");
   const [telefono, setTelefono] = useState("");
   const [correoElectronico, setCorreoElectronico] = useState("");
+
+  const { authState } = useContext(AuthContext);
+  const { token } = authState;
 
   const [usersId, setUsersId] = useState("");
   const [clienteId, setClienteId] = useState("");
@@ -104,6 +108,7 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
 
     try {
       let userResponse;
+
       if (clienteToEdit) {
         // Update existing client and user
         userResponse = await fetch(
@@ -117,8 +122,10 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
             body: JSON.stringify({ password }),
           }
         );
-        if (!userResponse.ok)
+        if (!userResponse.ok) {
+          toast.error("Error al actualizar la contraseña");
           throw new Error("Error al actualizar la contraseña");
+        }
 
         const clienteResponse = await fetch(
           `https://backend-integradora.vercel.app/api/clientes/${clienteId}`,
@@ -131,11 +138,14 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
             body: JSON.stringify(clienteData),
           }
         );
-        if (!clienteResponse.ok)
+        if (!clienteResponse.ok) {
+          toast.error("Error al actualizar los datos del cliente");
           throw new Error("Error al actualizar los datos del cliente");
+        }
 
         setSuccessMessage("Cliente actualizado exitosamente");
         closeModal();
+        toast.success("Cliente actualizado exitosamente");
       } else {
         // Create new user and client
         const userData = {
@@ -155,8 +165,10 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
             body: JSON.stringify(userData),
           }
         );
-        if (!userResponse.ok)
+        if (!userResponse.ok) {
+          toast.error("Error al guardar los datos del usuario");
           throw new Error("Error al guardar los datos del usuario");
+        }
 
         const userResult = await userResponse.json();
         const users_idusers = userResult.userId;
@@ -173,14 +185,16 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
           }
         );
 
-        if (!clienteResponse.ok)
+        if (!clienteResponse.ok) {
+          toast.error("Error al guardar los datos del cliente");
           throw new Error("Error al guardar los datos del cliente");
+        }
 
         const result = await clienteResponse.json();
         setSuccessMessage("Cliente agregado exitosamente");
         setClientes((prev) => [...prev, result]);
-
         closeModal();
+        toast.success("Cliente agregado exitosamente");
       }
     } catch (error) {
       setError(error.message || "Algo salió mal");
@@ -322,6 +336,7 @@ function AddClienteModal({ clientes, setClientes, closeModal, clienteToEdit }) {
           )}
         </form>
       </div>
+      <Toaster />
     </div>
   );
 }

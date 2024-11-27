@@ -22,7 +22,6 @@ export const AuthProvider = ({ children }) => {
 
   // Función para validar el token almacenado
   const validateToken = async (tokenToValidate) => {
-    console.log("validateToken: Iniciando validación del token"); // Log de entrada
     try {
       const response = await fetch(
         `https://backend-integradora.vercel.app/api/auth/perfil`,
@@ -35,7 +34,6 @@ export const AuthProvider = ({ children }) => {
       );
       const data = await response.json();
       if (response.ok) {
-        console.log("validateToken: Token válido"); // Log cuando el token es válido
         return data; // Devolver los datos del perfil si el token es válido
       } else {
         console.error("validateToken: Token inválido", data); // Log de error
@@ -48,14 +46,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loadToken = async () => {
-    console.log("loadToken: Iniciando carga del token"); // Log de entrada
     const storedToken = localStorage.getItem("authToken");
     const storedUser = localStorage.getItem("authUser");
     const storedRol = localStorage.getItem("rol");
     const storedIdUser = localStorage.getItem("iduser");
 
     if (storedToken && storedUser) {
-      console.log("loadToken: Token y usuario encontrados en localStorage"); // Log si se encuentran en localStorage
 
       try {
         const tokenValidationResult = await validateToken(storedToken);
@@ -64,7 +60,6 @@ export const AuthProvider = ({ children }) => {
           const { usuario } = tokenValidationResult;
 
           // Almacenar los datos del usuario en localStorage para futuras referencias
-          console.log("loadToken: Token válido, cargando datos del usuario"); // Log al cargar datos del usuario
           localStorage.setItem("rol", usuario.rol);
           localStorage.setItem("iduser", usuario.id.toString());
           localStorage.setItem("authUser", JSON.stringify(usuario));
@@ -83,7 +78,6 @@ export const AuthProvider = ({ children }) => {
           // Aquí puedes cargar detalles adicionales si es necesario
           loadUserDetails(usuario.rol, usuario.id);
         } else {
-          console.log("loadToken: Token inválido, cerrando sesión"); // Log si el token es inválido
           localStorage.removeItem("authToken");
           localStorage.removeItem("authUser");
           localStorage.removeItem("iduser");
@@ -103,17 +97,14 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: "signOut" });
       }
     } else {
-      console.log("loadToken: No se encontró token o usuario, cerrando sesión"); // Log si no se encuentran en localStorage
       dispatch({ type: "signOut" });
     }
 
     setLoading(false); // Finaliza la carga una vez que la validación se haya completado
-    console.log("loadToken: Carga completada"); // Log al finalizar carga
   };
 
   // El signIn también debe ser modificado para almacenar correctamente todos los valores
   const signIn = async (user, token) => {
-    console.log("signIn: Iniciando proceso de inicio de sesión"); // Log de entrada
     try {
       // Validamos el token primero
       const tokenValidationResult = await validateToken(token);
@@ -121,7 +112,6 @@ export const AuthProvider = ({ children }) => {
         const { usuario } = tokenValidationResult;
 
         // Almacenar los valores solo si el token es válido
-        console.log("signIn: Token válido, almacenando datos"); // Log al almacenar datos
         localStorage.setItem("authToken", token);
         localStorage.setItem("authUser", JSON.stringify(usuario));
         localStorage.setItem("rol", usuario.rol);
@@ -150,7 +140,6 @@ export const AuthProvider = ({ children }) => {
 
   // Cargar detalles del usuario según su rol
   const loadUserDetails = async () => {
-    console.log("loadUserDetails: Cargando detalles del usuario"); // Log de entrada
     const { token, rol, iduser } = authState;
     if (token && rol && iduser) {
       try {
@@ -161,7 +150,6 @@ export const AuthProvider = ({ children }) => {
         };
 
         const endpoint = endpointMap[rol];
-        console.log("loadUserDetails: Llamando a la API para", rol); // Log antes de hacer la petición
 
         const response = await fetch(endpoint, {
           method: "GET",
@@ -175,10 +163,7 @@ export const AuthProvider = ({ children }) => {
         const result = await response.json();
 
         if (result) {
-          console.log(
-            "loadUserDetails: Detalles del usuario obtenidos",
-            result
-          ); // Log si obtenemos los detalles
+        
           dispatch({
             type: "setUsuario",
             payload: { userDetails: result }, // Guarda todo el JSON recibido
@@ -191,44 +176,36 @@ export const AuthProvider = ({ children }) => {
         ); // Log de error
       }
     } else {
-      console.log(
-        "loadUserDetails: No se encontraron datos de usuario o token"
-      ); // Log si no hay datos
+   
     }
   };
 
-
-
   useEffect(() => {
-    console.log("useEffect: Iniciando carga de token al montar el componente"); // Log cuando se monta el componente
     loadToken();
   }, []);
 
   const signOut = async () => {
-    console.log("signOut: Cerrando sesión"); // Log de entrada en signOut
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("authUser");
-    localStorage.removeItem("iduser");
-    localStorage.removeItem("rol");
+    localStorage.clear();
     dispatch({ type: "signOut" });
     router.push("/");
   };
 
   if (loading) {
-    console.log("LoadingScreen: Mostrando pantalla de carga"); // Log antes de renderizar el componente de carga
     return <LoadingScreen />;
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        authState,
-        signIn,
-        signOut,
-        loadUserDetails,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <div>
+      <AuthContext.Provider
+        value={{
+          authState,
+          signIn,
+          signOut,
+          loadUserDetails,
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    </div>
   );
 };

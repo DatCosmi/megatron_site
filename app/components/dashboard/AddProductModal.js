@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { token } from "../../components/protectedRoute";
+import { AuthContext } from "../../context/UsuarioContext";
+import toast, { Toaster } from 'react-hot-toast';
 
 function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
   const [modelo, setModelo] = useState("");
@@ -10,6 +11,9 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
   const [tipo, setTipo] = useState("");
   const [existencia, setExistencia] = useState("");
   const [caracteristicas, setCaracteristicas] = useState("");
+
+  const { authState } = useContext(AuthContext);
+  const { token } = authState;
 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -73,6 +77,8 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
       }
 
       if (!response.ok) {
+        
+        toast.error("Error al guardar el producto");
         throw new Error("Error al guardar el producto");
       }
 
@@ -81,21 +87,24 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
 
       if (productToEdit) {
         // Actualizar el producto editado en el estado
-        setSuccessMessage(`Producto actualizado con ID: ${result.product.id}`);
+        setSuccessMessage(`Producto actualizado con ID`);
         setProducts((prev) =>
           prev.map((p) => (p.id === result.product.id ? result.product : p))
         );
       } else {
-        // Agregar el nuevo producto al estado
-        setSuccessMessage(`Producto agregado con ID: ${result.product.id}`);
+        
+        // Agregar el nuo producto al estado
+        setSuccessMessage(`Producto agregado con ID`);
         setProducts((prev) => [...prev, result.product]);
       }
 
       // Cerrar el modal y limpiar los campos si es necesario
       closeModal();
+      
+      toast.success("producto agregado exitosamente");
     } catch (error) {
       setError(error.message || "Algo salió mal");
-      closeModal();
+      
     }
   };
 
@@ -239,6 +248,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
           </div>
         </form>
       </div>
+      <Toaster />
     </div>
   );
 }

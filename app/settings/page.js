@@ -1,17 +1,18 @@
-"use client"
+"use client";
 import { useContext, useEffect, useState } from "react";
 import Sidebar from "../components/navigation/sidebar";
 import { FaUser } from "react-icons/fa";
 import ChangePasswordModal from "../components/dashboard/ChangePasswordModal";
 import EditDataModal from "../components/dashboard/EditDataModal";
 import { AuthContext } from "../context/UsuarioContext";
+import ProtectedRoute from "../context/protectedRoute";
 
 function SettingsPage() {
   const [userData, setUserData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const { authState, loadUserDetails } = useContext(AuthContext); 
+  const { authState, loadUserDetails } = useContext(AuthContext);
   const { rol, iduser, userDetails, token, user } = authState;
   console.log(authState);
 
@@ -29,7 +30,7 @@ function SettingsPage() {
 
   useEffect(() => {
     if (rol && iduser) {
-      loadUserDetails(rol, iduser); 
+      loadUserDetails(rol, iduser);
     }
   }, [rol, iduser]);
 
@@ -95,7 +96,7 @@ function SettingsPage() {
   };
 
   return (
-    <>
+    <ProtectedRoute>
       <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6]">
         <Sidebar />
         <div className="flex-1">
@@ -160,7 +161,7 @@ function SettingsPage() {
           onClose={() => setIsEditModalOpen(false)}
         />
       )}
-    </>
+    </ProtectedRoute>
   );
 }
 

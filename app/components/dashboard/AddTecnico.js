@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
-import { token } from "../protectedRoute";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/UsuarioContext";
+import toast, { Toaster } from "react-hot-toast";
 function AddTecnicoModal({
   Technicians,
   setTechnicians,
@@ -15,6 +16,9 @@ function AddTecnicoModal({
   const [apellidoMa, setApellidoMa] = useState("");
   const [telefono, setTelefono] = useState("");
   const [correoElectronico, setCorreoElectronico] = useState("");
+
+  const { authState } = useContext(AuthContext);
+  const { token } = authState;
 
   const [usersId, setUsersId] = useState("");
   const [TecnicoId, setTecnicoId] = useState("");
@@ -124,8 +128,10 @@ function AddTecnicoModal({
           }
         );
 
-        if (!tecnicoResponse.ok)
+        if (!tecnicoResponse.ok) {
+          toast.error("Error al actualizar los datos del técnico");
           throw new Error("Error al actualizar los datos del técnico");
+        }
 
         if (password.trim()) {
           // Actualizar contraseña
@@ -141,11 +147,13 @@ function AddTecnicoModal({
             }
           );
 
-          if (!passwordResponse.ok)
+          if (!passwordResponse.ok) {
+            toast.error("Error al actualizar la contraseña");
             throw new Error("Error al actualizar la contraseña");
+          }
         }
 
-        setSuccessMessage("Técnico actualizado exitosamente");
+        toast.success("Tecnico actulizado exitosamente");
       } else {
         const userData = {
           user,
@@ -164,8 +172,10 @@ function AddTecnicoModal({
             body: JSON.stringify({ ...userData }),
           }
         );
-        if (!userResponse.ok)
-          throw new Error("Error al guardar los datos del usuario");
+        if (!userResponse.ok) {
+          toast.error("Error al guardar los datos del tecnico");
+          throw new Error("Error al guardar los datos del tecnico");
+        }
         const UserResult = await userResponse.json();
         const users_idusers = UserResult.userId;
         const tecnicoResponse = await fetch(
@@ -180,11 +190,14 @@ function AddTecnicoModal({
           }
         );
 
-        if (!tecnicoResponse.ok)
+        if (!tecnicoResponse.ok) {
+          toast.error("Error al guardar los datos del usuario");
           throw new Error("Error al guardar los datos del técnico");
+        }
 
         const result = await tecnicoResponse.json();
-        setSuccessMessage("Técnico agregado exitosamente");
+
+        toast.success("Tecnico agregado exitosamente");
         setTechnicians((prev) => [...prev, result]);
       }
 
@@ -342,6 +355,7 @@ function AddTecnicoModal({
           )}
         </form>
       </div>
+      <Toaster />
     </div>
   );
 }

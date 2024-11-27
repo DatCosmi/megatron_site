@@ -1,14 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
-import { token } from "../../components/protectedRoute";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/UsuarioContext";
 import { ChevronDown } from "lucide-react";
+import toast, { Toaster } from 'react-hot-toast';
 
-function AddReportModal({ role, reports, setReports, closeModal }) {
+function AddReportModal({ id, role, reports, setReports, closeModal }) {
   const [TituloReporte, setTituloReporte] = useState("");
   const [FolioReporte, setFolioReporte] = useState("");
   const [estado, setEstado] = useState("");
   const [comentarios, setComentarios] = useState("");
-  const [creadorReporte, setCreadorReporte] = useState("");
+  const [creadorReporte, setCreadorReporte] = useState(id);
   const [searchText, setSearchText] = useState("");
   const [equipoSearchText, setEquipoSearchText] = useState(""); // Nuevo estado para búsqueda de equipo
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -16,7 +17,10 @@ function AddReportModal({ role, reports, setReports, closeModal }) {
   const [filteredClientes, setFilteredClientes] = useState([]);
   const [filteredEquipos, setFilteredEquipos] = useState([]); // Nuevo estado para equipos filtrados
   const [tecnicoAsignado, setTecnicoAsignado] = useState("");
-  const [idEquipos, setIdEquipos] = useState("");
+  const [idEquipos, setIdEquipos] = useState(null);
+
+  const { authState } = useContext(AuthContext);
+  const { token, rol } = authState;
 
   const currentDate = new Date();
   const date = currentDate.toLocaleDateString();
@@ -141,15 +145,15 @@ function AddReportModal({ role, reports, setReports, closeModal }) {
     event.preventDefault();
 
     const reportData = {
-      TituloReporte,
-      FolioReporte,
+      TituloReporte: TituloReporte || "",
+      FolioReporte: FolioReporte || "",
       fechaCreacion: currentDate,
       fechaHoraActualizacion: currentDate,
       estado: "pendiente",
-      comentarios,
-      creadorReporte,
-      tecnicoAsignado,
-      idEquipos,
+      comentarios: comentarios || "",
+      creadorReporte: creadorReporte || null, // Si el backend espera null en lugar de vacío
+      tecnicoAsignado: tecnicoAsignado || null,
+      idEquipos: idEquipos || null,
     };
 
     try {
@@ -166,18 +170,22 @@ function AddReportModal({ role, reports, setReports, closeModal }) {
       );
 
       if (!response.ok) {
+        
+        toast.error("Error al guardar el reporte");
         throw new Error("Error al guardar el reporte");
       }
 
       closeModal();
+      
+      toast.success("Reporte agregado exitosamente");
     } catch (error) {
       setError(error.message || "Algo salió mal");
-      closeModal();
+      
     }
   };
 
-  const getGridCols = (role) => {
-    switch (role) {
+  const getGridCols = (rol) => {
+    switch (rol) {
       case "admin":
         return "2";
       case "cliente":
@@ -187,8 +195,8 @@ function AddReportModal({ role, reports, setReports, closeModal }) {
     }
   };
 
-  const getGridCols2 = (role) => {
-    switch (role) {
+  const getGridCols2 = (rol) => {
+    switch (rol) {
       case "admin":
         return "3";
       case "cliente":
@@ -207,7 +215,7 @@ function AddReportModal({ role, reports, setReports, closeModal }) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Primera fila igual... */}
-          <div className={`grid grid-cols-${getGridCols(role)} gap-6`}>
+          <div className={`grid grid-cols-${getGridCols(rol)} gap-6`}>
             <div>
               <label className="block text-gray-600 mb-2 text-sm font-medium">
                 Problema
@@ -222,7 +230,7 @@ function AddReportModal({ role, reports, setReports, closeModal }) {
               />
             </div>
 
-            {role === "admin" && (
+            {rol === "admin" && (
               <div>
                 <label className="block text-gray-600 mb-2 text-sm font-medium">
                   Folio
@@ -254,7 +262,7 @@ function AddReportModal({ role, reports, setReports, closeModal }) {
           </div>
 
           {/* Tercera fila con ambos autocompletados */}
-          <div className={`grid grid-cols-${getGridCols(role)} gap-6`}>
+          <div className={`grid grid-cols-${getGridCols(rol)} gap-6`}>
             <div className="relative">
               <label className="block text-gray-600 mb-2 text-sm font-medium">
                 Equipo
@@ -282,7 +290,7 @@ function AddReportModal({ role, reports, setReports, closeModal }) {
               )}
             </div>
 
-            {role === "admin" && (
+            {rol === "admin" && (
               <div className="relative">
                 <label className="block text-gray-600 mb-2 text-sm font-medium">
                   Reportado por
@@ -311,7 +319,7 @@ function AddReportModal({ role, reports, setReports, closeModal }) {
               </div>
             )}
 
-            {role === "admin" && (
+            {rol === "admin" && (
               <div>
                 <label className="block text-gray-600 mb-2 text-sm font-medium">
                   Asignar a Técnico
@@ -356,6 +364,7 @@ function AddReportModal({ role, reports, setReports, closeModal }) {
           </div>
         </form>
       </div>
+      <Toaster />
     </div>
   );
 }

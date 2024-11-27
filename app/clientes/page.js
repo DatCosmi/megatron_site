@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import AddCliente from "../components/dashboard/AddCliente"; // Import as a component
 import { useRouter } from "next/navigation";
-import ProtectedRoute, { token } from "../components/protectedRoute";
+import ProtectedRoute from "../context/protectedRoute";
 import { AuthContext } from "../context/UsuarioContext";
 const ClientesPage = () => {
   const router = useRouter();
@@ -168,192 +168,194 @@ const ClientesPage = () => {
   );
 
   return (
-    <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6]">
-      <Sidebar />
-      <main className="flex-1 p-6 overflow-y-auto bg-[#eaeef6]">
-        <div className="dashboard space-y-6">
-          <h1 className="text-2xl font-semibold text-gray-800">
-            Dashboard de Clientes
-          </h1>
+    <ProtectedRoute>
+      <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6]">
+        <Sidebar />
+        <main className="flex-1 p-6 overflow-y-auto bg-[#eaeef6]">
+          <div className="dashboard space-y-6">
+            <h1 className="text-2xl font-semibold text-gray-800">
+              Dashboard de Clientes
+            </h1>
 
-          <div className="flex flex-col w-full bg-white rounded-lg p-4">
-            <div className="flex gap-3 w-[1190px]">
-              <div className="relative flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ¿Qué estás buscando?
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Buscar por nombre o usuario"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+            <div className="flex flex-col w-full bg-white rounded-lg p-4">
+              <div className="flex gap-3 w-[1190px]">
+                <div className="relative flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ¿Qué estás buscando?
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      placeholder="Buscar por nombre o usuario"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="relative min-w-[100px] flex items-end">
+                  <button
+                    onClick={() => setIsAddclienteModalOpen(true)}
+                    className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors flex items-center"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
+            </div>
 
-              <div className="relative min-w-[100px] flex items-end">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-4">
+                <span className="text-lg font-semibold text-gray-700">
+                  Clientes
+                </span>
+              </div>
+
+              <div className="pagination flex items-center space-x-2 bg-white p-2 rounded-md shadow">
                 <button
-                  onClick={() => setIsAddclienteModalOpen(true)}
-                  className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors flex items-center"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="text-gray-500 hover:text-gray-700 disabled:text-gray-300"
                 >
-                  <Plus className="w-5 h-5" />
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                {paginationRange().map((page, index) =>
+                  page === "..." ? (
+                    <span key={index} className="text-gray-500">
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={index}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-2 py-1 text-sm rounded ${
+                        currentPage === page
+                          ? "bg-blue-500 text-white"
+                          : "text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="text-gray-500 hover:text-gray-700 disabled:text-gray-300"
+                >
+                  <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
-          </div>
 
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <span className="text-lg font-semibold text-gray-700">
-                Clientes
-              </span>
-            </div>
-
-            <div className="pagination flex items-center space-x-2 bg-white p-2 rounded-md shadow">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="text-gray-500 hover:text-gray-700 disabled:text-gray-300"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              {paginationRange().map((page, index) =>
-                page === "..." ? (
-                  <span key={index} className="text-gray-500">
-                    ...
-                  </span>
-                ) : (
-                  <button
-                    key={index}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-2 py-1 text-sm rounded ${
-                      currentPage === page
-                        ? "bg-blue-500 text-white"
-                        : "text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                )
-              )}
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="text-gray-500 hover:text-gray-700 disabled:text-gray-300"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200 recent-orders">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th
-                    scope="col"
-                    onClick={() => handleSort("Cliente")}
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  >
-                    Nombre
-                  </th>
-                  <th
-                    scope="col"
-                    onClick={() => handleSort("user")}
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  >
-                    Usuario
-                  </th>
-                  <th
-                    scope="col"
-                    onClick={() => handleSort("Telefono")}
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  >
-                    Teléfono
-                  </th>
-
-                  <th
-                    scope="col"
-                    onClick={() => handleSort("correoElectronico")}
-                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  >
-                    Correo Electrónico
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {loading ? (
-                  <tr>
-                    <td
-                      colSpan="100%"
-                      className="text-center py-4 text-gray-500"
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200 recent-orders">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th
+                      scope="col"
+                      onClick={() => handleSort("Cliente")}
+                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                     >
-                      Cargando clientes...
-                    </td>
+                      Nombre
+                    </th>
+                    <th
+                      scope="col"
+                      onClick={() => handleSort("user")}
+                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    >
+                      Usuario
+                    </th>
+                    <th
+                      scope="col"
+                      onClick={() => handleSort("Telefono")}
+                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    >
+                      Teléfono
+                    </th>
+
+                    <th
+                      scope="col"
+                      onClick={() => handleSort("correoElectronico")}
+                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    >
+                      Correo Electrónico
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
                   </tr>
-                ) : currentItems.length > 0 ? (
-                  currentItems.map((cliente) => (
-                    <tr key={cliente.idClientes} className="hover:bg-gray-50">
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {cliente.Cliente}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {cliente.user}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {cliente.telefono}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {cliente.correoElectronico}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 flex gap-2">
-                        <button
-                          onClick={() => handleEditClick(cliente)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <SquarePen className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleDelete(cliente.idClientes, cliente.idusers)
-                          }
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td
+                        colSpan="100%"
+                        className="text-center py-4 text-gray-500"
+                      >
+                        Cargando clientes...
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="100%"
-                      className="text-center py-4 text-gray-500"
-                    >
-                      No se encontraron resultados.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  ) : currentItems.length > 0 ? (
+                    currentItems.map((cliente) => (
+                      <tr key={cliente.idClientes} className="hover:bg-gray-50">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {cliente.Cliente}
+                        </td>
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {cliente.user}
+                        </td>
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {cliente.telefono}
+                        </td>
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {cliente.correoElectronico}
+                        </td>
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 flex gap-2">
+                          <button
+                            onClick={() => handleEditClick(cliente)}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            <SquarePen className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleDelete(cliente.idClientes, cliente.idusers)
+                            }
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="100%"
+                        className="text-center py-4 text-gray-500"
+                      >
+                        No se encontraron resultados.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      {IsAddclienteModalOpen && (
-        <AddCliente
-          closeModal={closeModal}
-          clienteToEdit={clienteToEdit}
-          setClientes={setClientes}
-        />
-      )}
-    </div>
+        {IsAddclienteModalOpen && (
+          <AddCliente
+            closeModal={closeModal}
+            clienteToEdit={clienteToEdit}
+            setClientes={setClientes}
+          />
+        )}
+      </div>
+    </ProtectedRoute>
   );
 };
 

@@ -58,7 +58,7 @@ function AddUbicModal({
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+  
     // Data to send for location
     const ubicData = {
       nombre,
@@ -68,10 +68,11 @@ function AddUbicModal({
       direccion,
       clientes_idClientes,
     };
-
+  
     try {
       let response;
-
+      let message = "";
+  
       if (ubicacionToEdit) {
         // Edit existing location
         response = await fetch(
@@ -85,6 +86,7 @@ function AddUbicModal({
             body: JSON.stringify(ubicData),
           }
         );
+        message = "Ubicación actualizada exitosamente";
       } else {
         // Add new location
         response = await fetch(
@@ -98,37 +100,40 @@ function AddUbicModal({
             body: JSON.stringify(ubicData),
           }
         );
+        message = "Ubicación agregada exitosamente";
       }
-
+  
+      // Check if the response is successful
       if (!response.ok) {
-        toast.error("Error al guardar la ubicacion");
-        throw new Error("Error al guardar la ubicación");
+        const errorData = await response.json();
+        const errorMessage =
+          errorData?.message || "Error al guardar la ubicación. Intenta nuevamente.";
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
-
-      // Get the response result
+  
+      // Show success toast
       const result = await response.json();
-
+      toast.success(message);
+  
       if (ubicacionToEdit) {
         // Update the edited location in state
-        setSuccessMessage(`Ubicación actualizada`);
-
-        //aqui va una de que si se acutalizo bien
+        setSuccessMessage(`Ubicación actualizada con ID:`);
       } else {
         // Add new location to state
-        setSuccessMessage(`Ubicación agregada con ID`);
-        //aqui va una de que si se creo bien
+        setSuccessMessage(`Ubicación agregada con ID:`);
+        // Optionally update state if needed
       }
-
-      // Close modal after successful operation
-
-      toast.success("Ubicacion agregada exitosamente");
+  
+      // Close modal
       closeModal();
     } catch (error) {
+      console.error("Error en handleSubmit:", error);
+      toast.error(error.message || "Algo salió mal. Intenta nuevamente.");
       setError(error.message || "Algo salió mal");
-
-      //error
     }
   };
+  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

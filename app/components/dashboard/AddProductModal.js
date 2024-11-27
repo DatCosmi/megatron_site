@@ -34,7 +34,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+  
     // Datos del producto a enviar
     const productData = {
       modelo,
@@ -44,10 +44,11 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
       existencia,
       caracteristicas,
     };
-
+  
     try {
       let response;
-
+      let message = ""; // Mensaje para éxito o error
+  
       if (productToEdit) {
         // Editar producto existente
         response = await fetch(
@@ -61,6 +62,7 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
             body: JSON.stringify(productData),
           }
         );
+        message = "Producto actualizado exitosamente";
       } else {
         // Agregar nuevo producto
         response = await fetch(
@@ -74,32 +76,39 @@ function AddProductModal({ products, setProducts, closeModal, productToEdit }) {
             body: JSON.stringify(productData),
           }
         );
+        message = "Producto agregado exitosamente";
       }
-
+  
+      // Verificar si la respuesta fue exitosa
       if (!response.ok) {
-        toast.error("Error al guardar el producto");
-        throw new Error("Error al guardar el producto");
+        const errorData = await response.json(); // Obtener detalles del error
+        const errorMessage =
+          errorData?.message || "Error al guardar el producto. Intenta nuevamente.";
+        toast.error(errorMessage); // Mostrar error específico
+        throw new Error(errorMessage);
       }
-
+  
       // Obtener el resultado de la respuesta
       const result = await response.json();
-
+      toast.success(message); // Mostrar mensaje de éxito
+  
       if (productToEdit) {
         // Actualizar el producto editado en el estado
-        setSuccessMessage(`Producto actualizado con ID`);
+        setSuccessMessage(`Producto actualizado con ID:`);
       } else {
-        // Agregar el nuo producto al estado
-        setSuccessMessage(`Producto agregado con ID`);
+        // Agregar el nuevo producto al estado
+        setSuccessMessage(`Producto agregado con ID: `);
       }
-
-      // Cerrar el modal y limpiar los campos si es necesario
+  
+      // Cerrar el modal y limpiar campos
       closeModal();
-
-      toast.success("producto agregado exitosamente");
     } catch (error) {
+      console.error("Error en handleSubmit:", error);
+      toast.error(error.message || "Algo salió mal. Intenta nuevamente."); // Mostrar error
       setError(error.message || "Algo salió mal");
     }
   };
+  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

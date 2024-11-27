@@ -202,6 +202,7 @@ function Reports() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        cache: "no-store", // Deshabilita el caché
       });
 
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
@@ -256,7 +257,12 @@ function Reports() {
                   );
 
                   if (response.ok) {
-                    LoadReportsDetails(); // Actualiza la lista de reportes
+                    setReports((prevReportes) =>
+                      prevReportes.filter(
+                        (report) => report.IdReporte !== reportId
+                      )
+                    );
+                    await LoadReportsDetails();
                     toast.success("Reporte eliminado exitosamente");
                   } else {
                     console.error("Falló la eliminación del reporte");
@@ -315,7 +321,8 @@ function Reports() {
     setIsAddReportModalOpen(false);
     setIsTechnicianListOpen(false);
     setIsReportDetailModalOpen(false);
-    LoadReportsDetails();
+    setReports((prevReports) => [...prevReports, LoadReportsDetails()]);
+    await LoadReportsDetails();
     setReportToEdit(null);
   };
 
@@ -498,7 +505,6 @@ function Reports() {
                               className="w-full p-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
                               onClick={() => handleComplete(report.IdReporte)}
                             >
-                            
                               Completar
                             </button>
                           </>
@@ -534,6 +540,7 @@ function Reports() {
           )}
           {isAddReportModalOpen && (
             <AddReportModal
+              LoadReportsDetails={LoadReportsDetails}
               id={clienteId}
               reports={reports}
               role={rol}

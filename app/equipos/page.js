@@ -203,18 +203,20 @@ const Equipos = () => {
 
   const getSortedEquipos = () => {
     const filteredEquipos = equipos.filter((equipo) => {
+      // Verifica que equipo no sea null o undefined
+      if (!equipo) return false;
+  
       const tieneUbicacion = equipo.nombreUbicacion || equipo.nombre;
-
+  
       // Convertir el searchQuery a minúsculas para una búsqueda insensible a mayúsculas/minúsculas
       const lowerSearchQuery = searchQuery.toLowerCase();
-
+  
       // Verifica si alguna propiedad del equipo contiene el searchQuery
       const matchesSearchQuery = Object.values(equipo).some((value) =>
         value?.toString().toLowerCase().includes(lowerSearchQuery)
       );
-
+  
       return (
-        equipo &&
         (ubicacionFilter === "" ||
           (tieneUbicacion &&
             (equipo.nombreUbicacion === ubicacionFilter ||
@@ -223,19 +225,10 @@ const Equipos = () => {
         matchesSearchQuery // Aquí se aplica la búsqueda en cualquier propiedad del equipo
       );
     });
-
-    if (!sortConfig.key) return filteredEquipos;
-
-    return filteredEquipos.sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === "asc" ? -1 : 1;
-      }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
+  
+    return filteredEquipos;
   };
+  
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {

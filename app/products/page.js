@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+
 import Sidebar from "../components/navigation/sidebar";
 import {
   ChevronLeft,
@@ -14,15 +16,18 @@ import {
 import AddProductModal from "../components/dashboard/AddProductModal";
 import ProtectedRoute from "../context/protectedRoute";
 import { AuthContext } from "../context/UsuarioContext";
+import toast from "react-hot-toast";
 
 const Products = () => {
+  const router = useRouter();
+
   const [products, setProducts] = useState([]);
   const [productList, setProductList] = useState(products);
   const [loading, setLoading] = useState(true);
   const [productToEdit, setProductToEdit] = useState(null);
 
   const { authState } = useContext(AuthContext);
-  const { token } = authState;
+  const { token, rol } = authState;
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -68,30 +73,80 @@ const Products = () => {
 
   // Fetch products from the backend
   useEffect(() => {
-    fetchProducts();
+    if (rol !== "admin") {
+      router.push("/NotAuthorized ");
+    } else {
+      fetchProducts();
+    }
   }, []);
 
   // Function to handle delete action
+
   const handleDelete = async (productId) => {
     try {
-      // Call the backend API to delete the product
-      const response = await fetch(
-        `https://backend-integradora.vercel.app/api/productos/${productId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // Muestra la alerta de confirmación
+      toast.custom((t) => (
+        <div
+          className={`${
+            t.visible ? "animate-enter" : "animate-leave"
+          } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+        >
+          <div className="flex-1 w-0 p-4">
+            <div className="flex items-start">
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  Confirmación de Eliminación
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  ¿Estás seguro de que deseas eliminar este producto? Esta
+                  acción no se puede deshacer.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex border-l border-gray-200">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id); // Cierra el toast
+                try {
+                  // Llama al backend para eliminar el producto
+                  const response = await fetch(
+                    `https://backend-integradora.vercel.app/api/productos/${productId}`,
+                    {
+                      method: "DELETE",
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  );
 
-      if (response.ok) {
-        fetchProducts();
-      } else {
-        console.error("Failed to delete product");
-      }
+                  if (response.ok) {
+                    fetchProducts(); // Actualiza la lista de productos
+                    toast.success("Producto eliminado exitosamente");
+                  } else {
+                    console.error("Falló la eliminación del producto");
+                    toast.error("No se pudo eliminar el producto");
+                  }
+                } catch (error) {
+                  console.error("Error al eliminar el producto:", error);
+                  toast.error("Error al procesar la solicitud");
+                }
+              }}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              Confirmar
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-red-600 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ));
     } catch (error) {
-      console.error("Error deleting product:", error);
+      console.error("Error en la función handleDelete:", error);
     }
   };
 
@@ -119,7 +174,8 @@ const Products = () => {
 
   const getSortedProducts = () => {
     const filteredProducts = products.filter(
-      (product) => product &&
+      (product) =>
+        product &&
         (categoryFilter === "" || product.Categoria === categoryFilter) &&
         (statusFilter === "" || product.Tipo === statusFilter) &&
         (product.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||

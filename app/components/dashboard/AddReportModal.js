@@ -2,9 +2,16 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/UsuarioContext";
 import { ChevronDown } from "lucide-react";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 
-function AddReportModal({ id, role, reports, setReports, closeModal }) {
+function AddReportModal({
+  id,
+  role,
+  reports,
+  setReports,
+  closeModal,
+  LoadReportsDetails,
+}) {
   const [TituloReporte, setTituloReporte] = useState("");
   const [FolioReporte, setFolioReporte] = useState("");
   const [estado, setEstado] = useState("");
@@ -113,34 +120,6 @@ function AddReportModal({ id, role, reports, setReports, closeModal }) {
     setShowSuggestions(false);
   };
 
-  // Nuevo: Equipo search handlers
-  const handleEquipoSearchChange = (e) => {
-    const searchValue = e.target.value;
-    setEquipoSearchText(searchValue);
-    setIdEquipos("");
-
-    if (searchValue.trim() === "") {
-      setShowEquipoSuggestions(false);
-      setFilteredEquipos([]);
-      return;
-    }
-
-    const filtered = equipos.filter((equipo) =>
-      equipo.NumeroEquipo.toString()
-        .toLowerCase()
-        .includes(searchValue.toLowerCase())
-    );
-
-    setFilteredEquipos(filtered);
-    setShowEquipoSuggestions(true);
-  };
-
-  const handleEquipoSelect = (equipo) => {
-    setEquipoSearchText(equipo.NumeroEquipo);
-    setIdEquipos(equipo.idEquipos);
-    setShowEquipoSuggestions(false);
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -170,17 +149,15 @@ function AddReportModal({ id, role, reports, setReports, closeModal }) {
       );
 
       if (!response.ok) {
-        
         toast.error("Error al guardar el reporte");
         throw new Error("Error al guardar el reporte");
       }
-
+      await LoadReportsDetails();
       closeModal();
-      
+
       toast.success("Reporte agregado exitosamente");
     } catch (error) {
       setError(error.message || "Algo salió mal");
-      
     }
   };
 
@@ -204,6 +181,33 @@ function AddReportModal({ id, role, reports, setReports, closeModal }) {
       default:
         return;
     }
+  };
+  const handleEquipoSearchChange = (e) => {
+    const searchValue = e.target.value;
+    setEquipoSearchText(searchValue);
+    setIdEquipos("");
+
+    if (searchValue.trim() === "") {
+      setShowEquipoSuggestions(false);
+      setFilteredEquipos([]);
+      return;
+    }
+
+    // Filtrar equipos según la búsqueda
+    const filtered = equipos.filter((equipo) =>
+      equipo.NumeroEquipo.toString()
+        .toLowerCase()
+        .includes(searchValue.toLowerCase())
+    );
+
+    setFilteredEquipos(filtered);
+    setShowEquipoSuggestions(true);
+  };
+  // Manejo de la selección de un equipo
+  const handleEquipoSelect = (equipo) => {
+    setEquipoSearchText(equipo.NumeroEquipo); // Actualizar el texto con el número de equipo
+    setIdEquipos(equipo.idEquipos); // Almacenar el ID del equipo
+    setShowEquipoSuggestions(false); // Cerrar las sugerencias
   };
 
   return (
@@ -281,7 +285,7 @@ function AddReportModal({ id, role, reports, setReports, closeModal }) {
                     <div
                       key={equipo.idEquipos}
                       className="p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleEquipoSelect(equipo)}
+                      onClick={() => handleEquipoSelect(equipo)} // Seleccionar equipo
                     >
                       {equipo.NumeroEquipo}
                     </div>

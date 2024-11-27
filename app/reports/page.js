@@ -19,6 +19,8 @@ import axios from "axios";
 import SearchBar from "../components/dashboard/SearchBar";
 import { AuthContext } from "../context/UsuarioContext";
 import ProtectedRoute from "../context/protectedRoute";
+import toast from "react-hot-toast";
+//para re
 function Reports() {
   const { authState, loadUserDetails } = useContext(AuthContext);
   const { rol, iduser, token, userDetails } = authState;
@@ -121,7 +123,7 @@ function Reports() {
     return reportsData.filter((report) => {
       const fechaActual = new Date();
       const fechaUltimaSemana = new Date(
-        fechaActual.getTime() - 7 * 24 * 60 * 60 * 1000
+        fechaActual.getTime() - 31 * 24 * 60 * 60 * 1000
       );
       const fechaReporte = new Date(report.fechaCreacion);
 
@@ -132,6 +134,8 @@ function Reports() {
       // Luego aplicar el filtro de estado
       const cumpleFiltroEstado =
         filter === "todos" ? true : report.estado === filter;
+
+      // Filtro adicional para los reportes no asignados
 
       return esReporteDentroDeUltimaSemana && cumpleFiltroEstado;
     });
@@ -198,6 +202,7 @@ function Reports() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        cache: "no-store", // Deshabilita el caché
       });
 
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
@@ -215,23 +220,74 @@ function Reports() {
 
   const handleDelete = async (reportId) => {
     try {
-      const response = await fetch(
-        `https://backend-integradora.vercel.app/api/reportes/${reportId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // Muestra la alerta de confirmación
+      toast.custom((t) => (
+        <div
+          className={`${
+            t.visible ? "animate-enter" : "animate-leave"
+          } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+        >
+          <div className="flex-1 w-0 p-4">
+            <div className="flex items-start">
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  Confirmación de Eliminación
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  ¿Estás seguro de que deseas eliminar este reporte? Esta acción
+                  no se puede deshacer.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex border-l border-gray-200">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id); // Cierra el toast
+                try {
+                  // Realiza la solicitud DELETE
+                  const response = await fetch(
+                    `https://backend-integradora.vercel.app/api/reportes/${reportId}`,
+                    {
+                      method: "DELETE",
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  );
 
-      if (response.ok) {
-        LoadReportsDetails();
-      } else {
-        console.error("Failed to delete product");
-      }
+                  if (response.ok) {
+                    setReports((prevReportes) =>
+                      prevReportes.filter(
+                        (report) => report.IdReporte !== reportId
+                      )
+                    );
+                    await LoadReportsDetails();
+                    toast.success("Reporte eliminado exitosamente");
+                  } else {
+                    console.error("Falló la eliminación del reporte");
+                    toast.error("No se pudo eliminar el reporte");
+                  }
+                } catch (error) {
+                  console.error("Error al eliminar el reporte:", error);
+                  toast.error("Error al procesar la solicitud");
+                }
+              }}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              Confirmar
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-red-600 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ));
     } catch (error) {
-      console.error("Error deleting product:", error);
+      console.error("Error en la función handleDelete:", error);
     }
   };
 
@@ -265,7 +321,8 @@ function Reports() {
     setIsAddReportModalOpen(false);
     setIsTechnicianListOpen(false);
     setIsReportDetailModalOpen(false);
-    LoadReportsDetails();
+    setReports((prevReports) => [...prevReports, LoadReportsDetails()]);
+    await LoadReportsDetails();
     setReportToEdit(null);
   };
 
@@ -342,7 +399,7 @@ function Reports() {
               ) : getFilteredReports.length > 0 ? (
                 searchFilteredReports.map((report) => (
                   <div
-                    key={report.folioReporte}
+                    key={report.IdReporte}
                     className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex"
                   >
                     <div
@@ -377,6 +434,7 @@ function Reports() {
                           <span>
                             {report.TecnicoAsignado ||
                               report.tecnicoAsignado ||
+                              report.nombreTecnico ||
                               "Sin asignar"}
                           </span>
                         </div>
@@ -451,13 +509,14 @@ function Reports() {
                             </button>
                           </>
                         )}
-
-                        <button
-                          className="w-full p-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
-                          onClick={() => handleDelete(report.IdReporte)}
-                        >
-                          Eliminar
-                        </button>
+                        {(rol === "admin" || rol === "cliente") && (
+                          <button
+                            className="w-full p-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
+                            onClick={() => handleDelete(report.IdReporte)}
+                          >
+                            Eliminar
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -481,6 +540,7 @@ function Reports() {
           )}
           {isAddReportModalOpen && (
             <AddReportModal
+              LoadReportsDetails={LoadReportsDetails}
               id={clienteId}
               reports={reports}
               role={rol}

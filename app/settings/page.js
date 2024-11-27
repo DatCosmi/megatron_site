@@ -14,7 +14,6 @@ function SettingsPage() {
 
   const { authState, loadUserDetails } = useContext(AuthContext);
   const { rol, iduser, userDetails, token, user } = authState;
-  console.log(authState);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -38,8 +37,8 @@ function SettingsPage() {
     if (userDetails) {
       setFormData({
         nombre: userDetails.nombre || "",
-        apellidoPa: userDetails.ApellidoPa || "",
-        apellidoMa: userDetails.ApellidoMa || "",
+        apellidoPa: userDetails.ApellidoPa || userDetails.apellidoPa || "",
+        apellidoMa: userDetails.ApellidoMa ||  userDetails.apellidoMa || "",
         telefono: userDetails.Telefono || "",
         correoElectronico: userDetails.CorreoElectronico || "",
       });
@@ -115,8 +114,8 @@ function SettingsPage() {
                 {rol !== "admin" && (
                   <>
                     <p className="text-gray-700 mb-4">
-                      <strong>Apellidos:</strong> {userDetails?.ApellidoPa}{" "}
-                      {userDetails?.ApellidoMa}
+                      <strong>Apellidos:</strong> {userDetails?.ApellidoPa ||  userDetails.apellidoPa}{" "}
+                      {userDetails?.ApellidoMa ||  userDetails.apellidoMa}
                     </p>
                     <p className="text-gray-700 mb-4">
                       <strong>Teléfono:</strong> {userDetails?.Telefono}

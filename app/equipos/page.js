@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import AddEquipoModal from "../components/dashboard/AddEquipoModal";
 import ProtectedRoute from "../context/protectedRoute";
-
+import toast from "react-hot-toast";
 import { AuthContext } from "../context/UsuarioContext";
 
 const Equipos = () => {
@@ -22,7 +22,7 @@ const Equipos = () => {
   const [loading, setLoading] = useState(true);
   const [equipoToEdit, setEquipoToEdit] = useState(null);
   const { authState } = useContext(AuthContext);
-  const { token } = authState;
+  const { token, iduser, rol } = authState;
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -52,15 +52,17 @@ const Equipos = () => {
   };
 
   const fetchEquipos = async () => {
+    const mapendpoint = {
+      cliente: `https://backend-integradora.vercel.app/api/equipobyiduser/${iduser}`,
+      admin: `https://backend-integradora.vercel.app/api/equipoubicacion`,
+      tecnico: `https://backend-integradora.vercel.app/api/equipoubicacion`,
+    };
     try {
-      const response = await axios.get(
-        "https://backend-integradora.vercel.app/api/equipoubicacion",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(mapendpoint[rol], {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setEquipos(response.data);
     } catch (error) {
       console.error("Error fetching equipos:", error);
@@ -70,15 +72,17 @@ const Equipos = () => {
   };
 
   const fetchUbicaciones = async () => {
+    const mapendpoint = {
+      cliente: `https://backend-integradora.vercel.app/api/equipobyiduser/${iduser}`,
+      admin: `https://backend-integradora.vercel.app/api/ubicacion`,
+      tecnico: `https://backend-integradora.vercel.app/api/ubicacion`,
+    };
     try {
-      const response = await fetch(
-        "https://backend-integradora.vercel.app/api/ubicacion",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(mapendpoint[rol], {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       setUbicaciones(data);
     } catch (error) {
@@ -93,28 +97,75 @@ const Equipos = () => {
   }, []);
 
   // Function to handle delete action
+
+
   const handleDelete = async (equipoId) => {
     try {
-      // Call the backend API to delete the product
-      const response = await fetch(
-        `https://backend-integradora.vercel.app/api/equipos/${equipoId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        fetchEquipos();
-      } else {
-        console.error("Failed to delete product");
-      }
+      // Muestra la alerta de confirmación
+      toast.custom((t) => (
+        <div
+          className={`${
+            t.visible ? 'animate-enter' : 'animate-leave'
+          } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+        >
+          <div className="flex-1 w-0 p-4">
+            <div className="flex items-start">
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  Confirmación de Eliminación
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  ¿Estás seguro de que deseas eliminar este equipo? Esta acción no se puede deshacer.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex border-l border-gray-200">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id); // Cierra el toast
+                try {
+                  // Realiza la solicitud DELETE
+                  const response = await fetch(
+                    `https://backend-integradora.vercel.app/api/equipos/${equipoId}`,
+                    {
+                      method: 'DELETE',
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  );
+  
+                  if (response.ok) {
+                    fetchEquipos(); // Actualiza la lista de equipos
+                    toast.success('Equipo eliminado exitosamente');
+                  } else {
+                    console.error('Falló la eliminación del equipo');
+                    toast.error('No se pudo eliminar el equipo');
+                  }
+                } catch (error) {
+                  console.error('Error al eliminar el equipo:', error);
+                  toast.error('Error al procesar la solicitud');
+                }
+              }}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              Confirmar
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-red-600 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ));
     } catch (error) {
-      console.error("Error deleting product:", error);
+      console.error('Error en la función handleDelete:', error);
     }
   };
+  
 
   const getTypeBadge = (type) => {
     const baseClasses = "px-2.5 py-0.5 rounded-full text-xs font-medium";
@@ -150,26 +201,33 @@ const Equipos = () => {
   };
 
   const getSortedEquipos = () => {
-    const filteredEquipos = equipos.filter(
-      (equipo) => equipo &&
-        (ubicacionFilter === "" || equipo.nombre === ubicacionFilter) &&
+    const filteredEquipos = equipos.filter((equipo) => {
+      // Verifica que equipo no sea null o undefined
+      if (!equipo) return false;
+  
+      const tieneUbicacion = equipo.nombreUbicacion || equipo.nombre;
+  
+      // Convertir el searchQuery a minúsculas para una búsqueda insensible a mayúsculas/minúsculas
+      const lowerSearchQuery = searchQuery.toLowerCase();
+  
+      // Verifica si alguna propiedad del equipo contiene el searchQuery
+      const matchesSearchQuery = Object.values(equipo).some((value) =>
+        value?.toString().toLowerCase().includes(lowerSearchQuery)
+      );
+  
+      return (
+        (ubicacionFilter === "" ||
+          (tieneUbicacion &&
+            (equipo.nombreUbicacion === ubicacionFilter ||
+              equipo.nombre === ubicacionFilter))) &&
         (statusFilter === "" || equipo.Tipo === statusFilter) &&
-        (equipo.modelo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          equipo.idEquipos.toString().includes(searchQuery.toLowerCase()))
-    );
-
-    if (!sortConfig.key) return filteredEquipos;
-
-    return filteredEquipos.sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === "asc" ? -1 : 1;
-      }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
-      return 0;
+        matchesSearchQuery // Aquí se aplica la búsqueda en cualquier propiedad del equipo
+      );
     });
+  
+    return filteredEquipos;
   };
+  
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -199,7 +257,6 @@ const Equipos = () => {
     startIndex,
     startIndex + itemsPerPage
   );
-
   return (
     <ProtectedRoute>
       <div className="flex flex-col md:flex-row gap-2 h-screen bg-[#eaeef6]">
@@ -223,7 +280,7 @@ const Equipos = () => {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
                       type="text"
-                      placeholder="Buscar por modelo o ID"
+                      placeholder="Buscar"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -243,15 +300,28 @@ const Equipos = () => {
                       className="w-full appearance-none px-4 py-2 pr-10 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="">Todas</option>
+
+                      {/* Mapeo de ubicaciones sin duplicados */}
                       {Array.isArray(ubicaciones) &&
-                        ubicaciones.map((ubicacion) => (
-                          <option
-                            key={ubicacion.Nombre}
-                            value={ubicacion.Nombre}
-                          >
-                            {ubicacion.Nombre}
-                          </option>
-                        ))}
+                        (() => {
+                          const addedUbicaciones = new Set(); // Usamos un Set para evitar duplicados
+                          return ubicaciones.map((ubicacion, index) => {
+                            const nombreUbicacion =
+                              ubicacion.Nombre || ubicacion.nombreUbicacion;
+                            if (!addedUbicaciones.has(nombreUbicacion)) {
+                              addedUbicaciones.add(nombreUbicacion); // Añadimos al Set
+                              return (
+                                <option
+                                  key={nombreUbicacion || `ubicacion-${index}`}
+                                  value={nombreUbicacion}
+                                >
+                                  {nombreUbicacion}
+                                </option>
+                              );
+                            }
+                            return null; // Si ya está, no se agrega
+                          });
+                        })()}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                   </div>
@@ -381,12 +451,14 @@ const Equipos = () => {
                     >
                       Ubicacion
                     </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Acciones
-                    </th>
+                    {rol !== "cliente" && (
+                      <th
+                        scope="col"
+                        className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Acciones
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -415,27 +487,33 @@ const Equipos = () => {
                           {equipo.marca}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm">
-                          <span className={getTypeBadge(equipo.estatus)}>
-                            {equipo.estatus}
+                          <span
+                            className={getTypeBadge(
+                              equipo.estatus || equipo.estatusEquipo
+                            )}
+                          >
+                            {equipo.estatus || equipo.estatusEquipo}
                           </span>
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {equipo.nombre}
+                          {equipo.nombre || equipo.nombreUbicacion}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-xs flex">
-                          <button
-                            onClick={() => handleDelete(equipo.IdEquipos)}
-                            className="text-[#ff006e] flex"
-                          >
-                            <Trash2 />
-                          </button>
-                          <button
-                            className="text-[#007bff] flex"
-                            onClick={() => handleEditClick(equipo)}
-                          >
-                            <SquarePen />
-                          </button>
-                        </td>
+                        {rol !== "cliente" && (
+                          <td className="px-3 py-4 whitespace-nowrap text-xs flex">
+                            <button
+                              onClick={() => handleDelete(equipo.idEquipos)}
+                              className="text-[#ff006e] flex"
+                            >
+                              <Trash2 />
+                            </button>
+                            <button
+                              className="text-[#007bff] flex"
+                              onClick={() => handleEditClick(equipo)}
+                            >
+                              <SquarePen />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))
                   ) : (

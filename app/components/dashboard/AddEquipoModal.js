@@ -2,7 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { AuthContext } from "../../context/UsuarioContext";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 
 function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
   const [Estatus, setEstatus] = useState("");
@@ -75,7 +75,6 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
     }
   }, [IdProductos, equipoToEdit]);
 
-  console.log("a", IdProductos);
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -90,6 +89,7 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
 
     try {
       let response;
+      let message = "";
 
       if (equipoToEdit) {
         // Editar producto existente
@@ -104,6 +104,7 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
             body: JSON.stringify(equipoData),
           }
         );
+        message = "Equipo actualizado exitosamente";
       } else {
         // Agregar nuevo producto
         response = await fetch(
@@ -117,38 +118,39 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
             body: JSON.stringify(equipoData),
           }
         );
+        message = "Equipo agregado exitosamente";
       }
 
+      // Verificar si la respuesta es exitosa
       if (!response.ok) {
-        
-        toast.error("Error al guardar el equipo");
-        throw new Error("Error al guardar el Equipo");
+        const errorData = await response.json(); // Obtener detalles del error
+        const errorMessage =
+          errorData?.message ||
+          "Error al guardar el equipo. Intenta nuevamente.";
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
-      if (response.ok) {
-        
-      toast.success("Equipo agregado exitosamente");
-      }
+
+      // Mostrar mensaje de éxito
+      toast.success(message);
+
       // Obtener el resultado de la respuesta
       const result = await response.json();
-
       if (equipoToEdit) {
         // Actualizar el producto editado en el estado
-        setSuccessMessage(`Producto actualizado con ID`);
-        setEquipos((prev) =>
-          prev.map((p) => (p.id === result.equipo.id ? result.equipo : p))
-        );
+        console.log(result.equipo);
+        setSuccessMessage(`Producto actualizado con ID:`);
       } else {
-        
         // Agregar el nuevo producto al estado
-        setSuccessMessage(`Producto agregado con ID}`);
-        setEquipos((prev) => [...prev, result.equipo]);
+        setSuccessMessage(`Producto agregado con ID: `);
       }
 
       // Cerrar el modal y limpiar los campos si es necesario
       closeModal();
     } catch (error) {
+      console.error("Error en handleSubmit:", error);
+      toast.error(error.message || "Algo salió mal. Intenta nuevamente.");
       setError(error.message || "Algo salió mal");
-      
     }
   };
 

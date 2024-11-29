@@ -60,7 +60,6 @@ const Dashboard = () => {
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
       const result = await response.json();
       if (result) {
-       
         return result;
       }
     } catch (err) {
@@ -162,9 +161,10 @@ const Dashboard = () => {
       (a, b) => a.averageTime - b.averageTime
     );
 
+    // Change this to show top 10 fastest and slowest locations
     setLocationStats({
-      fastest: sortedLocations.slice(0, 5),
-      slowest: sortedLocations.slice(-5).reverse(),
+      fastest: sortedLocations.slice(0, 10),
+      slowest: sortedLocations.slice(-10).reverse(),
     });
   };
 
@@ -179,19 +179,29 @@ const Dashboard = () => {
 
   const getSortedReports = () => {
     const reportsCopy = [...reports];
-    if (!sortConfig.key) return reportsCopy.slice(-5);
 
+    // Si no hay clave de ordenamiento, ordena por fecha más reciente
+    if (!sortConfig.key) {
+      return reportsCopy
+        .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
+        .slice(0, 5);
+    }
+
+    // Si hay una clave de ordenamiento, ordena primero por esa clave
     return reportsCopy
       .sort((a, b) => {
+        // Primero ordenar por la clave seleccionada
         if (a[sortConfig.key] < b[sortConfig.key]) {
           return sortConfig.direction === "asc" ? -1 : 1;
         }
         if (a[sortConfig.key] > b[sortConfig.key]) {
           return sortConfig.direction === "asc" ? 1 : -1;
         }
-        return 0;
+
+        // Si los valores son iguales, ordenar por fecha más reciente como criterio secundario
+        return new Date(b.fechaCreacion) - new Date(a.fechaCreacion);
       })
-      .slice(-5);
+      .slice(0, 5); // Siempre cortar a 5 reportes
   };
 
   const getSortIcon = (key) => {
@@ -372,11 +382,11 @@ const Dashboard = () => {
                         <th
                           scope="col"
                           className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                          onClick={() => handleSort("Cliente")}
+                          onClick={() => handleSort("nombreUbicacion")}
                         >
                           <div className="flex items-center gap-2">
-                            Reportado por
-                            {getSortIcon("Cliente")}
+                            Ubicación
+                            {getSortIcon("nombreUbicacion")}
                           </div>
                         </th>
                       )}
@@ -410,7 +420,7 @@ const Dashboard = () => {
                     {getSortedReports().map((report) => (
                       <tr key={report.folioReporte}>
                         <td className="pl-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {report.folioReporte}
+                          {report.folioReporte || "Sin folio"}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {report.tituloReporte}
@@ -420,7 +430,7 @@ const Dashboard = () => {
                         </td>
                         {rol === "admin" && (
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {report.Cliente}
+                            {report.nombreUbicacion}
                           </td>
                         )}
                         {rol === "cliente" && (
@@ -445,9 +455,9 @@ const Dashboard = () => {
           {rol === "admin" && (
             <div className="w-80 space-y-6 flex justify-center items-center flex-col">
               {/* Fastest Locations */}
-              <div className="bg-white rounded-lg shadow p-4 min-w-80">
+              <div className="bg-white rounded-lg shadow p-4 min-w-80 max-h-96 overflow-y-auto">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
-                  Lugares mas rápidos de atender
+                  Lugares más rápidos de atender
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="min-w-full">
@@ -478,7 +488,7 @@ const Dashboard = () => {
               </div>
 
               {/* Slowest Locations */}
-              <div className="bg-white rounded-lg shadow p-4 min-w-80">
+              <div className="bg-white rounded-lg shadow p-4 min-w-80 max-h-96 overflow-y-auto">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
                   Lugares más lentos de atender
                 </h2>

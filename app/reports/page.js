@@ -20,7 +20,8 @@ import SearchBar from "../components/dashboard/SearchBar";
 import { AuthContext } from "../context/UsuarioContext";
 import ProtectedRoute from "../context/protectedRoute";
 import toast from "react-hot-toast";
-//para re
+import { RefreshCw } from "lucide-react";
+
 function Reports() {
   const { authState, loadUserDetails } = useContext(AuthContext);
   const { rol, iduser, token, userDetails } = authState;
@@ -36,6 +37,32 @@ function Reports() {
   const [isReportDetailModalOpen, setIsReportDetailModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const refreshReports = async () => {
+    setLoading(true);
+    try {
+      setIsRefreshing(true);
+      // Resetea cualquier mensaje de error previo
+      setError("");
+
+      // Obtén los reportes basado en el rol del usuario
+      const reportData = await LoadReportsDetails(clienteId, tecnicoId);
+
+      // Actualiza el estado de reportes
+      setReports(Array.isArray(reportData) ? reportData : []);
+
+      // Opcional: Muestra un mensaje de éxito
+      toast.success("Reportes actualizados");
+    } catch (error) {
+      console.error("Error al actualizar reportes:", error);
+      toast.error("No se pudieron actualizar los reportes");
+      setError("No se pudieron cargar los reportes");
+    } finally {
+      setIsRefreshing(false);
+      setLoading(false);
+    }
+  };
 
   const fetchTechnicians = async () => {
     try {
@@ -85,7 +112,12 @@ function Reports() {
       setError(error.message || "Algo salió mal");
       console.error(error);
     }
-    LoadReportsDetails();
+    try {
+      const updatedReports = await LoadReportsDetails(clienteId, tecnicoId);
+      setReports(updatedReports);
+    } catch (error) {
+      console.error("Error actualizando reportes:", error);
+    }
   };
 
   const handleStart = async (IdReporte) => {
@@ -202,19 +234,19 @@ function Reports() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        cache: "no-store", // Deshabilita el caché
+        cache: "no-store",
       });
 
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+
       const result = await response.json();
-      if (result) {
-        return result;
-      }
+      return result; // Retorna directamente los datos
     } catch (err) {
       console.error(
         "Reports: Error al obtener los detalles de los reportes:",
         err.message
       );
+      return []; // Retorna un array vacío en caso de error
     }
   };
 
@@ -321,8 +353,15 @@ function Reports() {
     setIsAddReportModalOpen(false);
     setIsTechnicianListOpen(false);
     setIsReportDetailModalOpen(false);
-    setReports((prevReports) => [...prevReports, LoadReportsDetails()]);
-    await LoadReportsDetails();
+
+    try {
+      // Obtiene directamente los nuevos reportes
+      const updatedReports = await LoadReportsDetails(clienteId, tecnicoId);
+      setReports(updatedReports);
+    } catch (error) {
+      console.error("Error actualizando reportes:", error);
+    }
+
     setReportToEdit(null);
   };
 
@@ -353,11 +392,13 @@ function Reports() {
                   Reportes realizados en la última semana
                 </p>
               </div>
+
               <SearchBar
                 reports={reports}
                 setFilteredReports={setSearchFilteredReports}
                 activeFilter={activeFilter}
               />
+
               <button
                 onClick={() => setIsAddReportModalOpen(true)}
                 className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors"
@@ -387,6 +428,18 @@ function Reports() {
                   </span>
                 </button>
               ))}
+              {/* Botón de actualización */}
+              <button
+                onClick={refreshReports}
+                disabled={isRefreshing}
+                className={`p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors 
+            flex items-center gap-2 
+            ${isRefreshing ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <RefreshCw
+                  className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

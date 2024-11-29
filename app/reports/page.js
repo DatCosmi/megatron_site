@@ -453,12 +453,18 @@ function Reports() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {loading ? (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="col-span-full flex items-center justify-center h-full min-h-[300px]">
                   <p className="text-2xl font-bold text-gray-400">
                     Cargando reportes...
                   </p>
                 </div>
-              ) : getFilteredReports.length > 0 ? (
+              ) : reports.length === 0 ? (
+                <div className="col-span-full flex items-center justify-center h-full min-h-[300px]">
+                  <p className="text-2xl font-bold text-gray-400">
+                    No hay reportes registrados
+                  </p>
+                </div>
+              ) : searchFilteredReports.length > 0 ? (
                 searchFilteredReports.map((report) => (
                   <div
                     key={report.IdReporte}
@@ -603,9 +609,9 @@ function Reports() {
                   </div>
                 ))
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="col-span-full flex items-center justify-center h-full min-h-[300px]">
                   <p className="text-2xl font-bold text-gray-400">
-                    No hay reportes
+                    No se encontraron reportes con los filtros aplicados
                   </p>
                 </div>
               )}

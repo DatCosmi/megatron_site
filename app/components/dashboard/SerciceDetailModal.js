@@ -3,7 +3,7 @@ import { AlertCircle, Clock, CheckCircle } from "lucide-react";
 import { AuthContext } from "../../context/UsuarioContext";
 import toast, { Toaster } from "react-hot-toast";
 
-function ServiceDetailModal({ report, closeModal, onSave }) {
+function ServiceDetailModal({ report, closeModal, onSave, rol }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedReport, setEditedReport] = useState(report);
   const { authState } = useContext(AuthContext);
@@ -109,115 +109,134 @@ function ServiceDetailModal({ report, closeModal, onSave }) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-      <div className="bg-white rounded-xl shadow-lg max-w-md w-full z-60 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full z-60 overflow-hidden">
         {!isEditing ? (
           <>
             {/* Encabezado */}
             <div
-              className={`p-8 text-center ${getStatusColor(
+              className={`p-6 text-center ${getStatusColor(
                 report.estado
               )} bg-opacity-10`}
             >
               <div
-                className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${getStatusColor(
+                className={`w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center ${getStatusColor(
                   report.estado
                 )} bg-opacity-15 shadow-sm`}
               >
                 {getStatusIcon(report.estado)}
               </div>
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2 className="text-lg font-semibold text-gray-800">
                 {report.tituloReporte}
               </h2>
-              <p className="text-sm text-gray-500 mt-2">Detalles del reporte</p>
+              <p className="text-sm text-gray-500 mt-1">Detalles del reporte</p>
             </div>
 
             {/* Contenido */}
-            <div className="p-6 space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Folio:</span>
-                  <span className="text-gray-600">
+            <div className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                {/* Campo individual */}
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">Folio:</p>
+                  <p className="text-gray-600 text-sm">
                     {report.folioReporte || "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Descripción:</span>
-                  <span className="text-gray-600 max-w-[10vw]">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">
+                    Descripción:
+                  </p>
+                  <p className="text-gray-600 text-sm">
                     {report.comentarios || "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Comentarios finales:</span>
-                  <span className="text-gray-600 max-w-[10vw]">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">
+                    Comentarios finales:
+                  </p>
+                  <p className="text-gray-600 text-sm">
                     {report.ComentariosFinales || "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Ubicación:</span>
-                  <span className="text-gray-600">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">
+                    Ubicación:
+                  </p>
+                  <p className="text-gray-600 text-sm">
                     {report.nombreUbicacion ||
                       report.ubicacion ||
                       "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Dirección:</span>
-                  <span className="text-gray-600">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">
+                    Dirección:
+                  </p>
+                  <p className="text-gray-600 text-sm">
                     {report.Direccion || "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Codigo Postal:</span>
-                  <span className="text-gray-600">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">
+                    Código Postal:
+                  </p>
+                  <p className="text-gray-600 text-sm">
                     {report.CodigoPostal || "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Equipo:</span>
-                  <span className="text-gray-600">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">Equipo:</p>
+                  <p className="text-gray-600 text-sm">
                     {report.numeroEquipo || "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">No. de Serie:</span>
-                  <span className="text-gray-600">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">
+                    No. de Serie:
+                  </p>
+                  <p className="text-gray-600 text-sm">
                     {report.numeroSerie || "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Reportado por:</span>
-                  <span className="text-gray-600">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">
+                    Reportado por:
+                  </p>
+                  <p className="text-gray-600 text-sm">
                     {report.Cliente ||
                       report.nombreCliente ||
                       report.creadorReporte ||
                       "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Tel. Cliente:</span>
-                  <span className="text-gray-600">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">
+                    Tel. Cliente:
+                  </p>
+                  <p className="text-gray-600 text-sm">
                     {report.telefonoCliente || "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Técnico:</span>
-                  <span className="text-gray-600">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">Técnico:</p>
+                  <p className="text-gray-600 text-sm">
                     {report.TecnicoAsignado ||
                       report.tecnicoAsignado ||
                       report.nombreTecnico ||
                       "No asignado"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Fecha y Hora:</span>
-                  <span className="text-gray-600">
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">
+                    Fecha y Hora:
+                  </p>
+                  <p className="text-gray-600 text-sm">
                     {formatFechaHora(report.fechaCreacion) || "No disponible"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="font-medium w-32">Estado:</span>
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-700 text-sm">Estado:</p>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
+                    className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
                       report.estado
                     )} bg-opacity-10 ${getStatusTextColor(report.estado)}`}
                   >
@@ -228,15 +247,17 @@ function ServiceDetailModal({ report, closeModal, onSave }) {
             </div>
 
             {/* Botones */}
-            <div className="px-6 py-4 bg-gray-50 flex justify-between">
+            <div className="px-4 py-3 bg-gray-50 flex justify-between">
+              {rol !== "tecnico" && (
+                <button
+                  className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition-colors duration-200"
+                  onClick={() => setIsEditing(true)}
+                >
+                  Editar
+                </button>
+              )}
               <button
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
-                onClick={() => setIsEditing(true)}
-              >
-                Editar
-              </button>
-              <button
-                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors duration-200"
+                className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm transition-colors duration-200"
                 onClick={closeModal}
               >
                 Cerrar

@@ -427,7 +427,7 @@ function Reports() {
                       <div className="space-y-4 mb-6">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <FileText className="w-4 h-4" />
-                          <span>{report.folioReporte}</span>
+                          <span>{report.folioReporte || "No disponible"}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Users className="w-4 h-4" />
@@ -491,6 +491,15 @@ function Reports() {
                             </>
                           )}
 
+                        {report.estado === "pendiente" && rol === "tecnico" && (
+                          <button
+                            className="w-full p-2 bg-[#ffbe0b] text-white rounded-lg hover:bg-[#edb20e] transition-colors text-sm font-medium"
+                            onClick={() => handleStart(report.IdReporte)}
+                          >
+                            Comenzar servicio
+                          </button>
+                        )}
+
                         {report.estado === "ejecucion" && rol === "admin" && (
                           <>
                             <button
@@ -505,10 +514,20 @@ function Reports() {
                               className="w-full p-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
                               onClick={() => handleComplete(report.IdReporte)}
                             >
-                              Completar
+                              Concluir servicio
                             </button>
                           </>
                         )}
+
+                        {report.estado === "ejecucion" && rol === "tecnico" && (
+                          <button
+                            className="w-full p-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
+                            onClick={() => handleComplete(report.IdReporte)}
+                          >
+                            Concluir servicio
+                          </button>
+                        )}
+
                         {(rol === "admin" || rol === "cliente") && (
                           <button
                             className="w-full p-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
@@ -552,6 +571,7 @@ function Reports() {
             <ServiceDetailModal
               report={selectedReport}
               closeModal={closeModal}
+              rol={rol}
             />
           )}
         </main>

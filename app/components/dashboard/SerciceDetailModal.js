@@ -109,7 +109,7 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-      <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full z-60 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full z-60 overflow-hidden">
         {!isEditing ? (
           <>
             {/* Encabezado */}
@@ -136,13 +136,13 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                 {/* Campo individual */}
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">Folio:</p>
+                  <p className="font-semibold text-gray-700 text-sm">Folio:</p>
                   <p className="text-gray-600 text-sm">
                     {report.folioReporte || "No disponible"}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">
+                  <p className="font-semibold text-gray-700 text-sm">
                     Descripción:
                   </p>
                   <p className="text-gray-600 text-sm">
@@ -150,15 +150,15 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">
+                  <p className="font-semibold text-gray-700 text-sm">
                     Comentarios finales:
                   </p>
                   <p className="text-gray-600 text-sm">
-                    {report.ComentariosFinales || "No disponible"}
+                    {report.ComentariosFinales || "Sin comentarios"}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">
+                  <p className="font-semibold text-gray-700 text-sm">
                     Ubicación:
                   </p>
                   <p className="text-gray-600 text-sm">
@@ -168,7 +168,7 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">
+                  <p className="font-semibold text-gray-700 text-sm">
                     Dirección:
                   </p>
                   <p className="text-gray-600 text-sm">
@@ -176,7 +176,7 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">
+                  <p className="font-semibold text-gray-700 text-sm">
                     Código Postal:
                   </p>
                   <p className="text-gray-600 text-sm">
@@ -184,13 +184,13 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">Equipo:</p>
+                  <p className="font-semibold text-gray-700 text-sm">Equipo:</p>
                   <p className="text-gray-600 text-sm">
                     {report.numeroEquipo || "No disponible"}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">
+                  <p className="font-semibold text-gray-700 text-sm">
                     No. de Serie:
                   </p>
                   <p className="text-gray-600 text-sm">
@@ -198,7 +198,7 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">
+                  <p className="font-semibold text-gray-700 text-sm">
                     Reportado por:
                   </p>
                   <p className="text-gray-600 text-sm">
@@ -209,7 +209,7 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">
+                  <p className="font-semibold text-gray-700 text-sm">
                     Tel. Cliente:
                   </p>
                   <p className="text-gray-600 text-sm">
@@ -217,7 +217,9 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">Técnico:</p>
+                  <p className="font-semibold text-gray-700 text-sm">
+                    Técnico:
+                  </p>
                   <p className="text-gray-600 text-sm">
                     {report.TecnicoAsignado ||
                       report.tecnicoAsignado ||
@@ -226,7 +228,7 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">
+                  <p className="font-semibold text-gray-700 text-sm">
                     Fecha y Hora:
                   </p>
                   <p className="text-gray-600 text-sm">
@@ -234,7 +236,7 @@ function ServiceDetailModal({ report, closeModal, onSave, rol }) {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-700 text-sm">Estado:</p>
+                  <p className="font-semibold text-gray-700 text-sm">Estado:</p>
                   <span
                     className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
                       report.estado

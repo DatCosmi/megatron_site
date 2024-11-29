@@ -277,7 +277,7 @@ function AddEquipoModal({ equipos, setEquipos, closeModal, equipoToEdit }) {
                     value="inventariado"
                     selected={Estatus === "inventariado"}
                   >
-                    Inventariado
+                    En bodega
                   </option>
                   <option
                     value="reparacion"

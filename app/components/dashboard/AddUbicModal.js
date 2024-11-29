@@ -58,7 +58,7 @@ function AddUbicModal({
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     // Data to send for location
     const ubicData = {
       nombre,
@@ -68,11 +68,11 @@ function AddUbicModal({
       direccion,
       clientes_idClientes,
     };
-  
+
     try {
       let response;
       let message = "";
-  
+
       if (ubicacionToEdit) {
         // Edit existing location
         response = await fetch(
@@ -102,20 +102,21 @@ function AddUbicModal({
         );
         message = "Ubicación agregada exitosamente";
       }
-  
+
       // Check if the response is successful
       if (!response.ok) {
         const errorData = await response.json();
         const errorMessage =
-          errorData?.message || "Error al guardar la ubicación. Intenta nuevamente.";
+          errorData?.message ||
+          "Error al guardar la ubicación. Intenta nuevamente.";
         toast.error(errorMessage);
         throw new Error(errorMessage);
       }
-  
+
       // Show success toast
       const result = await response.json();
       toast.success(message);
-  
+
       if (ubicacionToEdit) {
         // Update the edited location in state
         setSuccessMessage(`Ubicación actualizada con ID:`);
@@ -124,7 +125,7 @@ function AddUbicModal({
         setSuccessMessage(`Ubicación agregada con ID:`);
         // Optionally update state if needed
       }
-  
+
       // Close modal
       closeModal();
     } catch (error) {
@@ -133,7 +134,6 @@ function AddUbicModal({
       setError(error.message || "Algo salió mal");
     }
   };
-  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

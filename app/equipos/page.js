@@ -98,14 +98,13 @@ const Equipos = () => {
 
   // Function to handle delete action
 
-
   const handleDelete = async (equipoId) => {
     try {
       // Muestra la alerta de confirmación
       toast.custom((t) => (
         <div
           className={`${
-            t.visible ? 'animate-enter' : 'animate-leave'
+            t.visible ? "animate-enter" : "animate-leave"
           } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
         >
           <div className="flex-1 w-0 p-4">
@@ -115,7 +114,8 @@ const Equipos = () => {
                   Confirmación de Eliminación
                 </p>
                 <p className="mt-1 text-sm text-gray-500">
-                  ¿Estás seguro de que deseas eliminar este equipo? Esta acción no se puede deshacer.
+                  ¿Estás seguro de que deseas eliminar este equipo? Esta acción
+                  no se puede deshacer.
                 </p>
               </div>
             </div>
@@ -129,23 +129,23 @@ const Equipos = () => {
                   const response = await fetch(
                     `https://backend-integradora.vercel.app/api/equipos/${equipoId}`,
                     {
-                      method: 'DELETE',
+                      method: "DELETE",
                       headers: {
                         Authorization: `Bearer ${token}`,
                       },
                     }
                   );
-  
+
                   if (response.ok) {
                     fetchEquipos(); // Actualiza la lista de equipos
-                    toast.success('Equipo eliminado exitosamente');
+                    toast.success("Equipo eliminado exitosamente");
                   } else {
-                    console.error('Falló la eliminación del equipo');
-                    toast.error('No se pudo eliminar el equipo');
+                    console.error("Falló la eliminación del equipo");
+                    toast.error("No se pudo eliminar el equipo");
                   }
                 } catch (error) {
-                  console.error('Error al eliminar el equipo:', error);
-                  toast.error('Error al procesar la solicitud');
+                  console.error("Error al eliminar el equipo:", error);
+                  toast.error("Error al procesar la solicitud");
                 }
               }}
               className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -162,10 +162,9 @@ const Equipos = () => {
         </div>
       ));
     } catch (error) {
-      console.error('Error en la función handleDelete:', error);
+      console.error("Error en la función handleDelete:", error);
     }
   };
-  
 
   const getTypeBadge = (type) => {
     const baseClasses = "px-2.5 py-0.5 rounded-full text-xs font-medium";
@@ -178,6 +177,19 @@ const Equipos = () => {
         return `${baseClasses} bg-yellow-50 text-[#ffc107] border border-yellow-200`;
       default:
         return `${baseClasses} bg-gray-50 text-gray-800 border border-gray-200`;
+    }
+  };
+
+  const getStatusText = (type) => {
+    switch (type) {
+      case "inventariado":
+        return "En bodega";
+      case "activo":
+        return "Activo";
+      case "reparacion":
+        return "En reparación";
+      default:
+        return "No disponible";
     }
   };
 
@@ -202,32 +214,47 @@ const Equipos = () => {
 
   const getSortedEquipos = () => {
     const filteredEquipos = equipos.filter((equipo) => {
-      // Verifica que equipo no sea null o undefined
+      // Verificaciones de null/undefined
       if (!equipo) return false;
-  
-      const tieneUbicacion = equipo.nombreUbicacion || equipo.nombre;
-  
-      // Convertir el searchQuery a minúsculas para una búsqueda insensible a mayúsculas/minúsculas
+
+      // Unificar la lógica de búsqueda de ubicación
+      const ubicacion = equipo.nombreUbicacion || equipo.nombre || "";
+
+      // Búsqueda insensible a mayúsculas/minúsculas
       const lowerSearchQuery = searchQuery.toLowerCase();
-  
-      // Verifica si alguna propiedad del equipo contiene el searchQuery
+
       const matchesSearchQuery = Object.values(equipo).some((value) =>
         value?.toString().toLowerCase().includes(lowerSearchQuery)
       );
-  
-      return (
-        (ubicacionFilter === "" ||
-          (tieneUbicacion &&
-            (equipo.nombreUbicacion === ubicacionFilter ||
-              equipo.nombre === ubicacionFilter))) &&
-        (statusFilter === "" || equipo.Tipo === statusFilter) &&
-        matchesSearchQuery // Aquí se aplica la búsqueda en cualquier propiedad del equipo
-      );
+
+      const matchesUbicacion =
+        ubicacionFilter === "" ||
+        ubicacion.toLowerCase() === ubicacionFilter.toLowerCase();
+
+      // Modificar la comparación de estado para ser más flexible
+      const matchesStatus =
+        statusFilter === "" ||
+        (equipo.estatusEquipo || equipo.estatus)?.toLowerCase() ===
+          statusFilter.toLowerCase();
+
+      return matchesUbicacion && matchesStatus && matchesSearchQuery;
     });
-  
+
+    // Si necesitas ordenar, agrega la lógica de sorting aquí
+    if (sortConfig.key) {
+      filteredEquipos.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
     return filteredEquipos;
   };
-  
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -280,7 +307,7 @@ const Equipos = () => {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
                       type="text"
-                      placeholder="Buscar"
+                      placeholder="Buscar por número de equipo, modelo, marca..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -303,25 +330,25 @@ const Equipos = () => {
 
                       {/* Mapeo de ubicaciones sin duplicados */}
                       {Array.isArray(ubicaciones) &&
-                        (() => {
-                          const addedUbicaciones = new Set(); // Usamos un Set para evitar duplicados
-                          return ubicaciones.map((ubicacion, index) => {
-                            const nombreUbicacion =
-                              ubicacion.Nombre || ubicacion.nombreUbicacion;
-                            if (!addedUbicaciones.has(nombreUbicacion)) {
-                              addedUbicaciones.add(nombreUbicacion); // Añadimos al Set
-                              return (
-                                <option
-                                  key={nombreUbicacion || `ubicacion-${index}`}
-                                  value={nombreUbicacion}
-                                >
-                                  {nombreUbicacion}
-                                </option>
-                              );
-                            }
-                            return null; // Si ya está, no se agrega
-                          });
-                        })()}
+                        Array.from(
+                          new Set(
+                            ubicaciones
+                              .map(
+                                (ubicacion) =>
+                                  ubicacion.Nombre ||
+                                  ubicacion.nombreUbicacion ||
+                                  ubicacion.nombre
+                              )
+                              .filter(Boolean)
+                          )
+                        ).map((nombreUbicacion, index) => (
+                          <option
+                            key={nombreUbicacion || `ubicacion-${index}`}
+                            value={nombreUbicacion}
+                          >
+                            {nombreUbicacion}
+                          </option>
+                        ))}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                   </div>
@@ -330,17 +357,20 @@ const Equipos = () => {
                 {/* Status Dropdown */}
                 <div className="relative min-w-[140px]">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tipo
+                    Estado
                   </label>
                   <div className="relative">
                     <select
                       value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                      }}
                       className="w-full appearance-none px-4 py-2 pr-10 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="">Todos</option>
-                      <option value="Impresora">Impresora</option>
-                      <option value="Suministro">Suministro</option>
+                      <option value="activo">Activo</option>
+                      <option value="inventariado">En bodega</option>
+                      <option value="reparacion">En reparación</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                   </div>
@@ -414,42 +444,60 @@ const Equipos = () => {
                       className="pl-6 pr-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                       onClick={() => handleSort("numeroEquipo")}
                     >
-                      No. Equipo
+                      <div className="flex items-center gap-2">
+                        No. Equipo
+                        {getSortIcon("numeroEquipo")}
+                      </div>
                     </th>
                     <th
                       scope="col"
                       className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                       onClick={() => handleSort("modelo")}
                     >
-                      Modelo
+                      <div className="flex items-center gap-2">
+                        Modelo
+                        {getSortIcon("modelo")}
+                      </div>
                     </th>
                     <th
                       scope="col"
                       className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                       onClick={() => handleSort("numeroSerie")}
                     >
-                      No. Serie
+                      <div className="flex items-center gap-2">
+                        No. Serie
+                        {getSortIcon("numeroSerie")}
+                      </div>
                     </th>
                     <th
                       scope="col"
                       className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                       onClick={() => handleSort("marca")}
                     >
-                      Marca
+                      <div className="flex items-center gap-2">
+                        Marca
+                        {getSortIcon("marca")}
+                      </div>
                     </th>
                     <th
                       scope="col"
                       className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("estatus")}
+                      onClick={() => handleSort("estatusEquipo")}
                     >
-                      Estado
+                      <div className="flex items-center gap-2">
+                        Estado
+                        {getSortIcon("estatusEquipo")}
+                      </div>
                     </th>
                     <th
                       scope="col"
                       className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("ubicacion")}
+                      onClick={() => handleSort("nombreUbicacion")}
                     >
-                      Ubicacion
+                      <div className="flex items-center gap-2">
+                        Ubicación
+                        {getSortIcon("nombreUbicacion")}
+                      </div>
                     </th>
                     {rol !== "cliente" && (
                       <th
@@ -492,7 +540,9 @@ const Equipos = () => {
                               equipo.estatus || equipo.estatusEquipo
                             )}
                           >
-                            {equipo.estatus || equipo.estatusEquipo}
+                            {getStatusText(
+                              equipo.estatus || equipo.estatusEquipo
+                            )}
                           </span>
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">

@@ -103,14 +103,16 @@ function Reports() {
       );
 
       if (!response.ok) {
-        throw new Error("Error al completar el reporte");
+        throw new Error("Error al concluir el reporte");
       }
 
-      setSuccessMessage("Reporte completado exitosamente.");
+      setSuccessMessage("Servicio concluido exitosamente.");
+      toast.success("Servicio concluido exitosamente");
       closeModal();
     } catch (error) {
       setError(error.message || "Algo salió mal");
       console.error(error);
+      toast.error("No se pudo concluir el servicio");
     }
     try {
       const updatedReports = await LoadReportsDetails(clienteId, tecnicoId);
@@ -139,16 +141,23 @@ function Reports() {
       );
 
       if (!response.ok) {
-        throw new Error("Error al completar el reporte");
+        throw new Error("Error al comenzar el servicio");
       }
 
-      setSuccessMessage("Reporte completado exitosamente.");
+      setSuccessMessage("Servicio comenzado exitosamente.");
+      toast.success("Servicio comenzado exitosamente");
       closeModal();
     } catch (error) {
       setError(error.message || "Algo salió mal");
       console.error(error);
+      toast.error("No se pudo comenzar el servicio");
     }
-    await LoadReportsDetails();
+    try {
+      const updatedReports = await LoadReportsDetails(clienteId, tecnicoId);
+      setReports(updatedReports);
+    } catch (error) {
+      console.error("Error actualizando reportes:", error);
+    }
   };
   // Función para filtrar reportes por fecha y estado
   const getFilteredReports = (reportsData, filter) => {

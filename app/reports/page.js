@@ -408,12 +408,16 @@ function Reports() {
                 activeFilter={activeFilter}
               />
 
-              <button
-                onClick={() => setIsAddReportModalOpen(true)}
-                className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors"
-              >
-                <Plus className="w-7 h-7" />
-              </button>
+              <div className="w-12 flex justify-end">
+                {rol !== "tecnico" && (
+                  <button
+                    onClick={() => setIsAddReportModalOpen(true)}
+                    className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors"
+                  >
+                    <Plus className="w-7 h-7" />
+                  </button>
+                )}
+              </div>
             </header>
 
             <div className="flex gap-4 mb-8">

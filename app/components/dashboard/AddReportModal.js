@@ -27,7 +27,7 @@ function AddReportModal({
   const [idEquipos, setIdEquipos] = useState(null);
 
   const { authState } = useContext(AuthContext);
-  const { token, rol } = authState;
+  const { token, iduser, rol } = authState;
 
   const currentDate = new Date();
   const date = currentDate.toLocaleDateString();
@@ -42,13 +42,17 @@ function AddReportModal({
 
   // Mantener los fetchs igual...
   const fetchEquipos = async () => {
+    const mapendpoint = {
+      cliente: `https://backend-integradora.vercel.app/api/equipobyiduser/${iduser}`,
+      admin: `https://backend-integradora.vercel.app/api/equipoubicacion`,
+      tecnico: `https://backend-integradora.vercel.app/api/equipoubicacion`,
+    };
     try {
-      const response = await fetch(
-        "https://backend-integradora.vercel.app/api/equipos",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await fetch(mapendpoint[rol], {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       setEquipos(data);
     } catch (error) {
@@ -195,7 +199,7 @@ function AddReportModal({
 
     // Filtrar equipos según la búsqueda
     const filtered = equipos.filter((equipo) =>
-      equipo.NumeroEquipo.toString()
+      equipo.numeroEquipo.toString()
         .toLowerCase()
         .includes(searchValue.toLowerCase())
     );
@@ -205,7 +209,7 @@ function AddReportModal({
   };
   // Manejo de la selección de un equipo
   const handleEquipoSelect = (equipo) => {
-    setEquipoSearchText(equipo.NumeroEquipo); // Actualizar el texto con el número de equipo
+    setEquipoSearchText(equipo.numeroEquipo); // Actualizar el texto con el número de equipo
     setIdEquipos(equipo.idEquipos); // Almacenar el ID del equipo
     setShowEquipoSuggestions(false); // Cerrar las sugerencias
   };
@@ -287,7 +291,7 @@ function AddReportModal({
                       className="p-2 hover:bg-gray-100 cursor-pointer"
                       onClick={() => handleEquipoSelect(equipo)} // Seleccionar equipo
                     >
-                      {equipo.NumeroEquipo}
+                      {equipo.numeroEquipo}
                     </div>
                   ))}
                 </div>

@@ -24,7 +24,7 @@ const Sidebar = () => {
   const { rol } = authState;
   const { signOut } = useContext(AuthContext);
   const menuItems = [
-    { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
+    { name: "Inicio", icon: HomeIcon, href: "/dashboard" },
     { name: "Reportes", icon: DocumentChartBarIcon, href: "/reports" },
     { name: "Equipos", icon: PrinterIcon, href: "/equipos" },
     { name: "Ubicaciones", icon: MapPinIcon, href: "/ubicaciones" },

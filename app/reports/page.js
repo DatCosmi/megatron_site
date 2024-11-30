@@ -20,7 +20,8 @@ import SearchBar from "../components/dashboard/SearchBar";
 import { AuthContext } from "../context/UsuarioContext";
 import ProtectedRoute from "../context/protectedRoute";
 import toast from "react-hot-toast";
-//para re
+import { RefreshCw } from "lucide-react";
+
 function Reports() {
   const { authState, loadUserDetails } = useContext(AuthContext);
   const { rol, iduser, token, userDetails } = authState;
@@ -36,6 +37,32 @@ function Reports() {
   const [isReportDetailModalOpen, setIsReportDetailModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const refreshReports = async () => {
+    setLoading(true);
+    try {
+      setIsRefreshing(true);
+      // Resetea cualquier mensaje de error previo
+      setError("");
+
+      // Obtén los reportes basado en el rol del usuario
+      const reportData = await LoadReportsDetails(clienteId, tecnicoId);
+
+      // Actualiza el estado de reportes
+      setReports(Array.isArray(reportData) ? reportData : []);
+
+      // Opcional: Muestra un mensaje de éxito
+      toast.success("Reportes actualizados");
+    } catch (error) {
+      console.error("Error al actualizar reportes:", error);
+      toast.error("No se pudieron actualizar los reportes");
+      setError("No se pudieron cargar los reportes");
+    } finally {
+      setIsRefreshing(false);
+      setLoading(false);
+    }
+  };
 
   const fetchTechnicians = async () => {
     try {
@@ -76,16 +103,23 @@ function Reports() {
       );
 
       if (!response.ok) {
-        throw new Error("Error al completar el reporte");
+        throw new Error("Error al concluir el reporte");
       }
 
-      setSuccessMessage("Reporte completado exitosamente.");
+      setSuccessMessage("Servicio concluido exitosamente.");
+      toast.success("Servicio concluido exitosamente");
       closeModal();
     } catch (error) {
       setError(error.message || "Algo salió mal");
       console.error(error);
+      toast.error("No se pudo concluir el servicio");
     }
-    LoadReportsDetails();
+    try {
+      const updatedReports = await LoadReportsDetails(clienteId, tecnicoId);
+      setReports(updatedReports);
+    } catch (error) {
+      console.error("Error actualizando reportes:", error);
+    }
   };
 
   const handleStart = async (IdReporte) => {
@@ -107,16 +141,23 @@ function Reports() {
       );
 
       if (!response.ok) {
-        throw new Error("Error al completar el reporte");
+        throw new Error("Error al comenzar el servicio");
       }
 
-      setSuccessMessage("Reporte completado exitosamente.");
+      setSuccessMessage("Servicio comenzado exitosamente.");
+      toast.success("Servicio comenzado exitosamente");
       closeModal();
     } catch (error) {
       setError(error.message || "Algo salió mal");
       console.error(error);
+      toast.error("No se pudo comenzar el servicio");
     }
-    await LoadReportsDetails();
+    try {
+      const updatedReports = await LoadReportsDetails(clienteId, tecnicoId);
+      setReports(updatedReports);
+    } catch (error) {
+      console.error("Error actualizando reportes:", error);
+    }
   };
   // Función para filtrar reportes por fecha y estado
   const getFilteredReports = (reportsData, filter) => {
@@ -202,19 +243,19 @@ function Reports() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        cache: "no-store", // Deshabilita el caché
+        cache: "no-store",
       });
 
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+
       const result = await response.json();
-      if (result) {
-        return result;
-      }
+      return result; // Retorna directamente los datos
     } catch (err) {
       console.error(
         "Reports: Error al obtener los detalles de los reportes:",
         err.message
       );
+      return []; // Retorna un array vacío en caso de error
     }
   };
 
@@ -321,8 +362,15 @@ function Reports() {
     setIsAddReportModalOpen(false);
     setIsTechnicianListOpen(false);
     setIsReportDetailModalOpen(false);
-    setReports((prevReports) => [...prevReports, LoadReportsDetails()]);
-    await LoadReportsDetails();
+
+    try {
+      // Obtiene directamente los nuevos reportes
+      const updatedReports = await LoadReportsDetails(clienteId, tecnicoId);
+      setReports(updatedReports);
+    } catch (error) {
+      console.error("Error actualizando reportes:", error);
+    }
+
     setReportToEdit(null);
   };
 
@@ -353,11 +401,13 @@ function Reports() {
                   Reportes realizados en la última semana
                 </p>
               </div>
+
               <SearchBar
                 reports={reports}
                 setFilteredReports={setSearchFilteredReports}
                 activeFilter={activeFilter}
               />
+
               <button
                 onClick={() => setIsAddReportModalOpen(true)}
                 className="p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors"
@@ -387,16 +437,34 @@ function Reports() {
                   </span>
                 </button>
               ))}
+              {/* Botón de actualización */}
+              <button
+                onClick={refreshReports}
+                disabled={isRefreshing}
+                className={`p-2 bg-[#2d57d1] text-white rounded-lg hover:bg-[#1a42b6] transition-colors 
+            flex items-center gap-2 
+            ${isRefreshing ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <RefreshCw
+                  className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {loading ? (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="col-span-full flex items-center justify-center h-full min-h-[300px]">
                   <p className="text-2xl font-bold text-gray-400">
                     Cargando reportes...
                   </p>
                 </div>
-              ) : getFilteredReports.length > 0 ? (
+              ) : reports.length === 0 ? (
+                <div className="col-span-full flex items-center justify-center h-full min-h-[300px]">
+                  <p className="text-2xl font-bold text-gray-400">
+                    No hay reportes registrados
+                  </p>
+                </div>
+              ) : searchFilteredReports.length > 0 ? (
                 searchFilteredReports.map((report) => (
                   <div
                     key={report.IdReporte}
@@ -427,7 +495,7 @@ function Reports() {
                       <div className="space-y-4 mb-6">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <FileText className="w-4 h-4" />
-                          <span>{report.folioReporte}</span>
+                          <span>{report.folioReporte || "No disponible"}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Users className="w-4 h-4" />
@@ -491,6 +559,15 @@ function Reports() {
                             </>
                           )}
 
+                        {report.estado === "pendiente" && rol === "tecnico" && (
+                          <button
+                            className="w-full p-2 bg-[#ffbe0b] text-white rounded-lg hover:bg-[#edb20e] transition-colors text-sm font-medium"
+                            onClick={() => handleStart(report.IdReporte)}
+                          >
+                            Comenzar servicio
+                          </button>
+                        )}
+
                         {report.estado === "ejecucion" && rol === "admin" && (
                           <>
                             <button
@@ -505,10 +582,20 @@ function Reports() {
                               className="w-full p-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
                               onClick={() => handleComplete(report.IdReporte)}
                             >
-                              Completar
+                              Concluir servicio
                             </button>
                           </>
                         )}
+
+                        {report.estado === "ejecucion" && rol === "tecnico" && (
+                          <button
+                            className="w-full p-2 bg-[#35cd63] text-white rounded-lg hover:bg-[#28b552] transition-colors text-sm font-medium"
+                            onClick={() => handleComplete(report.IdReporte)}
+                          >
+                            Concluir servicio
+                          </button>
+                        )}
+
                         {(rol === "admin" || rol === "cliente") && (
                           <button
                             className="w-full p-2 bg-[#f71b49] text-white rounded-lg hover:bg-[#df1f47] transition-colors text-sm font-medium"
@@ -522,9 +609,9 @@ function Reports() {
                   </div>
                 ))
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="col-span-full flex items-center justify-center h-full min-h-[300px]">
                   <p className="text-2xl font-bold text-gray-400">
-                    No hay reportes
+                    No se encontraron reportes con los filtros aplicados
                   </p>
                 </div>
               )}
@@ -552,6 +639,7 @@ function Reports() {
             <ServiceDetailModal
               report={selectedReport}
               closeModal={closeModal}
+              rol={rol}
             />
           )}
         </main>

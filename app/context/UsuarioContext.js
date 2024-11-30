@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       return null; // Si ocurre un error, retornar null
     }
   };
-
+  //Función para tener el token cargado en toda la app web
   const loadToken = async () => {
     const storedToken = localStorage.getItem("authToken");
     const storedUser = localStorage.getItem("authUser");
@@ -183,7 +183,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     loadToken();
   }, []);
-
+ //Cerrar sesión y eliminar datos necesarios para el funcionamiento de la app web
   const signOut = async () => {
     localStorage.clear();
     dispatch({ type: "signOut" });
